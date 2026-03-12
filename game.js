@@ -1,0 +1,506 @@
+// ===== Dobble Game Engine =====
+
+import { ALL_SYMBOLS } from './emojis-claude.js';
+
+// import { ALL_SYMBOLS } from './emojis-origin.js';
+
+// ===== Dobble Card Generation =====
+// Dobble uses a projective plane of order n.
+// For 8 symbols per card, n = 7.
+// Total symbols needed: n^2 + n + 1 = 57
+// Total cards: 57
+// Each card has n + 1 = 8 symbols
+// Any two cards share exactly 1 symbol
+
+function generateDobbleCards(order) {
+  const n = order; // 7
+  const totalSymbols = n * n + n + 1; // 57
+  const symbolsPerCard = n + 1; // 8
+  const cards = [];
+
+  // Generate cards using projective plane construction
+  // Card 0: symbols 0..n
+  const card0 = [];
+  for (let i = 0; i <= n; i++) card0.push(i);
+  cards.push(card0);
+
+  // Cards 1..n: for each i in [0, n-1]
+  for (let i = 0; i < n; i++) {
+    const card = [0]; // always include symbol 0
+    for (let j = 0; j < n; j++) {
+      card.push(n + 1 + i * n + j);
+    }
+    cards.push(card);
+  }
+
+  // Cards n+1 .. n^2+n: for each i in [0, n-1], j in [0, n-1]
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      const card = [i + 1]; // one of the symbols from card 0
+      for (let k = 0; k < n; k++) {
+        card.push(n + 1 + k * n + ((i * k + j) % n));
+      }
+      cards.push(card);
+    }
+  }
+
+  return { cards, totalSymbols, symbolsPerCard };
+}
+
+// Build deck with actual emoji symbols
+function buildDeck() {
+  const { cards } = generateDobbleCards(7);
+
+  // Map indices to emojis
+  return cards.map((card) => card.map((idx) => ALL_SYMBOLS[idx]));
+}
+
+// Fisher-Yates shuffle
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Find the common symbol between two cards
+function findCommonSymbol(card1, card2) {
+  for (const sym of card1) {
+    if (card2.includes(sym)) return sym;
+  }
+  return null;
+}
+
+// ===== Position emojis in a circle layout =====
+function positionEmojis(card, containerEl, isClickable, onSymbolClick) {
+  containerEl.innerHTML = '';
+
+  const shuffledCard = shuffle(card);
+  const count = shuffledCard.length;
+
+  // Place one emoji in center, rest around
+  shuffledCard.forEach((symbol, i) => {
+    const el = document.createElement('div');
+    el.classList.add('emoji-item');
+    el.textContent = symbol;
+    el.dataset.symbol = symbol;
+
+    let x, y;
+    if (i === 0) {
+      // Center
+      x = 50;
+      y = 50;
+    } else {
+      // Distribute around circle
+      const angle = ((i - 1) / (count - 1)) * Math.PI * 2 - Math.PI / 2;
+      const radius = 30; // % from center
+      x = 50 + radius * Math.cos(angle);
+      y = 50 + radius * Math.sin(angle);
+    }
+
+    el.style.left = `${x}%`;
+    el.style.top = `${y}%`;
+
+    // Random slight size variation and rotation
+    const sizeVariation = 0.9 + Math.random() * 0.35;
+    const rotation = -20 + Math.random() * 40;
+    el.style.scale = sizeVariation;
+    el.style.rotate = `${rotation}deg`;
+
+    if (isClickable && onSymbolClick) {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        onSymbolClick(symbol, el);
+      });
+    }
+
+    containerEl.appendChild(el);
+  });
+}
+
+// ===== Audio Manager =====
+const AudioManager = {
+  enabled: true,
+  ctx: null,
+
+  init() {
+    try {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) {
+      this.enabled = false;
+    }
+  },
+
+  resume() {
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  },
+
+  play(type) {
+    if (!this.enabled || !this.ctx) return;
+    this.resume();
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    if (type === 'correct') {
+      osc.frequency.setValueAtTime(523, this.ctx.currentTime);
+      osc.frequency.setValueAtTime(659, this.ctx.currentTime + 0.08);
+      osc.frequency.setValueAtTime(784, this.ctx.currentTime + 0.16);
+      gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        this.ctx.currentTime + 0.35,
+      );
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.35);
+    } else if (type === 'wrong') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(200, this.ctx.currentTime);
+      osc.frequency.setValueAtTime(150, this.ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.3);
+    } else if (type === 'gameover') {
+      const notes = [523, 659, 784, 1047];
+      notes.forEach((freq, i) => {
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.connect(g);
+        g.connect(this.ctx.destination);
+        o.frequency.setValueAtTime(freq, this.ctx.currentTime + i * 0.15);
+        g.gain.setValueAtTime(0.12, this.ctx.currentTime + i * 0.15);
+        g.gain.exponentialRampToValueAtTime(
+          0.001,
+          this.ctx.currentTime + i * 0.15 + 0.3,
+        );
+        o.start(this.ctx.currentTime + i * 0.15);
+        o.stop(this.ctx.currentTime + i * 0.15 + 0.3);
+      });
+    }
+  },
+
+  toggle() {
+    this.enabled = !this.enabled;
+    return this.enabled;
+  },
+};
+
+// ===== Game State =====
+const Game = {
+  deck: [],
+  currentCardIndex: 0,
+  topCard: null,
+  bottomCard: null,
+  score: 0,
+  startTime: 0,
+  timerInterval: null,
+  timePerCard: 100000, // ms (debug: 10x)
+  cardStartTime: 0,
+  isPlaying: false,
+  vibrationEnabled: true,
+  totalCardsInGame: 20, // number of card pairs to play
+
+  // DOM elements
+  els: {},
+
+  init() {
+    this.cacheElements();
+    this.bindEvents();
+    AudioManager.init();
+    this.createFlashOverlay();
+    this.renderPreviewCard();
+  },
+
+  cacheElements() {
+    this.els = {
+      screenStart: document.getElementById('screen-start'),
+      screenHowto: document.getElementById('screen-howto'),
+      screenGame: document.getElementById('screen-game'),
+      screenSettings: document.getElementById('screen-settings'),
+      screenGameover: document.getElementById('screen-gameover'),
+      cardTop: document.getElementById('card-top'),
+      cardBottom: document.getElementById('card-bottom'),
+      cardPreview: document.getElementById('card-preview'),
+      score: document.getElementById('current-score'),
+      timerFill: document.getElementById('timer-fill'),
+      cardsRemaining: document.getElementById('cards-remaining'),
+      finalScore: document.getElementById('final-score'),
+      finalTime: document.getElementById('final-time'),
+      finalBest: document.getElementById('final-best'),
+      gameoverTitle: document.getElementById('gameover-title'),
+      toggleSound: document.getElementById('toggle-sound'),
+      toggleVibration: document.getElementById('toggle-vibration'),
+      soundOnIcon: document.getElementById('sound-on-icon'),
+      soundOffIcon: document.getElementById('sound-off-icon'),
+    };
+  },
+
+  bindEvents() {
+    document
+      .getElementById('btn-play')
+      .addEventListener('click', () => this.startGame());
+    document
+      .getElementById('btn-how-to')
+      .addEventListener('click', () => this.showScreen('howto'));
+    document
+      .getElementById('btn-back-howto')
+      .addEventListener('click', () => this.showScreen('start'));
+    document
+      .getElementById('btn-settings')
+      .addEventListener('click', () => this.pauseGame());
+    document
+      .getElementById('btn-sound')
+      .addEventListener('click', () => this.toggleSound());
+    document
+      .getElementById('btn-resume')
+      .addEventListener('click', () => this.resumeGame());
+    document
+      .getElementById('btn-quit')
+      .addEventListener('click', () => this.quitGame());
+    document
+      .getElementById('btn-play-again')
+      .addEventListener('click', () => this.startGame());
+    document
+      .getElementById('btn-menu')
+      .addEventListener('click', () => this.quitGame());
+
+    this.els.toggleSound.addEventListener('change', (e) => {
+      AudioManager.enabled = e.target.checked;
+      this.updateSoundIcon();
+    });
+
+    this.els.toggleVibration.addEventListener('change', (e) => {
+      this.vibrationEnabled = e.target.checked;
+    });
+  },
+
+  createFlashOverlay() {
+    this.flashOverlay = document.createElement('div');
+    this.flashOverlay.classList.add('flash-overlay');
+    document.body.appendChild(this.flashOverlay);
+  },
+
+  renderPreviewCard() {
+    const previewSymbols = ALL_SYMBOLS.slice(0, 8);
+    positionEmojis(previewSymbols, this.els.cardPreview, false);
+  },
+
+  flash(type) {
+    this.flashOverlay.className = 'flash-overlay';
+    // Force reflow
+    void this.flashOverlay.offsetWidth;
+    this.flashOverlay.classList.add(
+      type === 'correct' ? 'flash-correct' : 'flash-wrong',
+    );
+  },
+
+  showScreen(name) {
+    document
+      .querySelectorAll('.screen')
+      .forEach((s) => s.classList.remove('active'));
+    const screenId = `screen-${name}`;
+    const screen = document.getElementById(screenId);
+    if (screen) screen.classList.add('active');
+  },
+
+  startGame() {
+    AudioManager.resume();
+
+    // Generate and shuffle deck
+    this.deck = shuffle(buildDeck());
+
+    // Limit to totalCardsInGame + 1 cards (need pairs)
+    this.deck = this.deck.slice(0, this.totalCardsInGame + 1);
+
+    this.currentCardIndex = 1;
+    this.score = 0;
+    this.startTime = Date.now();
+    this.isPlaying = true;
+
+    this.els.score.textContent = '0';
+
+    // Set up first pair
+    this.topCard = this.deck[0];
+    this.bottomCard = this.deck[1];
+
+    this.renderCards();
+    this.updateCardsRemaining();
+    this.startCardTimer();
+    this.showScreen('game');
+  },
+
+  renderCards() {
+    // Top card — not clickable
+    positionEmojis(this.topCard, this.els.cardTop, false);
+
+    // Bottom card — clickable
+    positionEmojis(this.bottomCard, this.els.cardBottom, true, (symbol, el) => {
+      this.handleSymbolClick(symbol, el);
+    });
+
+    // Animate new cards
+    this.els.cardTop.classList.remove('card-enter');
+    void this.els.cardTop.offsetWidth;
+    this.els.cardTop.classList.add('card-enter');
+  },
+
+  handleSymbolClick(symbol, el) {
+    if (!this.isPlaying) return;
+
+    const commonSymbol = findCommonSymbol(this.topCard, this.bottomCard);
+
+    if (symbol === commonSymbol) {
+      // Correct!
+      el.classList.add('correct');
+      this.flash('correct');
+      AudioManager.play('correct');
+
+      if (this.vibrationEnabled && navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+
+      // Score based on remaining time
+      const elapsed = Date.now() - this.cardStartTime;
+      const timeBonus = Math.max(
+        0,
+        Math.floor((1 - elapsed / this.timePerCard) * 100),
+      );
+      this.score += 10 + timeBonus;
+      this.els.score.textContent = this.score;
+
+      // Next card
+      this.currentCardIndex++;
+      if (this.currentCardIndex >= this.deck.length) {
+        // Game over — won!
+        setTimeout(() => this.endGame(true), 400);
+      } else {
+        setTimeout(() => {
+          this.topCard = this.bottomCard;
+          this.bottomCard = this.deck[this.currentCardIndex];
+          this.renderCards();
+          this.updateCardsRemaining();
+          this.startCardTimer();
+        }, 350);
+      }
+    } else {
+      // Wrong!
+      el.classList.add('wrong');
+      this.flash('wrong');
+      AudioManager.play('wrong');
+
+      if (this.vibrationEnabled && navigator.vibrate) {
+        navigator.vibrate([50, 50, 50]);
+      }
+
+      // Penalty
+      this.score = Math.max(0, this.score - 5);
+      this.els.score.textContent = this.score;
+
+      setTimeout(() => el.classList.remove('wrong'), 400);
+    }
+  },
+
+  startCardTimer() {
+    this.cardStartTime = Date.now();
+    clearInterval(this.timerInterval);
+
+    this.els.timerFill.style.width = '100%';
+    this.els.timerFill.classList.remove('warning');
+
+    this.timerInterval = setInterval(() => {
+      if (!this.isPlaying) return;
+
+      const elapsed = Date.now() - this.cardStartTime;
+      const remaining = Math.max(0, 1 - elapsed / this.timePerCard);
+
+      this.els.timerFill.style.width = `${remaining * 100}%`;
+
+      if (remaining < 0.3) {
+        this.els.timerFill.classList.add('warning');
+      }
+
+      if (remaining <= 0) {
+        // Time's up for this card — game over
+        clearInterval(this.timerInterval);
+        this.endGame(false);
+      }
+    }, 50);
+  },
+
+  updateCardsRemaining() {
+    const done = this.currentCardIndex - 1;
+    const total = this.deck.length - 1;
+    this.els.cardsRemaining.textContent = `${done} / ${total}`;
+  },
+
+  pauseGame() {
+    this.isPlaying = false;
+    clearInterval(this.timerInterval);
+    this.showScreen('game');
+    this.els.screenSettings.classList.add('active');
+  },
+
+  resumeGame() {
+    this.els.screenSettings.classList.remove('active');
+    this.isPlaying = true;
+    // Resume timer adjusted for elapsed time
+    this.startCardTimer();
+  },
+
+  quitGame() {
+    this.isPlaying = false;
+    clearInterval(this.timerInterval);
+    this.els.screenSettings.classList.remove('active');
+    this.showScreen('start');
+  },
+
+  endGame(won) {
+    this.isPlaying = false;
+    clearInterval(this.timerInterval);
+
+    const totalTime = (Date.now() - this.startTime) / 1000;
+    const minutes = Math.floor(totalTime / 60);
+    const seconds = Math.floor(totalTime % 60);
+
+    this.els.gameoverTitle.textContent = won ? 'Отлично!' : 'Время вышло!';
+    this.els.finalScore.textContent = this.score;
+    this.els.finalTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+    // Best score from localStorage
+    const bestKey = 'dobble_best_score';
+    const prevBest = parseInt(localStorage.getItem(bestKey) || '0', 10);
+    if (this.score > prevBest) {
+      localStorage.setItem(bestKey, this.score.toString());
+    }
+    this.els.finalBest.textContent = Math.max(this.score, prevBest);
+
+    AudioManager.play('gameover');
+    this.showScreen('gameover');
+  },
+
+  toggleSound() {
+    const enabled = AudioManager.toggle();
+    this.updateSoundIcon();
+    this.els.toggleSound.checked = enabled;
+  },
+
+  updateSoundIcon() {
+    if (AudioManager.enabled) {
+      this.els.soundOnIcon.style.display = '';
+      this.els.soundOffIcon.style.display = 'none';
+    } else {
+      this.els.soundOnIcon.style.display = 'none';
+      this.els.soundOffIcon.style.display = '';
+    }
+  },
+};
+
+// ===== Start =====
+document.addEventListener('DOMContentLoaded', () => Game.init());
