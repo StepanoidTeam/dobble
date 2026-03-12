@@ -73,8 +73,22 @@
             />
           </svg>
         </button>
-        <div class="score-display">
-          <span id="current-score">0</span>
+        <div class="hud-panel" aria-label="Игровая статистика">
+          <div class="hud-item">
+            <span class="hud-icon" aria-hidden="true">⭐</span>
+            <span class="hud-label">Счёт</span>
+            <span class="hud-value" id="current-score">0</span>
+          </div>
+          <div class="hud-item">
+            <span class="hud-icon" aria-hidden="true">🃏</span>
+            <span class="hud-label">Уровень</span>
+            <span class="hud-value" id="cards-remaining">0 / 0</span>
+          </div>
+          <div class="hud-item">
+            <span class="hud-icon" aria-hidden="true">⏱️</span>
+            <span class="hud-label">Время</span>
+            <span class="hud-value" id="elapsed-time">0:00</span>
+          </div>
         </div>
         <button id="btn-sound" class="icon-btn" aria-label="Звук">
           <svg
@@ -135,9 +149,6 @@
         <div class="timer-bar">
           <div class="timer-fill" id="timer-fill"></div>
         </div>
-        <div class="game-info">
-          <span id="cards-remaining">0 / 0</span>
-        </div>
       </div>
     </div>
 
@@ -158,6 +169,13 @@
             <input type="checkbox" id="toggle-vibration" checked />
             <span class="toggle-slider"></span>
           </label>
+        </div>
+        <div class="setting-row">
+          <span>Набор эмодзи</span>
+          <select id="emoji-set-select" class="settings-select">
+            <option value="base">Базовый</option>
+            <option value="origin">Классический</option>
+          </select>
         </div>
         <button id="btn-resume" class="btn-primary">Продолжить</button>
         <button id="btn-quit" class="btn-secondary">Выйти в меню</button>

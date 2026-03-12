@@ -33,7 +33,6 @@ body {
   color: var(--text-light);
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-  -webkit-user-select: none;
 }
 
 body {
@@ -74,7 +73,6 @@ body {
   z-index: 100;
   background: var(--overlay);
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 /* ===== Buttons ===== */
@@ -224,13 +222,48 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   width: 100%;
   padding: 8px 4px;
   padding-top: max(env(safe-area-inset-top), 12px);
 }
 
-.score-display {
-  font-size: 24px;
+.hud-panel {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  background: rgba(20, 8, 36, 0.5);
+  border: 1px solid rgba(179, 117, 229, 0.35);
+  border-radius: 16px;
+  padding: 6px;
+  backdrop-filter: blur(3px);
+}
+
+.hud-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  border-radius: 10px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.hud-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.hud-label {
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.hud-value {
+  font-size: 14px;
   font-weight: 700;
   color: var(--accent);
 }
@@ -444,6 +477,21 @@ body {
   font-size: 16px;
 }
 
+.settings-select {
+  min-width: 140px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-light);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-size: 14px;
+  outline: none;
+}
+
+.settings-select option {
+  color: #1b0d2f;
+}
+
 /* Toggle switch */
 .toggle {
   position: relative;
@@ -529,6 +577,12 @@ body {
 
 /* ===== Responsive ===== */
 @media (max-height: 680px) {
+  .hud-label {
+    font-size: 9px;
+  }
+  .hud-value {
+    font-size: 12px;
+  }
   .card-container {
     width: min(70vw, 260px);
     height: min(70vw, 260px);
@@ -542,6 +596,12 @@ body {
 }
 
 @media (max-height: 580px) {
+  .hud-item {
+    padding: 2px;
+  }
+  .hud-value {
+    font-size: 11px;
+  }
   .card-container {
     width: min(60vw, 220px);
     height: min(60vw, 220px);
