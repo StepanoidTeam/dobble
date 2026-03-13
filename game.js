@@ -396,7 +396,7 @@ const EMOJI_SETS = {
     },
 
     renderPreviewCard() {
-      const previewSymbols = this.getCurrentSymbols().slice(0, 8);
+      const previewSymbols = shuffle(this.getCurrentSymbols()).slice(0, 8);
       positionEmojis(previewSymbols, this.els.cardPreview, false);
     },
 
