@@ -17,7 +17,7 @@
   </head>
   <body>
     <!-- Start Screen -->
-    <div id="screen-start" class="screen active">
+    <div id="screenStart" class="screen active">
       <div class="start-content">
         <h1 class="game-title">DOBBLE</h1>
         <p class="game-subtitle">Найди совпадение!</p>
@@ -28,17 +28,17 @@
             <div class="ring-segment seg-3"></div>
             <div class="ring-segment seg-4"></div>
           </div>
-          <div class="card-circle" id="card-preview">
+          <div class="card-circle" id="cardPreview">
             <!-- Emojis placed by JS -->
           </div>
         </div>
-        <button id="btn-play" class="btn-primary">ИГРАТЬ</button>
-        <button id="btn-how-to" class="btn-secondary">Как играть?</button>
+        <button id="btnPlay" class="btn-primary">ИГРАТЬ</button>
+        <button id="btnHowTo" class="btn-secondary">Как играть?</button>
       </div>
     </div>
 
     <!-- How To Play Screen -->
-    <div id="screen-howto" class="screen">
+    <div id="screenHowTo" class="screen">
       <div class="howto-content">
         <h2>Как играть?</h2>
         <div class="howto-steps">
@@ -59,14 +59,14 @@
             <p>Чем быстрее находишь — тем больше очков</p>
           </div>
         </div>
-        <button id="btn-back-howto" class="btn-primary">Понятно!</button>
+        <button id="btnBackHowTo" class="btn-primary">Понятно!</button>
       </div>
     </div>
 
     <!-- Game Screen -->
-    <div id="screen-game" class="screen">
+    <div id="screenGame" class="screen">
       <div class="game-header">
-        <button id="btn-settings" class="icon-btn" aria-label="Настройки">
+        <button id="btnSettings" class="icon-btn" aria-label="Настройки">
           <svg viewBox="0 0 24 24" fill="white" width="28" height="28">
             <path
               d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1115.6 12 3.6 3.6 0 0112 15.6z"
@@ -77,22 +77,22 @@
           <div class="hud-item">
             <span class="hud-icon" aria-hidden="true">⭐</span>
             <span class="hud-label">Счёт</span>
-            <span class="hud-value" id="current-score">0</span>
+            <span class="hud-value" id="currentScore">0</span>
           </div>
           <div class="hud-item">
             <span class="hud-icon" aria-hidden="true">🃏</span>
             <span class="hud-label">Уровень</span>
-            <span class="hud-value" id="cards-remaining">0 / 0</span>
+            <span class="hud-value" id="cardsRemaining">0 / 0</span>
           </div>
           <div class="hud-item">
             <span class="hud-icon" aria-hidden="true">⏱️</span>
             <span class="hud-label">Время</span>
-            <span class="hud-value" id="elapsed-time">0:00</span>
+            <span class="hud-value" id="elapsedTime">0:00</span>
           </div>
         </div>
-        <button id="btn-sound" class="icon-btn" aria-label="Звук">
+        <button id="btnSound" class="icon-btn" aria-label="Звук">
           <svg
-            id="sound-on-icon"
+            id="soundOnIcon"
             viewBox="0 0 24 24"
             fill="white"
             width="28"
@@ -103,7 +103,7 @@
             />
           </svg>
           <svg
-            id="sound-off-icon"
+            id="soundOffIcon"
             viewBox="0 0 24 24"
             fill="white"
             width="28"
@@ -126,7 +126,7 @@
             <div class="ring-segment seg-3"></div>
             <div class="ring-segment seg-4"></div>
           </div>
-          <div class="card-circle" id="card-top">
+          <div class="card-circle" id="cardTop">
             <!-- Emojis will be placed here by JS -->
           </div>
         </div>
@@ -139,7 +139,7 @@
             <div class="ring-segment seg-3"></div>
             <div class="ring-segment seg-4"></div>
           </div>
-          <div class="card-circle" id="card-bottom">
+          <div class="card-circle" id="cardBottom">
             <!-- Emojis will be placed here by JS -->
           </div>
         </div>
@@ -147,61 +147,61 @@
 
       <div class="game-footer">
         <div class="timer-bar">
-          <div class="timer-fill" id="timer-fill"></div>
+          <div class="timer-fill" id="timerFill"></div>
         </div>
       </div>
     </div>
 
     <!-- Pause/Settings Screen -->
-    <div id="screen-settings" class="screen overlay">
+    <div id="screenSettings" class="screen overlay">
       <div class="settings-panel">
         <h2>Пауза</h2>
         <div class="setting-row">
           <span>Звук</span>
           <label class="toggle">
-            <input type="checkbox" id="toggle-sound" checked />
+            <input type="checkbox" id="toggleSound" checked />
             <span class="toggle-slider"></span>
           </label>
         </div>
         <div class="setting-row">
           <span>Вибрация</span>
           <label class="toggle">
-            <input type="checkbox" id="toggle-vibration" checked />
+            <input type="checkbox" id="toggleVibration" checked />
             <span class="toggle-slider"></span>
           </label>
         </div>
         <div class="setting-row">
           <span>Набор эмодзи</span>
-          <select id="emoji-set-select" class="settings-select">
+          <select id="emojiSetSelect" class="settings-select">
             <option value="base">Базовый</option>
             <option value="origin">Классический</option>
           </select>
         </div>
-        <button id="btn-resume" class="btn-primary">Продолжить</button>
-        <button id="btn-quit" class="btn-secondary">Выйти в меню</button>
+        <button id="btnResume" class="btn-primary">Продолжить</button>
+        <button id="btnQuit" class="btn-secondary">Выйти в меню</button>
       </div>
     </div>
 
     <!-- Game Over Screen -->
-    <div id="screen-gameover" class="screen">
+    <div id="screenGameOver" class="screen">
       <div class="gameover-content">
-        <h2 id="gameover-title">Отлично!</h2>
+        <h2 id="gameOverTitle">Отлично!</h2>
         <div class="stats">
           <div class="stat">
-            <span class="stat-value" id="final-score">0</span>
+            <span class="stat-value" id="finalScore">0</span>
             <span class="stat-label">Очки</span>
           </div>
           <div class="stat">
-            <span class="stat-value" id="final-time">0:00</span>
+            <span class="stat-value" id="finalTime">0:00</span>
             <span class="stat-label">Время</span>
           </div>
           <div class="stat">
-            <span class="stat-value" id="final-best">0:00</span>
+            <span class="stat-value" id="finalBest">0:00</span>
             <span class="stat-label">Лучшее среднее</span>
           </div>
         </div>
-        <button id="btn-play-again" class="btn-primary">Играть снова</button>
-        <button id="btn-menu" class="btn-secondary">В меню</button>
+        <button id="btnPlayAgain" class="btn-primary">Играть снова</button>
+        <button id="btnMenu" class="btn-secondary">В меню</button>
       </div>
     </div>
   </body>

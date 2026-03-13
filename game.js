@@ -271,12 +271,9 @@ const EMOJI_SETS = {
     vibrationEnabled: true,
     totalCardsInGame: 20, // number of card pairs to play
 
-    // DOM elements
-    els: {},
-
     init() {
       this.loadEmojiSetPreference();
-      this.cacheElements();
+      this.populateEmojiSetOptions();
       this.bindEvents();
       AudioManager.init();
       this.createFlashOverlay();
@@ -285,46 +282,18 @@ const EMOJI_SETS = {
       this.updateElapsedTime();
     },
 
-    cacheElements() {
-      this.els = {
-        screenStart: document.getElementById('screen-start'),
-        screenHowto: document.getElementById('screen-howto'),
-        screenGame: document.getElementById('screen-game'),
-        screenSettings: document.getElementById('screen-settings'),
-        screenGameover: document.getElementById('screen-gameover'),
-        cardTop: document.getElementById('card-top'),
-        cardBottom: document.getElementById('card-bottom'),
-        cardPreview: document.getElementById('card-preview'),
-        score: document.getElementById('current-score'),
-        elapsedTime: document.getElementById('elapsed-time'),
-        timerFill: document.getElementById('timer-fill'),
-        cardsRemaining: document.getElementById('cards-remaining'),
-        finalScore: document.getElementById('final-score'),
-        finalTime: document.getElementById('final-time'),
-        finalBest: document.getElementById('final-best'),
-        gameoverTitle: document.getElementById('gameover-title'),
-        toggleSound: document.getElementById('toggle-sound'),
-        toggleVibration: document.getElementById('toggle-vibration'),
-        emojiSetSelect: document.getElementById('emoji-set-select'),
-        soundOnIcon: document.getElementById('sound-on-icon'),
-        soundOffIcon: document.getElementById('sound-off-icon'),
-      };
-
-      this.populateEmojiSetOptions();
-    },
-
     populateEmojiSetOptions() {
-      if (!this.els.emojiSetSelect) return;
+      if (!emojiSetSelect) return;
 
-      this.els.emojiSetSelect.innerHTML = '';
+      emojiSetSelect.innerHTML = '';
       Object.values(EMOJI_SETS).forEach((setConfig) => {
         const option = document.createElement('option');
         option.value = setConfig.key;
         option.textContent = setConfig.label;
-        this.els.emojiSetSelect.appendChild(option);
+        emojiSetSelect.appendChild(option);
       });
 
-      this.els.emojiSetSelect.value = this.selectedEmojiSetKey;
+      emojiSetSelect.value = this.selectedEmojiSetKey;
     },
 
     loadEmojiSetPreference() {
@@ -340,53 +309,37 @@ const EMOJI_SETS = {
     },
 
     bindEvents() {
-      document
-        .getElementById('btn-play')
-        .addEventListener('click', () => this.startGame());
-      document
-        .getElementById('btn-how-to')
-        .addEventListener('click', () => this.showScreen('howto'));
-      document
-        .getElementById('btn-back-howto')
-        .addEventListener('click', () => this.showScreen('start'));
-      document
-        .getElementById('btn-settings')
-        .addEventListener('click', () => this.pauseGame());
-      document
-        .getElementById('btn-sound')
-        .addEventListener('click', () => this.toggleSound());
-      document
-        .getElementById('btn-resume')
-        .addEventListener('click', () => this.resumeGame());
-      document
-        .getElementById('btn-quit')
-        .addEventListener('click', () => this.quitGame());
-      document
-        .getElementById('btn-play-again')
-        .addEventListener('click', () => this.startGame());
-      document
-        .getElementById('btn-menu')
-        .addEventListener('click', () => this.quitGame());
+      btnPlay.addEventListener('click', () => this.startGame());
+      btnHowTo.addEventListener('click', () => this.showScreen(screenHowTo));
+      btnBackHowTo.addEventListener('click', () =>
+        this.showScreen(screenStart),
+      );
+      btnSettings.addEventListener('click', () => this.pauseGame());
+      btnSound.addEventListener('click', () => this.toggleSound());
+      btnResume.addEventListener('click', () => this.resumeGame());
+      btnQuit.addEventListener('click', () => this.quitGame());
+      btnPlayAgain.addEventListener('click', () => this.startGame());
+      btnMenu.addEventListener('click', () => this.quitGame());
 
-      this.els.toggleSound.addEventListener('change', (e) => {
+      toggleSound.addEventListener('change', (e) => {
         AudioManager.enabled = e.target.checked;
         this.updateSoundIcon();
       });
 
-      this.els.toggleVibration.addEventListener('change', (e) => {
+      toggleVibration.addEventListener('change', (e) => {
         this.vibrationEnabled = e.target.checked;
       });
 
-      if (this.els.emojiSetSelect) {
-        this.els.emojiSetSelect.addEventListener('change', (e) => {
-          const nextSetKey = e.target.value;
-          if (!EMOJI_SETS[nextSetKey]) return;
+      if (!emojiSetSelect) return;
 
-          this.selectedEmojiSetKey = nextSetKey;
-          localStorage.setItem(EMOJI_SET_STORAGE_KEY, this.selectedEmojiSetKey);
-          this.renderPreviewCard();
-        });
-      }
+      emojiSetSelect.addEventListener('change', (e) => {
+        const nextSetKey = e.target.value;
+        if (!EMOJI_SETS[nextSetKey]) return;
+
+        this.selectedEmojiSetKey = nextSetKey;
+        localStorage.setItem(EMOJI_SET_STORAGE_KEY, this.selectedEmojiSetKey);
+        this.renderPreviewCard();
+      });
     },
 
     createFlashOverlay() {
@@ -397,7 +350,7 @@ const EMOJI_SETS = {
 
     renderPreviewCard() {
       const previewSymbols = shuffle(this.getCurrentSymbols()).slice(0, 8);
-      positionEmojis(previewSymbols, this.els.cardPreview, false);
+      positionEmojis(previewSymbols, cardPreview, false);
     },
 
     formatElapsedTime(milliseconds) {
@@ -409,7 +362,7 @@ const EMOJI_SETS = {
 
     updateElapsedTime() {
       const elapsed = this.startTime > 0 ? Date.now() - this.startTime : 0;
-      this.els.elapsedTime.textContent = this.formatElapsedTime(elapsed);
+      elapsedTime.textContent = this.formatElapsedTime(elapsed);
     },
 
     flash(type) {
@@ -421,13 +374,11 @@ const EMOJI_SETS = {
       );
     },
 
-    showScreen(name) {
+    showScreen(screenEl) {
       document
         .querySelectorAll('.screen')
         .forEach((s) => s.classList.remove('active'));
-      const screenId = `screen-${name}`;
-      const screen = document.getElementById(screenId);
-      if (screen) screen.classList.add('active');
+      if (screenEl) screenEl.classList.add('active');
     },
 
     startGame() {
@@ -444,7 +395,7 @@ const EMOJI_SETS = {
       this.startTime = Date.now();
       this.isPlaying = true;
 
-      this.els.score.textContent = '0';
+      currentScore.textContent = '0';
       this.updateElapsedTime();
 
       // Set up first pair
@@ -454,27 +405,22 @@ const EMOJI_SETS = {
       this.renderCards();
       this.updateCardsRemaining();
       this.startCardTimer();
-      this.showScreen('game');
+      this.showScreen(screenGame);
     },
 
     renderCards() {
       // Top card — not clickable
-      positionEmojis(this.topCard, this.els.cardTop, false);
+      positionEmojis(this.topCard, cardTop, false);
 
       // Bottom card — clickable
-      positionEmojis(
-        this.bottomCard,
-        this.els.cardBottom,
-        true,
-        (symbol, el) => {
-          this.handleSymbolClick(symbol, el);
-        },
-      );
+      positionEmojis(this.bottomCard, cardBottom, true, (symbol, el) => {
+        this.handleSymbolClick(symbol, el);
+      });
 
       // Animate new cards
-      this.els.cardTop.classList.remove('card-enter');
-      void this.els.cardTop.offsetWidth;
-      this.els.cardTop.classList.add('card-enter');
+      cardTop.classList.remove('card-enter');
+      void cardTop.offsetWidth;
+      cardTop.classList.add('card-enter');
     },
 
     handleSymbolClick(symbol, el) {
@@ -499,7 +445,7 @@ const EMOJI_SETS = {
           Math.floor((1 - elapsed / this.timePerCard) * 100),
         );
         this.score += 10 + timeBonus;
-        this.els.score.textContent = this.score;
+        currentScore.textContent = this.score;
 
         // Next card
         this.currentCardIndex++;
@@ -527,7 +473,7 @@ const EMOJI_SETS = {
 
         // Penalty
         this.score = Math.max(0, this.score - 5);
-        this.els.score.textContent = this.score;
+        currentScore.textContent = this.score;
 
         setTimeout(() => el.classList.remove('wrong'), 400);
       }
@@ -537,8 +483,8 @@ const EMOJI_SETS = {
       this.cardStartTime = Date.now();
       clearInterval(this.timerInterval);
 
-      this.els.timerFill.style.width = '100%';
-      this.els.timerFill.classList.remove('warning');
+      timerFill.style.width = '100%';
+      timerFill.classList.remove('warning');
 
       this.timerInterval = setInterval(() => {
         if (!this.isPlaying) return;
@@ -547,10 +493,10 @@ const EMOJI_SETS = {
         const remaining = Math.max(0, 1 - elapsed / this.timePerCard);
         this.updateElapsedTime();
 
-        this.els.timerFill.style.width = `${remaining * 100}%`;
+        timerFill.style.width = `${remaining * 100}%`;
 
         if (remaining < 0.3) {
-          this.els.timerFill.classList.add('warning');
+          timerFill.classList.add('warning');
         }
 
         if (remaining <= 0) {
@@ -564,18 +510,18 @@ const EMOJI_SETS = {
     updateCardsRemaining() {
       const total = Math.max(0, this.deck.length - 1);
       const done = Math.max(0, this.currentCardIndex - 1);
-      this.els.cardsRemaining.textContent = `${done} / ${total}`;
+      cardsRemaining.textContent = `${done} / ${total}`;
     },
 
     pauseGame() {
       this.isPlaying = false;
       clearInterval(this.timerInterval);
-      this.showScreen('game');
-      this.els.screenSettings.classList.add('active');
+      this.showScreen(screenGame);
+      screenSettings.classList.add('active');
     },
 
     resumeGame() {
-      this.els.screenSettings.classList.remove('active');
+      screenSettings.classList.remove('active');
       this.isPlaying = true;
       // Resume timer adjusted for elapsed time
       this.startCardTimer();
@@ -584,8 +530,8 @@ const EMOJI_SETS = {
     quitGame() {
       this.isPlaying = false;
       clearInterval(this.timerInterval);
-      this.els.screenSettings.classList.remove('active');
-      this.showScreen('start');
+      screenSettings.classList.remove('active');
+      this.showScreen(screenStart);
     },
 
     endGame(won) {
@@ -594,9 +540,9 @@ const EMOJI_SETS = {
 
       const elapsedMs = Date.now() - this.startTime;
 
-      this.els.gameoverTitle.textContent = won ? 'Отлично!' : 'Время вышло!';
-      this.els.finalScore.textContent = this.score;
-      this.els.finalTime.textContent = this.formatElapsedTime(elapsedMs);
+      gameOverTitle.textContent = won ? 'Отлично!' : 'Время вышло!';
+      finalScore.textContent = this.score;
+      finalTime.textContent = this.formatElapsedTime(elapsedMs);
 
       // Best score from localStorage
       const bestKey = 'dobble_best_score';
@@ -604,25 +550,25 @@ const EMOJI_SETS = {
       if (this.score > prevBest) {
         localStorage.setItem(bestKey, this.score.toString());
       }
-      this.els.finalBest.textContent = Math.max(this.score, prevBest);
+      finalBest.textContent = Math.max(this.score, prevBest);
 
       AudioManager.play('gameover');
-      this.showScreen('gameover');
+      this.showScreen(screenGameOver);
     },
 
     toggleSound() {
       const enabled = AudioManager.toggle();
       this.updateSoundIcon();
-      this.els.toggleSound.checked = enabled;
+      toggleSound.checked = enabled;
     },
 
     updateSoundIcon() {
       if (AudioManager.enabled) {
-        this.els.soundOnIcon.style.display = '';
-        this.els.soundOffIcon.style.display = 'none';
+        soundOnIcon.style.display = '';
+        soundOffIcon.style.display = 'none';
       } else {
-        this.els.soundOnIcon.style.display = 'none';
-        this.els.soundOffIcon.style.display = '';
+        soundOnIcon.style.display = 'none';
+        soundOffIcon.style.display = '';
       }
     },
   };

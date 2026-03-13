@@ -213,7 +213,7 @@ body {
 }
 
 /* ===== Game Screen ===== */
-#screen-game {
+#screenGame {
   justify-content: space-between;
   padding: env(safe-area-inset-top, 20px) 16px env(safe-area-inset-bottom, 20px);
 }
