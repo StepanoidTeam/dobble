@@ -8,7 +8,7 @@
 }
 
 :root {
-  --bg-primary: #3a1a5e;
+  --bg-primary: #47206e;
   --bg-secondary: #4a2272;
   --accent: #f5c518;
   --accent-dark: #d4a010;
@@ -33,22 +33,6 @@ body {
   color: var(--text-light);
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-}
-
-body {
-  background: linear-gradient(145deg, #2d1250, #4a2272, #3a1a5e);
-  background-size: 400% 400%;
-  animation: gradientShift 8s ease infinite;
-}
-
-@keyframes gradientShift {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
 }
 
 /* ===== Screens ===== */
