@@ -364,11 +364,14 @@ const EMOJI_SETS = {
     score: 0,
     startTime: 0,
     timerInterval: null,
+    previewTimerInterval: null,
     timePerCard: DEFAULT_TIME_PER_CARD_MS,
     iconRotationDegrees: DEFAULT_ICON_ROTATION_DEGREES,
     cardStartTime: 0,
+    previewCardStartTime: 0,
     pausedCardElapsed: 0,
     gameCardRings: [],
+    previewCardRing: null,
     isPlaying: false,
     totalCardsInGame: 20, // number of card pairs to play
 
@@ -382,7 +385,9 @@ const EMOJI_SETS = {
       AudioManager.init();
       this.createFlashOverlay();
       this.cacheGameCardRings();
+      this.cachePreviewCardRing();
       this.renderPreviewCard();
+      this.startPreviewCycle();
       this.updateCardsRemaining();
       this.updateElapsedTime();
     },
@@ -393,6 +398,10 @@ const EMOJI_SETS = {
           '.card-top .card-ring, .card-bottom .card-ring',
         ),
       );
+    },
+
+    cachePreviewCardRing() {
+      this.previewCardRing = document.querySelector('.card-preview .card-ring');
     },
 
     populateEmojiSetOptions() {
@@ -446,6 +455,9 @@ const EMOJI_SETS = {
       this.updateTimerDisplay(snappedSeconds);
       if (timerRange) {
         timerRange.value = `${snappedSeconds}`;
+      }
+      if (screenStart.classList.contains('active')) {
+        this.startPreviewCycle();
       }
     },
 
@@ -595,6 +607,49 @@ const EMOJI_SETS = {
       });
     },
 
+    updatePreviewRingProgress(remaining) {
+      if (!this.previewCardRing) return;
+
+      const clampedRemaining = Math.max(0, Math.min(1, remaining));
+      const segmentLength = clampedRemaining * 50;
+      setCardRingSegments(this.previewCardRing, {
+        firstStart: 0,
+        secondStart: 50,
+        firstLength: segmentLength,
+        secondLength: segmentLength,
+      });
+    },
+
+    startPreviewCycle() {
+      if (!this.previewCardRing || !screenStart.classList.contains('active')) {
+        return;
+      }
+
+      clearInterval(this.previewTimerInterval);
+      this.previewCardStartTime = Date.now();
+      this.updatePreviewRingProgress(1);
+
+      this.previewTimerInterval = setInterval(() => {
+        if (!screenStart.classList.contains('active')) return;
+
+        const elapsed = Date.now() - this.previewCardStartTime;
+        const remaining = Math.max(0, 1 - elapsed / this.timePerCard);
+
+        this.updatePreviewRingProgress(remaining);
+
+        if (remaining <= 0) {
+          this.renderPreviewCard();
+          this.previewCardStartTime = Date.now();
+          this.updatePreviewRingProgress(1);
+        }
+      }, 50);
+    },
+
+    stopPreviewCycle() {
+      clearInterval(this.previewTimerInterval);
+      this.previewTimerInterval = null;
+    },
+
     renderPreviewCard() {
       const previewSymbols = shuffle(this.getCurrentSymbols()).slice(0, 8);
       positionEmojis(previewSymbols, cardPreview, false, null, {
@@ -628,6 +683,13 @@ const EMOJI_SETS = {
         .querySelectorAll('.screen')
         .forEach((s) => s.classList.remove('active'));
       if (screenEl) screenEl.classList.add('active');
+
+      if (screenEl === screenStart) {
+        this.renderPreviewCard();
+        this.startPreviewCycle();
+      } else {
+        this.stopPreviewCycle();
+      }
     },
 
     startGame() {
