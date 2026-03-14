@@ -5,10 +5,15 @@ import { ALL_SYMBOLS as ORIGIN_SYMBOLS } from './emojis-origin.js';
 
 const EMOJI_SET_STORAGE_KEY = 'dobble_emoji_set';
 const TIME_PER_CARD_STORAGE_KEY = 'dobble_time_per_card_ms';
+const ICON_ROTATION_STORAGE_KEY = 'dobble_icon_rotation_deg';
 const TIME_PER_CARD_MIN_SECONDS = 5;
 const TIME_PER_CARD_MAX_SECONDS = 100;
 const TIME_PER_CARD_STEP_SECONDS = 5;
 const DEFAULT_TIME_PER_CARD_MS = 10000;
+const ICON_ROTATION_MIN_DEGREES = 0;
+const ICON_ROTATION_MAX_DEGREES = 360;
+const ICON_ROTATION_STEP_DEGREES = 5;
+const DEFAULT_ICON_ROTATION_DEGREES = 40;
 const EMOJI_SETS = {
   base: {
     key: 'base',
@@ -164,12 +169,31 @@ const EMOJI_SETS = {
     return TIME_PER_CARD_MIN_SECONDS + steps * TIME_PER_CARD_STEP_SECONDS;
   }
 
+  function snapIconRotationDegrees(degrees) {
+    const clamped = Math.max(
+      ICON_ROTATION_MIN_DEGREES,
+      Math.min(ICON_ROTATION_MAX_DEGREES, degrees),
+    );
+    const steps = Math.round(clamped / ICON_ROTATION_STEP_DEGREES);
+    return steps * ICON_ROTATION_STEP_DEGREES;
+  }
+
   // ===== Position emojis in a circle layout =====
-  function positionEmojis(card, containerEl, isClickable, onSymbolClick) {
+  function positionEmojis(
+    card,
+    containerEl,
+    isClickable,
+    onSymbolClick,
+    layoutOptions = {},
+  ) {
     containerEl.innerHTML = '';
 
     const shuffledCard = shuffle(card);
     const count = shuffledCard.length;
+    const rotationRangeDegrees =
+      typeof layoutOptions.rotationRangeDegrees === 'number'
+        ? layoutOptions.rotationRangeDegrees
+        : DEFAULT_ICON_ROTATION_DEGREES;
 
     // Place one emoji in center, rest around
     shuffledCard.forEach((symbol, i) => {
@@ -196,7 +220,10 @@ const EMOJI_SETS = {
 
       // Random slight size variation and rotation
       const sizeVariation = 0.9 + Math.random() * 0.35;
-      const rotation = -20 + Math.random() * 40;
+      const rotation =
+        rotationRangeDegrees === 0
+          ? 0
+          : -rotationRangeDegrees / 2 + Math.random() * rotationRangeDegrees;
       el.style.scale = `${roundUiNumber(sizeVariation)}`;
       el.style.rotate = `${roundUiNumber(rotation)}deg`;
 
@@ -338,6 +365,7 @@ const EMOJI_SETS = {
     startTime: 0,
     timerInterval: null,
     timePerCard: DEFAULT_TIME_PER_CARD_MS,
+    iconRotationDegrees: DEFAULT_ICON_ROTATION_DEGREES,
     cardStartTime: 0,
     pausedCardElapsed: 0,
     gameCardRings: [],
@@ -347,6 +375,7 @@ const EMOJI_SETS = {
     init() {
       this.loadEmojiSetPreference();
       this.loadTimerPreference();
+      this.loadIconRotationPreference();
       this.populateEmojiSetOptions();
       this.syncSettingsControls();
       this.bindEvents();
@@ -398,6 +427,14 @@ const EMOJI_SETS = {
       this.timePerCard = normalizedSeconds * 1000;
     },
 
+    loadIconRotationPreference() {
+      const rawValue = localStorage.getItem(ICON_ROTATION_STORAGE_KEY);
+      const parsedValue = rawValue ? parseInt(rawValue, 10) : NaN;
+      if (Number.isNaN(parsedValue)) return;
+
+      this.iconRotationDegrees = snapIconRotationDegrees(parsedValue);
+    },
+
     getTimePerCardSeconds() {
       return Math.round(this.timePerCard / 1000);
     },
@@ -412,9 +449,28 @@ const EMOJI_SETS = {
       }
     },
 
+    applyIconRotationDegrees(degrees) {
+      const snappedDegrees = snapIconRotationDegrees(degrees);
+      this.iconRotationDegrees = snappedDegrees;
+      localStorage.setItem(
+        ICON_ROTATION_STORAGE_KEY,
+        `${this.iconRotationDegrees}`,
+      );
+      this.updateRotationDisplay(snappedDegrees);
+      if (rotationRange) {
+        rotationRange.value = `${snappedDegrees}`;
+      }
+      this.renderPreviewCard();
+    },
+
     updateTimerDisplay(seconds) {
       if (!timerValue) return;
       timerValue.textContent = `${seconds} с`;
+    },
+
+    updateRotationDisplay(degrees) {
+      if (!rotationValue) return;
+      rotationValue.textContent = `${degrees}°`;
     },
 
     syncSettingsControls() {
@@ -429,7 +485,15 @@ const EMOJI_SETS = {
         timerRange.value = `${this.getTimePerCardSeconds()}`;
       }
 
+      if (rotationRange) {
+        rotationRange.min = `${ICON_ROTATION_MIN_DEGREES}`;
+        rotationRange.max = `${ICON_ROTATION_MAX_DEGREES}`;
+        rotationRange.step = `${ICON_ROTATION_STEP_DEGREES}`;
+        rotationRange.value = `${this.iconRotationDegrees}`;
+      }
+
       this.updateTimerDisplay(this.getTimePerCardSeconds());
+      this.updateRotationDisplay(this.iconRotationDegrees);
     },
 
     getCurrentSymbols() {
@@ -466,6 +530,14 @@ const EMOJI_SETS = {
           const nextValue = parseInt(e.target.value, 10);
           if (Number.isNaN(nextValue)) return;
           this.applyTimePerCardSeconds(nextValue);
+        });
+      }
+
+      if (rotationRange) {
+        rotationRange.addEventListener('input', (e) => {
+          const nextValue = parseInt(e.target.value, 10);
+          if (Number.isNaN(nextValue)) return;
+          this.applyIconRotationDegrees(nextValue);
         });
       }
 
@@ -525,7 +597,9 @@ const EMOJI_SETS = {
 
     renderPreviewCard() {
       const previewSymbols = shuffle(this.getCurrentSymbols()).slice(0, 8);
-      positionEmojis(previewSymbols, cardPreview, false);
+      positionEmojis(previewSymbols, cardPreview, false, null, {
+        rotationRangeDegrees: this.iconRotationDegrees,
+      });
     },
 
     formatElapsedTime(milliseconds) {
@@ -586,12 +660,22 @@ const EMOJI_SETS = {
 
     renderCards() {
       // Top card — not clickable
-      positionEmojis(this.topCard, cardTop, false);
+      positionEmojis(this.topCard, cardTop, false, null, {
+        rotationRangeDegrees: this.iconRotationDegrees,
+      });
 
       // Bottom card — clickable
-      positionEmojis(this.bottomCard, cardBottom, true, (symbol, el) => {
-        this.handleSymbolClick(symbol, el);
-      });
+      positionEmojis(
+        this.bottomCard,
+        cardBottom,
+        true,
+        (symbol, el) => {
+          this.handleSymbolClick(symbol, el);
+        },
+        {
+          rotationRangeDegrees: this.iconRotationDegrees,
+        },
+      );
 
       // Animate new cards
       cardTop.classList.remove('card-enter');
