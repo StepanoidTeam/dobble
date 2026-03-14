@@ -4,15 +4,20 @@ import { ALL_SYMBOLS as BASE_SYMBOLS } from './emojis-claude.js';
 import { ALL_SYMBOLS as ORIGIN_SYMBOLS } from './emojis-origin.js';
 
 const EMOJI_SET_STORAGE_KEY = 'dobble_emoji_set';
+const TIME_PER_CARD_STORAGE_KEY = 'dobble_time_per_card_ms';
+const TIME_PER_CARD_MIN_SECONDS = 5;
+const TIME_PER_CARD_MAX_SECONDS = 100;
+const TIME_PER_CARD_STEP_SECONDS = 5;
+const DEFAULT_TIME_PER_CARD_MS = 10000;
 const EMOJI_SETS = {
   base: {
     key: 'base',
-    label: 'Базовый',
+    label: `${BASE_SYMBOLS.at(0)}Базовый`,
     symbols: BASE_SYMBOLS,
   },
   origin: {
     key: 'origin',
-    label: 'Классический',
+    label: `${ORIGIN_SYMBOLS.at(0)}Классический`,
     symbols: ORIGIN_SYMBOLS,
   },
 };
@@ -92,6 +97,73 @@ const EMOJI_SETS = {
     return null;
   }
 
+  function roundUiNumber(value) {
+    return Math.round((value + Number.EPSILON) * 100) / 100;
+  }
+
+  function setCardRingSegments(cardRingEl, config = {}) {
+    if (!cardRingEl) return;
+
+    const { strokeWidth, firstLength, firstStart, secondLength, secondStart } =
+      config;
+
+    if (typeof strokeWidth === 'number') {
+      cardRingEl.style.setProperty(
+        '--ring-stroke-width',
+        `${roundUiNumber(strokeWidth)}`,
+      );
+    }
+    if (typeof firstLength === 'number') {
+      cardRingEl.style.setProperty(
+        '--ring-segment-a-length',
+        `${roundUiNumber(firstLength)}`,
+      );
+    }
+    if (typeof firstStart === 'number') {
+      cardRingEl.style.setProperty(
+        '--ring-segment-a-start',
+        `${roundUiNumber(firstStart)}`,
+      );
+    }
+    if (typeof secondLength === 'number') {
+      cardRingEl.style.setProperty(
+        '--ring-segment-b-length',
+        `${roundUiNumber(secondLength)}`,
+      );
+    }
+    if (typeof secondStart === 'number') {
+      cardRingEl.style.setProperty(
+        '--ring-segment-b-start',
+        `${roundUiNumber(secondStart)}`,
+      );
+    }
+  }
+
+  function initCardRings() {
+    const cardRings = document.querySelectorAll('.card-ring');
+    cardRings.forEach((cardRingEl, index) => {
+      setCardRingSegments(cardRingEl, {
+        firstLength: index === 0 ? 20 : 18,
+        firstStart: 8,
+        secondLength: index === 0 ? 16 : 18,
+        secondStart: 58,
+      });
+    });
+
+    window.setCardRingSegments = setCardRingSegments;
+  }
+
+  function snapTimerSeconds(seconds) {
+    const clamped = Math.max(
+      TIME_PER_CARD_MIN_SECONDS,
+      Math.min(TIME_PER_CARD_MAX_SECONDS, seconds),
+    );
+    const steps = Math.round(
+      (clamped - TIME_PER_CARD_MIN_SECONDS) / TIME_PER_CARD_STEP_SECONDS,
+    );
+    return TIME_PER_CARD_MIN_SECONDS + steps * TIME_PER_CARD_STEP_SECONDS;
+  }
+
   // ===== Position emojis in a circle layout =====
   function positionEmojis(card, containerEl, isClickable, onSymbolClick) {
     containerEl.innerHTML = '';
@@ -119,14 +191,14 @@ const EMOJI_SETS = {
         y = 50 + radius * Math.sin(angle);
       }
 
-      el.style.left = `${x}%`;
-      el.style.top = `${y}%`;
+      el.style.left = `${roundUiNumber(x)}%`;
+      el.style.top = `${roundUiNumber(y)}%`;
 
       // Random slight size variation and rotation
       const sizeVariation = 0.9 + Math.random() * 0.35;
       const rotation = -20 + Math.random() * 40;
-      el.style.scale = sizeVariation;
-      el.style.rotate = `${rotation}deg`;
+      el.style.scale = `${roundUiNumber(sizeVariation)}`;
+      el.style.rotate = `${roundUiNumber(rotation)}deg`;
 
       if (isClickable && onSymbolClick) {
         el.addEventListener('click', (e) => {
@@ -265,21 +337,33 @@ const EMOJI_SETS = {
     score: 0,
     startTime: 0,
     timerInterval: null,
-    timePerCard: 10000, // ms (debug: 10x)
+    timePerCard: DEFAULT_TIME_PER_CARD_MS,
     cardStartTime: 0,
+    pausedCardElapsed: 0,
+    gameCardRings: [],
     isPlaying: false,
-    vibrationEnabled: true,
     totalCardsInGame: 20, // number of card pairs to play
 
     init() {
       this.loadEmojiSetPreference();
+      this.loadTimerPreference();
       this.populateEmojiSetOptions();
+      this.syncSettingsControls();
       this.bindEvents();
       AudioManager.init();
       this.createFlashOverlay();
+      this.cacheGameCardRings();
       this.renderPreviewCard();
       this.updateCardsRemaining();
       this.updateElapsedTime();
+    },
+
+    cacheGameCardRings() {
+      this.gameCardRings = Array.from(
+        document.querySelectorAll(
+          '.card-top .card-ring, .card-bottom .card-ring',
+        ),
+      );
     },
 
     populateEmojiSetOptions() {
@@ -303,6 +387,51 @@ const EMOJI_SETS = {
       }
     },
 
+    loadTimerPreference() {
+      const rawValue = localStorage.getItem(TIME_PER_CARD_STORAGE_KEY);
+      const parsedValue = rawValue ? parseInt(rawValue, 10) : NaN;
+      if (Number.isNaN(parsedValue)) return;
+
+      const normalizedSeconds = snapTimerSeconds(
+        Math.round(parsedValue / 1000),
+      );
+      this.timePerCard = normalizedSeconds * 1000;
+    },
+
+    getTimePerCardSeconds() {
+      return Math.round(this.timePerCard / 1000);
+    },
+
+    applyTimePerCardSeconds(seconds) {
+      const snappedSeconds = snapTimerSeconds(seconds);
+      this.timePerCard = snappedSeconds * 1000;
+      localStorage.setItem(TIME_PER_CARD_STORAGE_KEY, `${this.timePerCard}`);
+      this.updateTimerDisplay(snappedSeconds);
+      if (timerRange) {
+        timerRange.value = `${snappedSeconds}`;
+      }
+    },
+
+    updateTimerDisplay(seconds) {
+      if (!timerValue) return;
+      timerValue.textContent = `${seconds} с`;
+    },
+
+    syncSettingsControls() {
+      if (toggleSound) {
+        toggleSound.checked = AudioManager.enabled;
+      }
+
+      if (timerRange) {
+        timerRange.min = `${TIME_PER_CARD_MIN_SECONDS}`;
+        timerRange.max = `${TIME_PER_CARD_MAX_SECONDS}`;
+        timerRange.step = `${TIME_PER_CARD_STEP_SECONDS}`;
+        timerRange.value = `${this.getTimePerCardSeconds()}`;
+      }
+
+      this.updateTimerDisplay(this.getTimePerCardSeconds());
+    },
+
     getCurrentSymbols() {
       const setConfig = EMOJI_SETS[this.selectedEmojiSetKey] || EMOJI_SETS.base;
       return setConfig.symbols;
@@ -311,13 +440,19 @@ const EMOJI_SETS = {
     bindEvents() {
       btnPlay.addEventListener('click', () => this.startGame());
       btnHowTo.addEventListener('click', () => this.showScreen(screenHowTo));
+      btnOpenSettings.addEventListener('click', () => this.openSettings());
       btnBackHowTo.addEventListener('click', () =>
         this.showScreen(screenStart),
       );
-      btnSettings.addEventListener('click', () => this.pauseGame());
+      btnExitGame.addEventListener('click', () => this.openExitConfirm());
       btnSound.addEventListener('click', () => this.toggleSound());
-      btnResume.addEventListener('click', () => this.resumeGame());
-      btnQuit.addEventListener('click', () => this.quitGame());
+      btnCloseSettings.addEventListener('click', () =>
+        this.showScreen(screenStart),
+      );
+      btnContinueGame.addEventListener('click', () =>
+        this.continueAfterConfirm(),
+      );
+      btnConfirmExit.addEventListener('click', () => this.quitGame());
       btnPlayAgain.addEventListener('click', () => this.startGame());
       btnMenu.addEventListener('click', () => this.quitGame());
 
@@ -326,9 +461,13 @@ const EMOJI_SETS = {
         this.updateSoundIcon();
       });
 
-      toggleVibration.addEventListener('change', (e) => {
-        this.vibrationEnabled = e.target.checked;
-      });
+      if (timerRange) {
+        timerRange.addEventListener('input', (e) => {
+          const nextValue = parseInt(e.target.value, 10);
+          if (Number.isNaN(nextValue)) return;
+          this.applyTimePerCardSeconds(nextValue);
+        });
+      }
 
       if (!emojiSetSelect) return;
 
@@ -346,6 +485,42 @@ const EMOJI_SETS = {
       this.flashOverlay = document.createElement('div');
       this.flashOverlay.classList.add('flash-overlay');
       document.body.appendChild(this.flashOverlay);
+    },
+
+    openSettings() {
+      this.syncSettingsControls();
+      this.showScreen(screenSettings);
+    },
+
+    openExitConfirm() {
+      if (!this.isPlaying) return;
+
+      this.pausedCardElapsed = Date.now() - this.cardStartTime;
+      this.isPlaying = false;
+      clearInterval(this.timerInterval);
+      this.showScreen(screenGame);
+      screenExitConfirm.classList.add('active');
+    },
+
+    continueAfterConfirm() {
+      screenExitConfirm.classList.remove('active');
+      this.isPlaying = true;
+      this.startCardTimer(this.pausedCardElapsed);
+      this.pausedCardElapsed = 0;
+    },
+
+    updateCardRingProgress(remaining) {
+      const clampedRemaining = Math.max(0, Math.min(1, remaining));
+      const segmentLength = clampedRemaining * 50;
+
+      this.gameCardRings.forEach((ringEl) => {
+        setCardRingSegments(ringEl, {
+          firstStart: 0,
+          secondStart: 50,
+          firstLength: segmentLength,
+          secondLength: segmentLength,
+        });
+      });
     },
 
     renderPreviewCard() {
@@ -393,6 +568,7 @@ const EMOJI_SETS = {
       this.currentCardIndex = 1;
       this.score = 0;
       this.startTime = Date.now();
+      this.pausedCardElapsed = 0;
       this.isPlaying = true;
 
       currentScore.textContent = '0';
@@ -434,10 +610,6 @@ const EMOJI_SETS = {
         this.flash('correct');
         AudioManager.play('correct');
 
-        if (this.vibrationEnabled && navigator.vibrate) {
-          navigator.vibrate(50);
-        }
-
         // Score based on remaining time
         const elapsed = Date.now() - this.cardStartTime;
         const timeBonus = Math.max(
@@ -467,10 +639,6 @@ const EMOJI_SETS = {
         this.flash('wrong');
         AudioManager.play('wrong');
 
-        if (this.vibrationEnabled && navigator.vibrate) {
-          navigator.vibrate([50, 50, 50]);
-        }
-
         // Penalty
         this.score = Math.max(0, this.score - 5);
         currentScore.textContent = this.score;
@@ -479,12 +647,21 @@ const EMOJI_SETS = {
       }
     },
 
-    startCardTimer() {
-      this.cardStartTime = Date.now();
+    startCardTimer(initialElapsed = 0) {
+      this.cardStartTime = Date.now() - initialElapsed;
       clearInterval(this.timerInterval);
 
-      timerFill.style.width = '100%';
+      const initialRemaining = Math.max(
+        0,
+        1 - initialElapsed / this.timePerCard,
+      );
+      timerFill.style.width = `${roundUiNumber(initialRemaining * 100)}%`;
       timerFill.classList.remove('warning');
+      if (initialRemaining < 0.3) {
+        timerFill.classList.add('warning');
+      }
+
+      this.updateCardRingProgress(initialRemaining);
 
       this.timerInterval = setInterval(() => {
         if (!this.isPlaying) return;
@@ -493,7 +670,8 @@ const EMOJI_SETS = {
         const remaining = Math.max(0, 1 - elapsed / this.timePerCard);
         this.updateElapsedTime();
 
-        timerFill.style.width = `${remaining * 100}%`;
+        timerFill.style.width = `${roundUiNumber(remaining * 100)}%`;
+        this.updateCardRingProgress(remaining);
 
         if (remaining < 0.3) {
           timerFill.classList.add('warning');
@@ -513,30 +691,18 @@ const EMOJI_SETS = {
       cardsRemaining.textContent = `${done} / ${total}`;
     },
 
-    pauseGame() {
-      this.isPlaying = false;
-      clearInterval(this.timerInterval);
-      this.showScreen(screenGame);
-      screenSettings.classList.add('active');
-    },
-
-    resumeGame() {
-      screenSettings.classList.remove('active');
-      this.isPlaying = true;
-      // Resume timer adjusted for elapsed time
-      this.startCardTimer();
-    },
-
     quitGame() {
       this.isPlaying = false;
       clearInterval(this.timerInterval);
-      screenSettings.classList.remove('active');
+      this.pausedCardElapsed = 0;
+      screenExitConfirm.classList.remove('active');
       this.showScreen(screenStart);
     },
 
     endGame(won) {
       this.isPlaying = false;
       clearInterval(this.timerInterval);
+      screenExitConfirm.classList.remove('active');
 
       const elapsedMs = Date.now() - this.startTime;
 
@@ -574,5 +740,8 @@ const EMOJI_SETS = {
   };
 
   // ===== Start =====
-  document.addEventListener('DOMContentLoaded', () => Game.init());
+  document.addEventListener('DOMContentLoaded', () => {
+    initCardRings();
+    Game.init();
+  });
 })();

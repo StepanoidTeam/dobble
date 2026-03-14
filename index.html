@@ -22,11 +22,30 @@
         <h1 class="game-title">DOBBLE</h1>
         <p class="game-subtitle">Найди совпадение!</p>
         <div class="card-container card-preview">
-          <div class="card-ring">
-            <div class="ring-segment seg-1"></div>
-            <div class="ring-segment seg-2"></div>
-            <div class="ring-segment seg-3"></div>
-            <div class="ring-segment seg-4"></div>
+          <div class="card-ring" aria-hidden="true">
+            <svg class="card-ring-svg" viewBox="0 0 100 100" focusable="false">
+              <circle
+                class="card-ring-track"
+                cx="50"
+                cy="50"
+                r="46"
+                pathLength="100"
+              ></circle>
+              <circle
+                class="card-ring-segment ring-segment-a"
+                cx="50"
+                cy="50"
+                r="46"
+                pathLength="100"
+              ></circle>
+              <circle
+                class="card-ring-segment ring-segment-b"
+                cx="50"
+                cy="50"
+                r="46"
+                pathLength="100"
+              ></circle>
+            </svg>
           </div>
           <div class="card-circle" id="cardPreview">
             <!-- Emojis placed by JS -->
@@ -34,6 +53,7 @@
         </div>
         <button id="btnPlay" class="btn-primary">ИГРАТЬ</button>
         <button id="btnHowTo" class="btn-secondary">Как играть?</button>
+        <button id="btnOpenSettings" class="btn-secondary">Настройки</button>
       </div>
     </div>
 
@@ -66,10 +86,10 @@
     <!-- Game Screen -->
     <div id="screenGame" class="screen">
       <div class="game-header">
-        <button id="btnSettings" class="icon-btn" aria-label="Настройки">
+        <button id="btnExitGame" class="icon-btn" aria-label="Выйти в меню">
           <svg viewBox="0 0 24 24" fill="white" width="28" height="28">
             <path
-              d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 1115.6 12 3.6 3.6 0 0112 15.6z"
+              d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H9c-1.1 0-2 .9-2 2v3h2V5h10v14H9v-3H7v3c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
             />
           </svg>
         </button>
@@ -120,11 +140,30 @@
       <div class="game-area">
         <!-- Top card (from deck) -->
         <div class="card-container card-top">
-          <div class="card-ring">
-            <div class="ring-segment seg-1"></div>
-            <div class="ring-segment seg-2"></div>
-            <div class="ring-segment seg-3"></div>
-            <div class="ring-segment seg-4"></div>
+          <div class="card-ring" aria-hidden="true">
+            <svg class="card-ring-svg" viewBox="0 0 100 100" focusable="false">
+              <circle
+                class="card-ring-track"
+                cx="50"
+                cy="50"
+                r="46"
+                pathLength="100"
+              ></circle>
+              <circle
+                class="card-ring-segment ring-segment-a"
+                cx="50"
+                cy="50"
+                r="46"
+                pathLength="100"
+              ></circle>
+              <circle
+                class="card-ring-segment ring-segment-b"
+                cx="50"
+                cy="50"
+                r="46"
+                pathLength="100"
+              ></circle>
+            </svg>
           </div>
           <div class="card-circle" id="cardTop">
             <!-- Emojis will be placed here by JS -->
@@ -133,11 +172,30 @@
 
         <!-- Bottom card (player's card) -->
         <div class="card-container card-bottom">
-          <div class="card-ring">
-            <div class="ring-segment seg-1"></div>
-            <div class="ring-segment seg-2"></div>
-            <div class="ring-segment seg-3"></div>
-            <div class="ring-segment seg-4"></div>
+          <div class="card-ring" aria-hidden="true">
+            <svg class="card-ring-svg" viewBox="0 0 100 100" focusable="false">
+              <circle
+                class="card-ring-track"
+                cx="50"
+                cy="50"
+                r="46"
+                pathLength="100"
+              ></circle>
+              <circle
+                class="card-ring-segment ring-segment-a"
+                cx="50"
+                cy="50"
+                r="46"
+                pathLength="100"
+              ></circle>
+              <circle
+                class="card-ring-segment ring-segment-b"
+                cx="50"
+                cy="50"
+                r="46"
+                pathLength="100"
+              ></circle>
+            </svg>
           </div>
           <div class="card-circle" id="cardBottom">
             <!-- Emojis will be placed here by JS -->
@@ -155,7 +213,7 @@
     <!-- Pause/Settings Screen -->
     <div id="screenSettings" class="screen overlay">
       <div class="settings-panel">
-        <h2>Пауза</h2>
+        <h2>Настройки</h2>
         <div class="setting-row">
           <span>Звук</span>
           <label class="toggle">
@@ -163,13 +221,19 @@
             <span class="toggle-slider"></span>
           </label>
         </div>
-        <div class="setting-row">
-          <span>Вибрация</span>
-          <label class="toggle">
-            <input type="checkbox" id="toggleVibration" checked />
-            <span class="toggle-slider"></span>
-          </label>
+        <div class="setting-row setting-row-timer">
+          <span>Таймер на карточку</span>
+          <span class="setting-value" id="timerValue">10 с</span>
         </div>
+        <input
+          type="range"
+          id="timerRange"
+          class="settings-range"
+          min="5"
+          max="20"
+          step="5"
+          value="10"
+        />
         <div class="setting-row">
           <span>Набор эмодзи</span>
           <select id="emojiSetSelect" class="settings-select">
@@ -177,8 +241,17 @@
             <option value="origin">Классический</option>
           </select>
         </div>
-        <button id="btnResume" class="btn-primary">Продолжить</button>
-        <button id="btnQuit" class="btn-secondary">Выйти в меню</button>
+        <button id="btnCloseSettings" class="btn-primary">Готово</button>
+      </div>
+    </div>
+
+    <!-- Exit Confirm Overlay -->
+    <div id="screenExitConfirm" class="screen overlay">
+      <div class="confirm-panel">
+        <h2>Выйти из игры?</h2>
+        <p>Текущий прогресс раунда будет потерян.</p>
+        <button id="btnContinueGame" class="btn-primary">Продолжить</button>
+        <button id="btnConfirmExit" class="btn-secondary">Выйти</button>
       </div>
     </div>
 

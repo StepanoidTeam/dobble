@@ -295,31 +295,57 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
+  --ring-stroke-width: 2;
+  --ring-segment-a-length: 18;
+  --ring-segment-a-start: 9;
+  --ring-segment-b-length: 18;
+  --ring-segment-b-start: 59;
 }
 
-.ring-segment {
-  position: absolute;
+.card-ring-svg {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
-  border: 6px solid transparent;
+  overflow: visible;
+  transform: rotate(-90deg);
 }
 
-.ring-segment.seg-1 {
-  border-top-color: var(--ring-yellow);
-  transform: rotate(0deg);
+.card-top .card-ring-svg,
+.card-bottom .card-ring-svg {
+  /* animation: ringRotate 6s ease-in-out infinite; */
 }
-.ring-segment.seg-2 {
-  border-right-color: var(--ring-purple);
-  transform: rotate(0deg);
+
+.card-ring-track,
+.card-ring-segment {
+  fill: none;
+  stroke-width: var(--ring-stroke-width);
 }
-.ring-segment.seg-3 {
-  border-bottom-color: var(--ring-yellow);
-  transform: rotate(0deg);
+
+.card-ring-track {
+  stroke: var(--ring-purple);
 }
-.ring-segment.seg-4 {
-  border-left-color: var(--ring-purple);
-  transform: rotate(0deg);
+
+.card-ring-segment {
+  stroke: var(--ring-yellow);
+  stroke-linecap: round;
+}
+
+.ring-segment-a {
+  stroke-dasharray: var(--ring-segment-a-length) 100;
+  stroke-dashoffset: calc(-1 * var(--ring-segment-a-start));
+}
+
+.ring-segment-b {
+  stroke-dasharray: var(--ring-segment-b-length) 100;
+  stroke-dashoffset: calc(-1 * var(--ring-segment-b-start));
+}
+
+@keyframes ringRotate {
+  from {
+    transform: rotate(-90deg);
+  }
+  to {
+    transform: rotate(270deg);
+  }
 }
 
 /* Emoji items on cards */
@@ -449,6 +475,30 @@ body {
   color: var(--accent);
 }
 
+.confirm-panel {
+  background: var(--bg-secondary);
+  border-radius: 24px;
+  padding: 28px 24px;
+  width: min(85vw, 340px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+}
+
+.confirm-panel h2 {
+  font-size: 24px;
+  color: var(--accent);
+}
+
+.confirm-panel p {
+  opacity: 0.85;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
 .setting-row {
   display: flex;
   align-items: center;
@@ -461,14 +511,26 @@ body {
   font-size: 16px;
 }
 
+.setting-value {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.settings-range {
+  width: 100%;
+  accent-color: var(--accent);
+  margin-top: -6px;
+  margin-bottom: 2px;
+}
+
 .settings-select {
   min-width: 140px;
   background: rgba(255, 255, 255, 0.12);
   color: var(--text-light);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50px;
   padding: 8px 10px;
-  font-size: 14px;
+  font-size: 16px;
   outline: none;
 }
 
