@@ -721,8 +721,15 @@ const EMOJI_SETS = {
     },
 
     renderCards() {
-      // Top card — not clickable
-      positionEmojis(this.topCard, cardTop, false, null, {
+      // Top card — clickable
+      positionEmojis(
+        this.topCard,
+        cardTop,
+        true,
+        (symbol, el) => {
+          this.handleSymbolClick(symbol, el);
+        },
+        {
         rotationRangeDegrees: this.iconRotationDegrees,
       });
 
