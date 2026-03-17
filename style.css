@@ -518,9 +518,38 @@ body {
 
 .settings-range {
   width: 100%;
+
+  --thumb-height: 2em;
+  --thumb-fill: white;
+  --thumb-stroke: black;
+  --thumb-stroke-width: 0.2em;
+}
+
+input[type='range'] {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: var(--ring-purple);
   accent-color: var(--accent);
-  margin-top: -6px;
-  margin-bottom: 2px;
+  border-radius: 10px;
+  height: 8px;
+}
+
+todo
+/* doesnt work somewhy */
+input[type='range']:-webkit-slider-thumb,
+input[type='range']:-moz-range-thumb,
+input[type='range']:-ms-thumb {
+  outline: var(--thumb-stroke-width) solid var(--thumb-stroke);
+  border: var(--thumb-stroke-width) solid var(--thumb-stroke);
+  aspect-ratio: 1;
+  height: var(--thumb-height);
+  width: var(--thumb-height);
+  border-radius: 50%;
+  background-color: var(--thumb-fill);
+
+  margin-top: calc(-1 * var(--thumb-height) / 2);
+  background-color: var(--thumb-fill);
+  cursor: pointer;
 }
 
 .settings-select {
