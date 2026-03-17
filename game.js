@@ -2,6 +2,9 @@
 
 import { ALL_SYMBOLS as BASE_SYMBOLS } from './emojis-claude.js';
 import { ALL_SYMBOLS as ORIGIN_SYMBOLS } from './emojis-origin.js';
+import { ALL_SYMBOLS as INSECT_SYMBOLS } from './emojis-insects.js';
+import { getDeckStatsBySymbolsCount } from './dobble-math.js';
+import { AudioManager } from './audio-manager.js';
 
 const EMOJI_SET_STORAGE_KEY = 'dobble_emoji_set';
 const TIME_PER_CARD_STORAGE_KEY = 'dobble_time_per_card_ms';
@@ -25,22 +28,22 @@ const EMOJI_SETS = [
     label: `${ORIGIN_SYMBOLS.at(0)}Классический`,
     symbols: ORIGIN_SYMBOLS,
   },
+  {
+    key: 'insects',
+    label: `${INSECT_SYMBOLS.at(0)}Насекомые`,
+    symbols: INSECT_SYMBOLS,
+  },
 ];
 
 // ===== Symbol Pool (emojis) =====
 
 // ===== Dobble Card Generation =====
 // Dobble uses a projective plane of order n.
-// For 8 symbols per card, n = 7.
-// Total symbols needed: n^2 + n + 1 = 57
-// Total cards: 57
-// Each card has n + 1 = 8 symbols
-// Any two cards share exactly 1 symbol
+// For valid n: total symbols/cards = n^2 + n + 1, symbols/card = n + 1.
+// n is derived from the active emoji set size...
 
 function generateDobbleCards(order) {
-  const n = order; // 7
-  const totalSymbols = n * n + n + 1; // 57
-  const symbolsPerCard = n + 1; // 8
+  const n = order;
   const cards = [];
 
   // Generate cards using projective plane construction
@@ -69,16 +72,31 @@ function generateDobbleCards(order) {
     }
   }
 
-  return { cards, totalSymbols, symbolsPerCard };
+  return cards;
 }
 
 // Build deck with actual emoji symbols
 function buildDeck(symbols) {
-  const { cards } = generateDobbleCards(7);
-  const safeSymbols = symbols && symbols.length >= 57 ? symbols : BASE_SYMBOLS;
+  const sourceSymbols = Array.isArray(symbols) ? symbols : [];
+  const stats = getDeckStatsBySymbolsCount(sourceSymbols.length);
+
+  console.log('🃏stats', stats);
+
+  if (!stats) {
+    return {
+      deck: [],
+      stats: null,
+    };
+  }
+
+  const cards = generateDobbleCards(stats.n);
+  const safeSymbols = sourceSymbols.slice(0, stats.totalSymbolsUsed);
 
   // Map indices to emojis
-  return cards.map((card) => card.map((idx) => safeSymbols[idx]));
+  return {
+    deck: cards.map((card) => card.map((idx) => safeSymbols[idx])),
+    stats,
+  };
 }
 
 // Fisher-Yates shuffle
@@ -234,116 +252,6 @@ function positionEmojis(
     containerEl.appendChild(el);
   });
 }
-
-// ===== Audio Manager =====
-const AudioManager = {
-  enabled: true,
-  ctx: null,
-
-  init() {
-    try {
-      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-    } catch (e) {
-      this.enabled = false;
-    }
-  },
-
-  resume() {
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
-    }
-  },
-
-  play(type) {
-    if (!this.enabled || !this.ctx) return;
-    this.resume();
-
-    if (type === 'correct') {
-      const popOsc = this.ctx.createOscillator();
-      const popGain = this.ctx.createGain();
-      popOsc.type = 'sine';
-      popOsc.connect(popGain);
-      popGain.connect(this.ctx.destination);
-
-      popOsc.frequency.setValueAtTime(720, this.ctx.currentTime);
-      popOsc.frequency.exponentialRampToValueAtTime(
-        180,
-        this.ctx.currentTime + 0.09,
-      );
-      popGain.gain.setValueAtTime(0.001, this.ctx.currentTime);
-      popGain.gain.exponentialRampToValueAtTime(
-        0.2,
-        this.ctx.currentTime + 0.01,
-      );
-      popGain.gain.exponentialRampToValueAtTime(
-        0.001,
-        this.ctx.currentTime + 0.11,
-      );
-
-      const sparkleOsc = this.ctx.createOscillator();
-      const sparkleGain = this.ctx.createGain();
-      sparkleOsc.type = 'triangle';
-      sparkleOsc.connect(sparkleGain);
-      sparkleGain.connect(this.ctx.destination);
-      sparkleOsc.frequency.setValueAtTime(980, this.ctx.currentTime + 0.02);
-      sparkleOsc.frequency.exponentialRampToValueAtTime(
-        620,
-        this.ctx.currentTime + 0.09,
-      );
-      sparkleGain.gain.setValueAtTime(0.001, this.ctx.currentTime + 0.02);
-      sparkleGain.gain.exponentialRampToValueAtTime(
-        0.08,
-        this.ctx.currentTime + 0.04,
-      );
-      sparkleGain.gain.exponentialRampToValueAtTime(
-        0.001,
-        this.ctx.currentTime + 0.1,
-      );
-
-      popOsc.start(this.ctx.currentTime);
-      popOsc.stop(this.ctx.currentTime + 0.12);
-      sparkleOsc.start(this.ctx.currentTime + 0.02);
-      sparkleOsc.stop(this.ctx.currentTime + 0.1);
-    } else if (type === 'wrong') {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(170, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(
-        95,
-        this.ctx.currentTime + 0.18,
-      );
-      gain.gain.setValueAtTime(0.001, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.2, this.ctx.currentTime + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.2);
-      osc.start(this.ctx.currentTime);
-      osc.stop(this.ctx.currentTime + 0.22);
-    } else if (type === 'gameover') {
-      const notes = [523, 659, 784, 1047];
-      notes.forEach((freq, i) => {
-        const o = this.ctx.createOscillator();
-        const g = this.ctx.createGain();
-        o.connect(g);
-        g.connect(this.ctx.destination);
-        o.frequency.setValueAtTime(freq, this.ctx.currentTime + i * 0.15);
-        g.gain.setValueAtTime(0.12, this.ctx.currentTime + i * 0.15);
-        g.gain.exponentialRampToValueAtTime(
-          0.001,
-          this.ctx.currentTime + i * 0.15 + 0.3,
-        );
-        o.start(this.ctx.currentTime + i * 0.15);
-        o.stop(this.ctx.currentTime + i * 0.15 + 0.3);
-      });
-    }
-  },
-
-  toggle() {
-    this.enabled = !this.enabled;
-    return this.enabled;
-  },
-};
 
 // ===== Game State =====
 const Game = {
@@ -504,6 +412,12 @@ const Game = {
     return setConfig.symbols;
   },
 
+  getCurrentDeckStats() {
+    const stats = getDeckStatsBySymbolsCount(this.getCurrentSymbols().length);
+    console.log('🃏stats', stats);
+    return stats;
+  },
+
   bindEvents() {
     btnPlay.addEventListener('click', () => this.startGame());
     btnHowTo.addEventListener('click', () => this.showScreen(screenHowTo));
@@ -640,7 +554,12 @@ const Game = {
   },
 
   renderPreviewCard() {
-    const previewSymbols = shuffle(this.getCurrentSymbols()).slice(0, 8);
+    const stats = this.getCurrentDeckStats();
+    const symbolsPerCard = stats ? stats.symbolsPerCard : 8;
+    const previewSymbols = shuffle(this.getCurrentSymbols()).slice(
+      0,
+      symbolsPerCard,
+    );
     positionEmojis(previewSymbols, cardPreview, false, null, {
       rotationRangeDegrees: this.iconRotationDegrees,
     });
@@ -685,7 +604,8 @@ const Game = {
     AudioManager.resume();
 
     // Generate and shuffle deck
-    this.deck = shuffle(buildDeck(this.getCurrentSymbols()));
+    const { deck } = buildDeck(this.getCurrentSymbols());
+    this.deck = shuffle(deck);
 
     // Limit to totalCardsInGame + 1 cards (need pairs)
     this.deck = this.deck.slice(0, this.totalCardsInGame + 1);
