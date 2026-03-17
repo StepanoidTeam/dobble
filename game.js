@@ -193,6 +193,21 @@ function snapIconRotationDegrees(degrees) {
   return steps * ICON_ROTATION_STEP_DEGREES;
 }
 
+function updateRangeProgress(rangeEl) {
+  if (!rangeEl) return;
+
+  const min = parseFloat(rangeEl.min || '0');
+  const max = parseFloat(rangeEl.max || '100');
+  const value = parseFloat(rangeEl.value || '0');
+  const span = max - min;
+  const progress = span <= 0 ? 0 : ((value - min) / span) * 100;
+  const normalizedProgress = Math.max(0, Math.min(100, progress));
+  const progressValue = `${roundUiNumber(normalizedProgress)}%`;
+
+  rangeEl.dataset.width = `${roundUiNumber(normalizedProgress)}`;
+  rangeEl.style.setProperty('--range-progress', progressValue);
+}
+
 // ===== Position emojis in a circle layout =====
 function positionEmojis(
   card,
@@ -272,6 +287,7 @@ const Game = {
   gameCardRings: [],
   previewCardRing: null,
   isPlaying: false,
+  isInputLocked: false,
   totalCardsInGame: 20, // number of card pairs to play
 
   init() {
@@ -352,6 +368,7 @@ const Game = {
     this.updateTimerDisplay(snappedSeconds);
     if (timerRange) {
       timerRange.value = `${snappedSeconds}`;
+      updateRangeProgress(timerRange);
     }
     if (screenStart.classList.contains('active')) {
       this.startPreviewCycle();
@@ -368,6 +385,7 @@ const Game = {
     this.updateRotationDisplay(snappedDegrees);
     if (rotationRange) {
       rotationRange.value = `${snappedDegrees}`;
+      updateRangeProgress(rotationRange);
     }
     this.renderPreviewCard();
   },
@@ -392,6 +410,7 @@ const Game = {
       timerRange.max = `${TIME_PER_CARD_MAX_SECONDS}`;
       timerRange.step = `${TIME_PER_CARD_STEP_SECONDS}`;
       timerRange.value = `${this.getTimePerCardSeconds()}`;
+      updateRangeProgress(timerRange);
     }
 
     if (rotationRange) {
@@ -399,6 +418,7 @@ const Game = {
       rotationRange.max = `${ICON_ROTATION_MAX_DEGREES}`;
       rotationRange.step = `${ICON_ROTATION_STEP_DEGREES}`;
       rotationRange.value = `${this.iconRotationDegrees}`;
+      updateRangeProgress(rotationRange);
     }
 
     this.updateTimerDisplay(this.getTimePerCardSeconds());
@@ -442,6 +462,7 @@ const Game = {
 
     if (timerRange) {
       timerRange.addEventListener('input', (e) => {
+        updateRangeProgress(e.target);
         const nextValue = parseInt(e.target.value, 10);
         if (Number.isNaN(nextValue)) return;
         this.applyTimePerCardSeconds(nextValue);
@@ -450,6 +471,7 @@ const Game = {
 
     if (rotationRange) {
       rotationRange.addEventListener('input', (e) => {
+        updateRangeProgress(e.target);
         const nextValue = parseInt(e.target.value, 10);
         if (Number.isNaN(nextValue)) return;
         this.applyIconRotationDegrees(nextValue);
@@ -615,6 +637,7 @@ const Game = {
     this.startTime = Date.now();
     this.pausedCardElapsed = 0;
     this.isPlaying = true;
+    this.isInputLocked = false;
 
     currentScore.textContent = '0';
     this.updateElapsedTime();
@@ -663,11 +686,13 @@ const Game = {
   },
 
   handleSymbolClick(symbol, el) {
-    if (!this.isPlaying) return;
+    if (!this.isPlaying || this.isInputLocked) return;
 
     const commonSymbol = findCommonSymbol(this.topCard, this.bottomCard);
 
     if (symbol === commonSymbol) {
+      this.isInputLocked = true;
+
       // Correct!
       el.classList.add('correct');
       this.flash('correct');
@@ -694,6 +719,7 @@ const Game = {
           this.renderCards();
           this.updateCardsRemaining();
           this.startCardTimer();
+          this.isInputLocked = false;
         }, 350);
       }
     } else {
@@ -753,6 +779,7 @@ const Game = {
 
   quitGame() {
     this.isPlaying = false;
+    this.isInputLocked = false;
     clearInterval(this.timerInterval);
     this.pausedCardElapsed = 0;
     screenExitConfirm.classList.remove('active');
@@ -761,6 +788,7 @@ const Game = {
 
   endGame(won) {
     this.isPlaying = false;
+    this.isInputLocked = false;
     clearInterval(this.timerInterval);
     screenExitConfirm.classList.remove('active');
 
