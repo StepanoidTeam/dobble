@@ -277,8 +277,8 @@ const Game = {
   bottomCard: null,
   score: 0,
   startTime: 0,
-  timerInterval: null,
-  previewTimerInterval: null,
+  timerAnimationFrameId: null,
+  previewAnimationFrameId: null,
   timePerCard: DEFAULT_TIME_PER_CARD_MS,
   iconRotationDegrees: DEFAULT_ICON_ROTATION_DEGREES,
   cardStartTime: 0,
@@ -506,7 +506,7 @@ const Game = {
 
     this.pausedCardElapsed = Date.now() - this.cardStartTime;
     this.isPlaying = false;
-    clearInterval(this.timerInterval);
+    this.stopCardTimer();
     this.showScreen(screenGame);
     screenExitConfirm.classList.add('active');
   },
@@ -550,12 +550,15 @@ const Game = {
       return;
     }
 
-    clearInterval(this.previewTimerInterval);
+    this.stopPreviewCycle();
     this.previewCardStartTime = Date.now();
     this.updatePreviewRingProgress(1);
 
-    this.previewTimerInterval = setInterval(() => {
-      if (!screenStart.classList.contains('active')) return;
+    const tick = () => {
+      if (!screenStart.classList.contains('active')) {
+        this.stopPreviewCycle();
+        return;
+      }
 
       const elapsed = Date.now() - this.previewCardStartTime;
       const remaining = Math.max(0, 1 - elapsed / this.timePerCard);
@@ -567,12 +570,18 @@ const Game = {
         this.previewCardStartTime = Date.now();
         this.updatePreviewRingProgress(1);
       }
-    }, 50);
+
+      this.previewAnimationFrameId = requestAnimationFrame(tick);
+    };
+
+    this.previewAnimationFrameId = requestAnimationFrame(tick);
   },
 
   stopPreviewCycle() {
-    clearInterval(this.previewTimerInterval);
-    this.previewTimerInterval = null;
+    if (this.previewAnimationFrameId !== null) {
+      cancelAnimationFrame(this.previewAnimationFrameId);
+      this.previewAnimationFrameId = null;
+    }
   },
 
   renderPreviewCard() {
@@ -738,7 +747,7 @@ const Game = {
 
   startCardTimer(initialElapsed = 0) {
     this.cardStartTime = Date.now() - initialElapsed;
-    clearInterval(this.timerInterval);
+    this.stopCardTimer();
 
     const initialRemaining = Math.max(0, 1 - initialElapsed / this.timePerCard);
     timerFill.style.width = `${roundUiNumber(initialRemaining * 100)}%`;
@@ -749,8 +758,11 @@ const Game = {
 
     this.updateCardRingProgress(initialRemaining);
 
-    this.timerInterval = setInterval(() => {
-      if (!this.isPlaying) return;
+    const tick = () => {
+      if (!this.isPlaying) {
+        this.timerAnimationFrameId = null;
+        return;
+      }
 
       const elapsed = Date.now() - this.cardStartTime;
       const remaining = Math.max(0, 1 - elapsed / this.timePerCard);
@@ -765,10 +777,22 @@ const Game = {
 
       if (remaining <= 0) {
         // Time's up for this card — game over
-        clearInterval(this.timerInterval);
+        this.stopCardTimer();
         this.endGame(false);
+        return;
       }
-    }, 50);
+
+      this.timerAnimationFrameId = requestAnimationFrame(tick);
+    };
+
+    this.timerAnimationFrameId = requestAnimationFrame(tick);
+  },
+
+  stopCardTimer() {
+    if (this.timerAnimationFrameId !== null) {
+      cancelAnimationFrame(this.timerAnimationFrameId);
+      this.timerAnimationFrameId = null;
+    }
   },
 
   updateCardsRemaining() {
@@ -780,7 +804,7 @@ const Game = {
   quitGame() {
     this.isPlaying = false;
     this.isInputLocked = false;
-    clearInterval(this.timerInterval);
+    this.stopCardTimer();
     this.pausedCardElapsed = 0;
     screenExitConfirm.classList.remove('active');
     this.showScreen(screenStart);
@@ -789,7 +813,7 @@ const Game = {
   endGame(won) {
     this.isPlaying = false;
     this.isInputLocked = false;
-    clearInterval(this.timerInterval);
+    this.stopCardTimer();
     screenExitConfirm.classList.remove('active');
 
     const elapsedMs = Date.now() - this.startTime;
