@@ -272,7 +272,11 @@ body {
 }
 
 .card-container {
+  display: flex;
   position: relative;
+  align-items: center;
+  justify-content: center;
+
   width: min(80vw, 320px);
   height: min(80vw, 320px);
 }
@@ -287,9 +291,7 @@ body {
 
 .card-circle {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+
   width: 85%;
   height: 85%;
   background: var(--card-bg);
@@ -426,11 +428,11 @@ body {
 
 @keyframes cardSlideIn {
   from {
-    transform: translate(-50%, -50%) scale(0.8);
+    transform: scale(0.8);
     opacity: 0;
   }
   to {
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
     opacity: 1;
   }
 }
