@@ -301,6 +301,19 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   z-index: 2;
   overflow: hidden;
+
+  &:after {
+    content: '';
+    position: absolute;
+    align-self: center;
+    justify-self: center;
+    width: 95%;
+    height: 95%;
+    border-radius: inherit;
+    border: 2px solid #00000014;
+    pointer-events: none;
+    user-select: none;
+  }
 }
 
 /* Ring segments around the card */
