@@ -1,0 +1,120 @@
+/* ===== Game Screen ===== */
+#screenGame {
+  justify-content: flex-start;
+  gap: 10px;
+  padding: max(env(safe-area-inset-top), 12px) 16px
+    max(env(safe-area-inset-bottom), 12px);
+}
+
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 0 4px;
+  flex: 0 0 auto;
+}
+
+.hud-panel {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  background: rgba(20, 8, 36, 0.5);
+  border: 1px solid rgba(179, 117, 229, 0.35);
+  border-radius: 16px;
+  padding: 6px;
+  backdrop-filter: blur(3px);
+}
+
+.hud-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  border-radius: 10px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.hud-icon {
+  font-size: 50px;
+  line-height: 1;
+}
+
+.hud-label {
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.hud-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* ===== Game Area ===== */
+.game-area {
+  display: grid;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  justify-items: center;
+  align-items: center;
+  gap: 16px;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  max-width: 400px;
+  overflow: hidden;
+}
+
+.game-area .card-container {
+  width: auto;
+  max-width: 100%;
+  height: min(100%, 80vw, 320px);
+  aspect-ratio: 1;
+  flex-shrink: 1;
+}
+
+/* ===== Timer Bar ===== */
+.game-footer {
+  width: 100%;
+  padding: 12px 0 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.timer-bar {
+  width: 85%;
+  height: 28px;
+  background: #2a1045;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 3px solid rgba(160, 100, 200, 0.6);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
+    0 0 8px rgba(120, 60, 160, 0.3);
+  padding: 3px;
+}
+
+.timer-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(
+    180deg,
+    #ffe566 0%,
+    var(--accent) 50%,
+    #e0a800 100%
+  );
+  border-radius: 10px;
+  transition: width 0.1s linear;
+}
+
+.timer-fill.warning {
+  background: linear-gradient(180deg, #ffb347, #f44336 60%, #c62828);
+}

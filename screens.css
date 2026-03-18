@@ -1,0 +1,100 @@
+/* ===== Screens ===== */
+.screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.screen.active {
+  display: flex;
+}
+
+.screen.overlay {
+  z-index: 100;
+  background: var(--overlay);
+  backdrop-filter: blur(8px);
+}
+
+/* ===== Start Screen ===== */
+.start-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 40px 20px;
+}
+
+.game-title {
+  font-size: 56px;
+  font-weight: 900;
+  letter-spacing: 8px;
+  text-shadow: 0 4px 20px rgba(245, 197, 24, 0.5);
+  color: var(--accent);
+}
+
+.game-subtitle {
+  font-size: 18px;
+  opacity: 0.8;
+  margin-bottom: 10px;
+}
+
+.card-preview {
+  width: min(55vw, 220px);
+  height: min(55vw, 220px);
+  margin: 10px 0 20px;
+}
+
+/* ===== How To Play ===== */
+.howto-content {
+  padding: 40px 30px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.howto-content h2 {
+  font-size: 28px;
+  color: var(--accent);
+}
+
+.howto-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 320px;
+}
+
+.howto-step {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-align: left;
+}
+
+.step-num {
+  min-width: 36px;
+  height: 36px;
+  background: var(--accent);
+  color: var(--text-dark);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.howto-step p {
+  font-size: 15px;
+  line-height: 1.4;
+  opacity: 0.9;
+}
