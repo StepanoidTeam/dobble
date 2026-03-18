@@ -1,272 +1,31 @@
 // ===== Dobble Game Engine =====
 
-import { ALL_SYMBOLS as BASE_SYMBOLS } from './emojis-claude.js';
-import { ALL_SYMBOLS as ORIGIN_SYMBOLS } from './emojis-origin.js';
-import { ALL_SYMBOLS as INSECT_SYMBOLS } from './emojis-insects.js';
 import { getDeckStatsBySymbolsCount } from './dobble-math.js';
 import { AudioManager } from './audio-manager.js';
-
-const EMOJI_SET_STORAGE_KEY = 'dobble_emoji_set';
-const TIME_PER_CARD_STORAGE_KEY = 'dobble_time_per_card_ms';
-const ICON_ROTATION_STORAGE_KEY = 'dobble_icon_rotation_deg';
-const TIME_PER_CARD_MIN_SECONDS = 5;
-const TIME_PER_CARD_MAX_SECONDS = 100;
-const TIME_PER_CARD_STEP_SECONDS = 5;
-const DEFAULT_TIME_PER_CARD_MS = 10000;
-const ICON_ROTATION_MIN_DEGREES = 0;
-const ICON_ROTATION_MAX_DEGREES = 360;
-const ICON_ROTATION_STEP_DEGREES = 5;
-const DEFAULT_ICON_ROTATION_DEGREES = 40;
-const EMOJI_SETS = [
-  {
-    key: 'base',
-    label: `${BASE_SYMBOLS.at(0)}Базовый`,
-    symbols: BASE_SYMBOLS,
-  },
-  {
-    key: 'origin',
-    label: `${ORIGIN_SYMBOLS.at(0)}Классический`,
-    symbols: ORIGIN_SYMBOLS,
-  },
-  {
-    key: 'insects',
-    label: `${INSECT_SYMBOLS.at(0)}Насекомые`,
-    symbols: INSECT_SYMBOLS,
-  },
-];
-
-// ===== Symbol Pool (emojis) =====
-
-// ===== Dobble Card Generation =====
-// Dobble uses a projective plane of order n.
-// For valid n: total symbols/cards = n^2 + n + 1, symbols/card = n + 1.
-// n is derived from the active emoji set size...
-
-function generateDobbleCards(order) {
-  const n = order;
-  const cards = [];
-
-  // Generate cards using projective plane construction
-  // Card 0: symbols 0..n
-  const card0 = [];
-  for (let i = 0; i <= n; i++) card0.push(i);
-  cards.push(card0);
-
-  // Cards 1..n: for each i in [0, n-1]
-  for (let i = 0; i < n; i++) {
-    const card = [0]; // always include symbol 0
-    for (let j = 0; j < n; j++) {
-      card.push(n + 1 + i * n + j);
-    }
-    cards.push(card);
-  }
-
-  // Cards n+1 .. n^2+n: for each i in [0, n-1], j in [0, n-1]
-  for (let i = 0; i < n; i++) {
-    for (let j = 0; j < n; j++) {
-      const card = [i + 1]; // one of the symbols from card 0
-      for (let k = 0; k < n; k++) {
-        card.push(n + 1 + k * n + ((i * k + j) % n));
-      }
-      cards.push(card);
-    }
-  }
-
-  return cards;
-}
-
-// Build deck with actual emoji symbols
-function buildDeck(symbols) {
-  const sourceSymbols = Array.isArray(symbols) ? symbols : [];
-  const stats = getDeckStatsBySymbolsCount(sourceSymbols.length);
-
-  console.log('🃏stats', stats);
-
-  if (!stats) {
-    return {
-      deck: [],
-      stats: null,
-    };
-  }
-
-  const cards = generateDobbleCards(stats.n);
-  const safeSymbols = sourceSymbols.slice(0, stats.totalSymbolsUsed);
-
-  // Map indices to emojis
-  return {
-    deck: cards.map((card) => card.map((idx) => safeSymbols[idx])),
-    stats,
-  };
-}
-
-// Fisher-Yates shuffle
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-// Find the common symbol between two cards
-function findCommonSymbol(card1, card2) {
-  for (const sym of card1) {
-    if (card2.includes(sym)) return sym;
-  }
-  return null;
-}
-
-function roundUiNumber(value) {
-  return Math.round((value + Number.EPSILON) * 100) / 100;
-}
-
-function setCardRingSegments(cardRingEl, config = {}) {
-  if (!cardRingEl) return;
-
-  const { strokeWidth, firstLength, firstStart, secondLength, secondStart } =
-    config;
-
-  if (typeof strokeWidth === 'number') {
-    cardRingEl.style.setProperty(
-      '--ring-stroke-width',
-      `${roundUiNumber(strokeWidth)}`,
-    );
-  }
-  if (typeof firstLength === 'number') {
-    cardRingEl.style.setProperty(
-      '--ring-segment-a-length',
-      `${roundUiNumber(firstLength)}`,
-    );
-  }
-  if (typeof firstStart === 'number') {
-    cardRingEl.style.setProperty(
-      '--ring-segment-a-start',
-      `${roundUiNumber(firstStart)}`,
-    );
-  }
-  if (typeof secondLength === 'number') {
-    cardRingEl.style.setProperty(
-      '--ring-segment-b-length',
-      `${roundUiNumber(secondLength)}`,
-    );
-  }
-  if (typeof secondStart === 'number') {
-    cardRingEl.style.setProperty(
-      '--ring-segment-b-start',
-      `${roundUiNumber(secondStart)}`,
-    );
-  }
-}
-
-function initCardRings() {
-  const cardRings = document.querySelectorAll('.card-ring');
-  cardRings.forEach((cardRingEl, index) => {
-    setCardRingSegments(cardRingEl, {
-      firstLength: index === 0 ? 20 : 18,
-      firstStart: 8,
-      secondLength: index === 0 ? 16 : 18,
-      secondStart: 58,
-    });
-  });
-
-  window.setCardRingSegments = setCardRingSegments;
-}
-
-function snapTimerSeconds(seconds) {
-  const clamped = Math.max(
-    TIME_PER_CARD_MIN_SECONDS,
-    Math.min(TIME_PER_CARD_MAX_SECONDS, seconds),
-  );
-  const steps = Math.round(
-    (clamped - TIME_PER_CARD_MIN_SECONDS) / TIME_PER_CARD_STEP_SECONDS,
-  );
-  return TIME_PER_CARD_MIN_SECONDS + steps * TIME_PER_CARD_STEP_SECONDS;
-}
-
-function snapIconRotationDegrees(degrees) {
-  const clamped = Math.max(
-    ICON_ROTATION_MIN_DEGREES,
-    Math.min(ICON_ROTATION_MAX_DEGREES, degrees),
-  );
-  const steps = Math.round(clamped / ICON_ROTATION_STEP_DEGREES);
-  return steps * ICON_ROTATION_STEP_DEGREES;
-}
-
-function updateRangeProgress(rangeEl) {
-  if (!rangeEl) return;
-
-  const min = parseFloat(rangeEl.min || '0');
-  const max = parseFloat(rangeEl.max || '100');
-  const value = parseFloat(rangeEl.value || '0');
-  const span = max - min;
-  const progress = span <= 0 ? 0 : ((value - min) / span) * 100;
-  const normalizedProgress = Math.max(0, Math.min(100, progress));
-  const progressValue = `${roundUiNumber(normalizedProgress)}%`;
-
-  rangeEl.dataset.width = `${roundUiNumber(normalizedProgress)}`;
-  rangeEl.style.setProperty('--range-progress', progressValue);
-}
-
-// ===== Position emojis in a circle layout =====
-function positionEmojis(
-  card,
-  containerEl,
-  isClickable,
-  onSymbolClick,
-  layoutOptions = {},
-) {
-  containerEl.innerHTML = '';
-
-  const shuffledCard = shuffle(card);
-  const count = shuffledCard.length;
-  const rotationRangeDegrees =
-    typeof layoutOptions.rotationRangeDegrees === 'number'
-      ? layoutOptions.rotationRangeDegrees
-      : DEFAULT_ICON_ROTATION_DEGREES;
-
-  // Place one emoji in center, rest around
-  shuffledCard.forEach((symbol, i) => {
-    const el = document.createElement('div');
-    el.classList.add('emoji-item');
-    el.textContent = symbol;
-    el.dataset.symbol = symbol;
-
-    let x, y;
-    if (i === 0) {
-      // Center
-      x = 50;
-      y = 50;
-    } else {
-      // Distribute around circle
-      const angle = ((i - 1) / (count - 1)) * Math.PI * 2 - Math.PI / 2;
-      const radius = 30; // % from center
-      x = 50 + radius * Math.cos(angle);
-      y = 50 + radius * Math.sin(angle);
-    }
-
-    el.style.left = `${roundUiNumber(x)}%`;
-    el.style.top = `${roundUiNumber(y)}%`;
-
-    // Random slight size variation and rotation
-    const sizeVariation = 0.9 + Math.random() * 0.35;
-    const rotation =
-      rotationRangeDegrees === 0
-        ? 0
-        : -rotationRangeDegrees / 2 + Math.random() * rotationRangeDegrees;
-    el.style.scale = `${roundUiNumber(sizeVariation)}`;
-    el.style.rotate = `${roundUiNumber(rotation)}deg`;
-
-    if (isClickable && onSymbolClick) {
-      el.addEventListener('click', (e) => {
-        e.preventDefault();
-        onSymbolClick(symbol, el);
-      });
-    }
-
-    containerEl.appendChild(el);
-  });
-}
+import { buildDeck, shuffle, findCommonSymbol } from './deck.js';
+import {
+  roundUiNumber,
+  initCardRings,
+  updateRangeProgress,
+  updateRingProgress,
+  positionEmojis,
+} from './ui-utils.js';
+import {
+  EMOJI_SET_STORAGE_KEY,
+  TIME_PER_CARD_STORAGE_KEY,
+  ICON_ROTATION_STORAGE_KEY,
+  TIME_PER_CARD_MIN_SECONDS,
+  TIME_PER_CARD_MAX_SECONDS,
+  TIME_PER_CARD_STEP_SECONDS,
+  DEFAULT_TIME_PER_CARD_MS,
+  ICON_ROTATION_MIN_DEGREES,
+  ICON_ROTATION_MAX_DEGREES,
+  ICON_ROTATION_STEP_DEGREES,
+  DEFAULT_ICON_ROTATION_DEGREES,
+  EMOJI_SETS,
+  snapTimerSeconds,
+  snapIconRotationDegrees,
+} from './settings.js';
 
 // ===== Game State =====
 const Game = {
@@ -518,33 +277,6 @@ const Game = {
     this.pausedCardElapsed = 0;
   },
 
-  updateCardRingProgress(remaining) {
-    const clampedRemaining = Math.max(0, Math.min(1, remaining));
-    const segmentLength = clampedRemaining * 50;
-
-    this.gameCardRings.forEach((ringEl) => {
-      setCardRingSegments(ringEl, {
-        firstStart: 0,
-        secondStart: 50,
-        firstLength: segmentLength,
-        secondLength: segmentLength,
-      });
-    });
-  },
-
-  updatePreviewRingProgress(remaining) {
-    if (!this.previewCardRing) return;
-
-    const clampedRemaining = Math.max(0, Math.min(1, remaining));
-    const segmentLength = clampedRemaining * 50;
-    setCardRingSegments(this.previewCardRing, {
-      firstStart: 0,
-      secondStart: 50,
-      firstLength: segmentLength,
-      secondLength: segmentLength,
-    });
-  },
-
   startPreviewCycle() {
     if (!this.previewCardRing || !screenStart.classList.contains('active')) {
       return;
@@ -552,7 +284,7 @@ const Game = {
 
     this.stopPreviewCycle();
     this.previewCardStartTime = Date.now();
-    this.updatePreviewRingProgress(1);
+    updateRingProgress(this.previewCardRing, 1);
 
     const tick = () => {
       if (!screenStart.classList.contains('active')) {
@@ -563,12 +295,12 @@ const Game = {
       const elapsed = Date.now() - this.previewCardStartTime;
       const remaining = Math.max(0, 1 - elapsed / this.timePerCard);
 
-      this.updatePreviewRingProgress(remaining);
+      updateRingProgress(this.previewCardRing, remaining);
 
       if (remaining <= 0) {
         this.renderPreviewCard();
         this.previewCardStartTime = Date.now();
-        this.updatePreviewRingProgress(1);
+        updateRingProgress(this.previewCardRing, 1);
       }
 
       this.previewAnimationFrameId = requestAnimationFrame(tick);
@@ -662,30 +394,16 @@ const Game = {
   },
 
   renderCards() {
-    // Top card
-    positionEmojis(
-      this.topCard,
-      cardTop,
-      true,
-      (symbol, el) => {
-        this.handleSymbolClick(symbol, el);
-      },
-      {
-        rotationRangeDegrees: this.iconRotationDegrees,
-      },
-    );
+    const onSymbolClick = (symbol, el) => this.handleSymbolClick(symbol, el);
+    const layoutOptions = { rotationRangeDegrees: this.iconRotationDegrees };
 
-    // Bottom card
+    positionEmojis(this.topCard, cardTop, true, onSymbolClick, layoutOptions);
     positionEmojis(
       this.bottomCard,
       cardBottom,
       true,
-      (symbol, el) => {
-        this.handleSymbolClick(symbol, el);
-      },
-      {
-        rotationRangeDegrees: this.iconRotationDegrees,
-      },
+      onSymbolClick,
+      layoutOptions,
     );
 
     // Animate new cards
@@ -756,7 +474,7 @@ const Game = {
       timerFill.classList.add('warning');
     }
 
-    this.updateCardRingProgress(initialRemaining);
+    updateRingProgress(this.gameCardRings, initialRemaining);
 
     const tick = () => {
       if (!this.isPlaying) {
@@ -769,7 +487,7 @@ const Game = {
       this.updateElapsedTime();
 
       timerFill.style.width = `${roundUiNumber(remaining * 100)}%`;
-      this.updateCardRingProgress(remaining);
+      updateRingProgress(this.gameCardRings, remaining);
 
       if (remaining < 0.3) {
         timerFill.classList.add('warning');
