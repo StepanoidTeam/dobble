@@ -1,4 +1,5 @@
 @import './range.css';
+@import './select.css';
 
 /* ===== Reset & Base ===== */
 *,
@@ -515,6 +516,11 @@ body {
   justify-content: space-between;
   width: 100%;
   padding: 8px 0;
+  gap: 8px;
+}
+
+.text-nowrap {
+  text-wrap-mode: nowrap;
 }
 
 .setting-row span {
@@ -524,21 +530,6 @@ body {
 .setting-value {
   color: var(--accent);
   font-weight: 700;
-}
-
-.settings-select {
-  min-width: 140px;
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--text-light);
-  border: 2px solid rgba(255, 255, 255, 0.25);
-  border-radius: 50px;
-  padding: 8px 10px;
-  font-size: 16px;
-  outline: none;
-}
-
-.settings-select option {
-  color: #1b0d2f;
 }
 
 /* Toggle switch */
@@ -575,6 +566,7 @@ body {
   left: 3px;
   bottom: 3px;
   background: white;
+  border: 2px solid var(--bg-primary);
   border-radius: 50%;
   transition: 0.3s;
 }
