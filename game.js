@@ -207,6 +207,13 @@ const Game = {
     btnCloseSettings.addEventListener('click', () =>
       this.showScreen(screenStart),
     );
+    btnResetProgress.addEventListener('click', () => {
+      screenResetConfirm.classList.add('active');
+    });
+    btnConfirmReset.addEventListener('click', () => this.resetProgress());
+    btnCancelReset.addEventListener('click', () => {
+      screenResetConfirm.classList.remove('active');
+    });
     btnContinueGame.addEventListener('click', () =>
       this.continueAfterConfirm(),
     );
@@ -550,6 +557,11 @@ const Game = {
 
     AudioManager.play('gameover');
     this.showScreen(screenGameOver);
+  },
+
+  resetProgress() {
+    localStorage.removeItem('dobble_best_score');
+    screenResetConfirm.classList.remove('active');
   },
 
   toggleSound() {

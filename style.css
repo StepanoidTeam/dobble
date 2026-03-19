@@ -62,7 +62,8 @@ body {
 
 /* ===== Buttons ===== */
 .btn-primary,
-.btn-secondary {
+.btn-secondary,
+.btn-danger {
   text-transform: capitalize;
   font-weight: bold;
   font-size: 20px;
@@ -112,6 +113,28 @@ body {
   /* corner-shape: superellipse(1); */
   color: #fcdd81;
   text-shadow: 2px 2px 5px var(--bg-primary);
+}
+
+.btn-danger {
+  background-color: #ff4136;
+  border: none;
+  border-radius: 50px;
+  box-shadow:
+    inset 0px -2px 0px 0px #8b0000,
+    inset 0px 3px 2px -1px #ff9a8b,
+    inset 0px -2px 0px 3px #e53529,
+    inset 1px -20px 20px 3px #b71c1c,
+    0px 3px 7px 3px #441b80;
+  color: var(--card-bg);
+  text-shadow: 2px 2px 1px #7a0f0f;
+  padding: 8px 16px;
+
+  min-width: auto;
+}
+
+.btn-danger:active {
+  opacity: 0.8;
+  transform: scale(0.95);
 }
 
 .icon-btn {

@@ -251,7 +251,23 @@
           <span class="text-nowrap">Набор эмодзи</span>
           <select id="emojiSetSelect" class="settings-select"></select>
         </div>
+
+        <div class="setting-row">
+          <span class="text-nowrap">Сбросить прогресс</span>
+
+          <button id="btnResetProgress" class="btn-danger">Сбросить</button>
+        </div>
         <button id="btnCloseSettings" class="btn-primary">Готово</button>
+      </div>
+    </div>
+
+    <!-- Reset Confirm Overlay -->
+    <div id="screenResetConfirm" class="screen overlay">
+      <div class="confirm-panel">
+        <h2>Сбросить прогресс?</h2>
+        <p>Лучший результат будет удалён. Это нельзя отменить.</p>
+        <button id="btnConfirmReset" class="btn-danger">Сбросить</button>
+        <button id="btnCancelReset" class="btn-primary">Отмена</button>
       </div>
     </div>
 
