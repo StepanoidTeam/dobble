@@ -8,6 +8,10 @@ https://stepanoidteam.github.io/dobble/
 
 https://dobble-78869.web.app/
 
+## to run locally (and disable cache):
+
+`% http-server ./ -c-1`
+
 ## to deploy, run:
 
 `% firebase deploy`
