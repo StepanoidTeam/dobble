@@ -78,19 +78,25 @@ body {
 }
 
 .btn-primary {
-  background-color: #fcc63e;
+  background-color: #ffdc20;
   border: none;
   /* border: 2px solid #e69732; */
   box-shadow:
     inset 0px -2px 0px 0px #c5680c,
     inset 0px 3px 2px -1px #fcebbb,
     inset 0px -2px 0px 3px #fcd447,
-    inset 1px -20px 20px 3px #e38818,
+    inset 1px -20px 20px 3px #ff7300,
     0px 3px 7px 3px #441b80;
   border-radius: 16px;
   /* corner-shape: superellipse(1); */
-  color: #482973;
-  text-shadow: 2px 2px 5px var(--accent);
+  color: var(--card-bg);
+  text-shadow: 2px 2px 1px #965507;
+}
+
+.btn-hero {
+  font-size: 35px;
+  border-radius: 30px;
+  padding: 10px 10px 15px 10px;
 }
 
 .btn-secondary {
