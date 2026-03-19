@@ -1,6 +1,7 @@
 {
   "hosting": {
     "public": ".",
+    "predeploy":"sh scripts/generate-version.sh",
     "ignore": [
       "firebase.json",
       "**/.*",
