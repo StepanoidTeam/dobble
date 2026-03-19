@@ -29,6 +29,8 @@ import {
   snapIconRotationDegrees,
 } from './settings.js';
 
+import './firebase.js';
+
 // ===== Game State =====
 const Game = {
   deck: [],
