@@ -11,16 +11,25 @@
       name="apple-mobile-web-app-status-bar-style"
       content="black-translucent"
     />
-    <title>Dobble</title>
+    <title data-i18n="game.title">Dobble</title>
     <link rel="stylesheet" href="style.css" />
+    <link rel="shortcut icon" href="./images/favicon.png" type="image/x-icon" />
     <script src="./game.js" type="module" defer></script>
   </head>
   <body>
     <!-- Start Screen -->
     <div id="screenStart" class="screen active">
       <div class="start-content">
-        <h1 class="game-title">DOBBLE</h1>
-        <p class="game-subtitle">Найди совпадение!</p>
+        <div>
+          <img src="./images/favicon.png" width="100" alt="" />
+          <div>
+            <h1 class="game-title" data-i18n="game.title">DOBBLE</h1>
+            <p class="game-subtitle" data-i18n="game.subtitle">
+              Найди совпадение!
+            </p>
+          </div>
+        </div>
+
         <div class="card-container card-preview">
           <div class="card-ring" aria-hidden="true">
             <svg class="card-ring-svg" viewBox="0 0 100 100" focusable="false">
@@ -51,35 +60,55 @@
             <!-- Emojis placed by JS -->
           </div>
         </div>
-        <button id="btnPlay" class="btn-primary btn-hero">играть!</button>
-        <button id="btnHowTo" class="btn-secondary">Как играть?</button>
-        <button id="btnOpenSettings" class="btn-secondary">Настройки</button>
+        <button id="btnPlay" class="btn-primary btn-hero" data-i18n="btn.play">
+          играть!
+        </button>
+        <button id="btnHowTo" class="btn-secondary" data-i18n="btn.howto">
+          Как играть?
+        </button>
+        <button
+          id="btnOpenSettings"
+          class="btn-secondary"
+          data-i18n="btn.settings"
+        >
+          Настройки
+        </button>
       </div>
     </div>
 
     <!-- How To Play Screen -->
     <div id="screenHowTo" class="screen">
       <div class="howto-content">
-        <h2>Как играть?</h2>
+        <h2 data-i18n="howto.title">Как играть?</h2>
         <div class="howto-steps">
           <div class="howto-step">
             <span class="step-num">1</span>
-            <p>На экране показаны две карточки с символами</p>
+            <p data-i18n="howto.step1">
+              На экране показаны две карточки с символами
+            </p>
           </div>
           <div class="howto-step">
             <span class="step-num">2</span>
-            <p>Найди один общий символ на обеих карточках</p>
+            <p data-i18n="howto.step2">
+              Найди один общий символ на обеих карточках
+            </p>
           </div>
           <div class="howto-step">
             <span class="step-num">3</span>
-            <p>Нажми на совпадающий символ как можно быстрее!</p>
+            <p data-i18n="howto.step3">
+              Нажми на совпадающий символ как можно быстрее!
+            </p>
           </div>
           <div class="howto-step">
             <span class="step-num">4</span>
-            <p>Чем быстрее находишь — тем больше очков</p>
+            <p data-i18n="howto.step4">
+              Чем быстрее находишь — тем больше очков
+            </p>
           </div>
         </div>
-        <button id="btnBackHowTo" class="btn-primary">Понятно!</button>
+        <button id="btnBackHowTo" class="btn-primary" data-i18n="btn.gotIt">
+          Понятно!
+        </button>
       </div>
     </div>
 
@@ -96,17 +125,17 @@
         <div class="hud-panel" aria-label="Игровая статистика">
           <div class="hud-item">
             <span class="hud-icon" aria-hidden="true">⭐</span>
-            <span class="hud-label">Счёт</span>
+            <span class="hud-label" data-i18n="hud.score">Счёт</span>
             <span class="hud-value" id="currentScore">0</span>
           </div>
           <div class="hud-item">
             <span class="hud-icon" aria-hidden="true">🃏</span>
-            <span class="hud-label">Уровень</span>
+            <span class="hud-label" data-i18n="hud.level">Уровень</span>
             <span class="hud-value" id="cardsRemaining">0 / 0</span>
           </div>
           <div class="hud-item">
             <span class="hud-icon" aria-hidden="true">⏱️</span>
-            <span class="hud-label">Время</span>
+            <span class="hud-label" data-i18n="hud.time">Время</span>
             <span class="hud-value" id="elapsedTime">0:00</span>
           </div>
         </div>
@@ -213,16 +242,16 @@
     <!-- Pause/Settings Screen -->
     <div id="screenSettings" class="screen overlay">
       <div class="settings-panel">
-        <h2>Настройки</h2>
+        <h2 data-i18n="settings.title">Настройки</h2>
         <div class="setting-row">
-          <span>Звук</span>
+          <span data-i18n="settings.sound">Звук</span>
           <label class="toggle">
             <input type="checkbox" id="toggleSound" checked />
             <span class="toggle-slider"></span>
           </label>
         </div>
         <div class="setting-row setting-row-timer">
-          <span>Таймер на карточку</span>
+          <span data-i18n="settings.timer">Таймер на карточку</span>
           <span class="setting-value" id="timerValue">10 с</span>
         </div>
         <input
@@ -235,7 +264,7 @@
           value="10"
         />
         <div class="setting-row setting-row-rotation">
-          <span>Поворот иконок</span>
+          <span data-i18n="settings.rotation">Поворот иконок</span>
           <span class="setting-value" id="rotationValue">40°</span>
         </div>
         <input
@@ -248,43 +277,76 @@
           value="40"
         />
         <div class="setting-row">
-          <span>Разворот от центра</span>
+          <span data-i18n="settings.rotateByPosition">Разворот от центра</span>
           <label class="toggle">
             <input type="checkbox" id="toggleRotateByPosition" />
             <span class="toggle-slider"></span>
           </label>
         </div>
         <div class="setting-row">
-          <span class="text-nowrap">Набор эмодзи</span>
+          <span class="text-nowrap" data-i18n="settings.emojiSet"
+            >Набор эмодзи</span
+          >
           <select id="emojiSetSelect" class="settings-select"></select>
         </div>
 
         <div class="setting-row">
-          <span class="text-nowrap">Сбросить прогресс</span>
-
-          <button id="btnResetProgress" class="btn-danger">Сбросить</button>
+          <span class="text-nowrap" data-i18n="settings.language">Язык</span>
+          <select id="langSelect" class="settings-select"></select>
         </div>
-        <button id="btnCloseSettings" class="btn-primary">Готово</button>
+
+        <div class="setting-row">
+          <span class="text-nowrap" data-i18n="settings.resetProgress"
+            >Сбросить прогресс</span
+          >
+
+          <button
+            id="btnResetProgress"
+            class="btn-danger"
+            data-i18n="btn.reset"
+          >
+            Сбросить
+          </button>
+        </div>
+        <button id="btnCloseSettings" class="btn-primary" data-i18n="btn.done">
+          Готово
+        </button>
       </div>
     </div>
 
     <!-- Reset Confirm Overlay -->
     <div id="screenResetConfirm" class="screen overlay">
       <div class="confirm-panel">
-        <h2>Сбросить прогресс?</h2>
-        <p>Лучший результат будет удалён. Это нельзя отменить.</p>
-        <button id="btnConfirmReset" class="btn-danger">Сбросить</button>
-        <button id="btnCancelReset" class="btn-primary">Отмена</button>
+        <h2 data-i18n="confirm.resetTitle">Сбросить прогресс?</h2>
+        <p data-i18n="confirm.resetMessage">
+          Лучший результат будет удалён. Это нельзя отменить.
+        </p>
+        <button id="btnConfirmReset" class="btn-danger" data-i18n="btn.reset">
+          Сбросить
+        </button>
+        <button id="btnCancelReset" class="btn-primary" data-i18n="btn.cancel">
+          Отмена
+        </button>
       </div>
     </div>
 
     <!-- Exit Confirm Overlay -->
     <div id="screenExitConfirm" class="screen overlay">
       <div class="confirm-panel">
-        <h2>Выйти из игры?</h2>
-        <p>Текущий прогресс раунда будет потерян.</p>
-        <button id="btnContinueGame" class="btn-primary">Продолжить</button>
-        <button id="btnConfirmExit" class="btn-secondary">Выйти</button>
+        <h2 data-i18n="confirm.exitTitle">Выйти из игры?</h2>
+        <p data-i18n="confirm.exitMessage">
+          Текущий прогресс раунда будет потерян.
+        </p>
+        <button
+          id="btnContinueGame"
+          class="btn-primary"
+          data-i18n="btn.continue"
+        >
+          Продолжить
+        </button>
+        <button id="btnConfirmExit" class="btn-secondary" data-i18n="btn.exit">
+          Выйти
+        </button>
       </div>
     </div>
 
@@ -296,21 +358,25 @@
           <div class="stat">
             <span class="stat-icon" aria-hidden="true">⭐</span>
             <span class="stat-value" id="finalScore">0</span>
-            <span class="stat-label">Очки</span>
+            <span class="stat-label" data-i18n="stat.score">Очки</span>
           </div>
           <div class="stat">
             <span class="stat-icon" aria-hidden="true">⏱️</span>
             <span class="stat-value" id="finalTime">0:00</span>
-            <span class="stat-label">Время</span>
+            <span class="stat-label" data-i18n="stat.time">Время</span>
           </div>
           <div class="stat">
             <span class="stat-icon" aria-hidden="true">🏆</span>
             <span class="stat-value" id="finalBest">0:00</span>
-            <span class="stat-label">Лучшее среднее</span>
+            <span class="stat-label" data-i18n="stat.best">Лучшее среднее</span>
           </div>
         </div>
-        <button id="btnPlayAgain" class="btn-primary">Играть снова</button>
-        <button id="btnMenu" class="btn-secondary">В меню</button>
+        <button id="btnPlayAgain" class="btn-primary" data-i18n="btn.playAgain">
+          Играть снова
+        </button>
+        <button id="btnMenu" class="btn-secondary" data-i18n="btn.menu">
+          В меню
+        </button>
       </div>
     </div>
   </body>

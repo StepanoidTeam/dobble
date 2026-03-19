@@ -3,6 +3,7 @@
 import { getDeckStatsBySymbolsCount } from './dobble-math.js';
 import { AudioManager } from './audio-manager.js';
 import { buildDeck, shuffle, findCommonSymbol } from './deck.js';
+import { initI18n, setLang, t, getSupportedLangs, getLang } from './i18n.js';
 import {
   roundUiNumber,
   initCardRings,
@@ -58,12 +59,14 @@ const Game = {
     this.loadIconRotationPreference();
     this.loadRotateByPositionPreference();
     this.populateEmojiSetOptions();
+    this.populateLangOptions();
     this.syncSettingsControls();
     this.bindEvents();
     AudioManager.init();
     this.createFlashOverlay();
     this.cacheGameCardRings();
     this.cachePreviewCardRing();
+    initI18n(() => this.onLangApplied());
     this.renderPreviewCard();
     this.startPreviewCycle();
     this.updateCardsRemaining();
@@ -94,6 +97,24 @@ const Game = {
     });
 
     emojiSetSelect.value = this.selectedEmojiSetKey;
+  },
+
+  populateLangOptions() {
+    if (!langSelect) return;
+    langSelect.innerHTML = '';
+    getSupportedLangs().forEach((lang) => {
+      const option = document.createElement('option');
+      option.value = lang.key;
+      option.textContent = lang.label;
+      langSelect.appendChild(option);
+    });
+    langSelect.value = getLang();
+  },
+
+  onLangApplied() {
+    this.updateTimerDisplay(this.getTimePerCardSeconds());
+    this.updateRotationDisplay(this.iconRotationDegrees);
+    if (langSelect) langSelect.value = getLang();
   },
 
   loadEmojiSetPreference() {
@@ -160,12 +181,12 @@ const Game = {
 
   updateTimerDisplay(seconds) {
     if (!timerValue) return;
-    timerValue.textContent = `${seconds} с`;
+    timerValue.textContent = t('timer.seconds', { value: seconds });
   },
 
   updateRotationDisplay(degrees) {
     if (!rotationValue) return;
-    rotationValue.textContent = `${degrees}°`;
+    rotationValue.textContent = t('rotation.degrees', { value: degrees });
   },
 
   syncSettingsControls() {
@@ -278,6 +299,12 @@ const Game = {
       localStorage.setItem(EMOJI_SET_STORAGE_KEY, this.selectedEmojiSetKey);
       this.renderPreviewCard();
     });
+
+    if (langSelect) {
+      langSelect.addEventListener('change', (e) => {
+        setLang(e.target.value, () => this.onLangApplied());
+      });
+    }
   },
 
   createFlashOverlay() {
@@ -593,7 +620,7 @@ const Game = {
 
     const elapsedMs = Date.now() - this.startTime;
 
-    gameOverTitle.textContent = won ? 'Отлично!' : 'Время вышло!';
+    gameOverTitle.textContent = won ? t('gameover.win') : t('gameover.lose');
     finalScore.textContent = this.score;
     finalTime.textContent = this.formatElapsedTime(elapsedMs);
 
