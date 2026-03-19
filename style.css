@@ -23,7 +23,8 @@
   --card-bg: #ffffff;
   --text-light: #ffffff;
   --text-dark: #333333;
-  --ring-purple: #7b3fa0;
+  /* --ring-purple: #7b3fa0; */
+  --ring-purple: #a85dea;
   --ring-yellow: #f5c518;
   --success: #4caf50;
   --error: #f44336;
@@ -37,7 +38,8 @@ body {
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
     sans-serif;
-  background: var(--bg-primary);
+  background-color: var(--bg-primary);
+  background-color: #7846c5;
   color: var(--text-light);
   -webkit-tap-highlight-color: transparent;
   user-select: none;
@@ -46,51 +48,64 @@ body {
   /* background-image: url(./images/Gemini_bg-pattern.png); */
   /* background-image: url(./images/Gemini_pattern3.png); */
 
+  /* radial-gradient(#f5c51880, #7846c580), */
+
+  background-image:
+    url(./images/bg-pattern.png),
+    radial-gradient(circle, #ffd900 25%, #7f46c6 60%, black 100%),
+    radial-gradient(circle, #ffffff00 80%, #577932 84%);
+  background-blend-mode: soft-light;
   background-repeat: repeat;
   background-size: initial;
+  background-size: 640px, 100%;
 }
 
 /* ===== Buttons ===== */
-.btn-primary {
-  background: var(--accent);
-  color: var(--text-dark);
-  border: none;
-  padding: 16px 48px;
-  border-radius: 30px;
-  font-size: 18px;
-  font-weight: 700;
+.btn-primary,
+.btn-secondary {
+  text-transform: capitalize;
+  font-weight: bold;
+  font-size: 20px;
+  padding: 12px;
   cursor: pointer;
-  letter-spacing: 1px;
-  box-shadow: 0 4px 15px rgba(245, 197, 24, 0.4);
-  transition:
-    transform 0.15s,
-    box-shadow 0.15s;
+  transition: all 0.15s;
   min-width: 200px;
+
+  &:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
 }
 
-.btn-primary:active {
-  transform: scale(0.95);
-  box-shadow: 0 2px 8px rgba(245, 197, 24, 0.3);
+.btn-primary {
+  background-color: #fcc63e;
+  border: none;
+  /* border: 2px solid #e69732; */
+  box-shadow:
+    inset 0px -2px 0px 0px #c5680c,
+    inset 0px 3px 2px -1px #fcebbb,
+    inset 0px -2px 0px 3px #fcd447,
+    inset 1px -20px 20px 3px #e38818,
+    0px 3px 7px 3px #441b80;
+  border-radius: 16px;
+  /* corner-shape: superellipse(1); */
+  color: #482973;
+  text-shadow: 2px 2px 5px var(--accent);
 }
 
 .btn-secondary {
-  background: transparent;
-  color: var(--text-light);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  padding: 14px 40px;
-  border-radius: 30px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    transform 0.15s,
-    background 0.15s;
-  min-width: 200px;
-}
-
-.btn-secondary:active {
-  transform: scale(0.95);
-  background: rgba(255, 255, 255, 0.1);
+  background-color: #8241c8;
+  /* //disable? */
+  border: 2px solid #47206e;
+  box-shadow:
+    inset 0px 3px 2px -1px #d59cee,
+    inset 0px 0px 2px 2px #8c3ce5,
+    inset 1px -20px 20px 3px #541e9ed4,
+    0px 2px 10px 3px #441b80;
+  border-radius: 16px;
+  /* corner-shape: superellipse(1); */
+  color: #fcdd81;
+  text-shadow: 2px 2px 5px var(--bg-primary);
 }
 
 .icon-btn {
