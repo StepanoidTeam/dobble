@@ -61,6 +61,11 @@ export function buildDeck(symbols) {
   };
 }
 
+// Pick a random element from arr
+export function sample(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 // Fisher-Yates shuffle
 export function shuffle(arr) {
   const a = [...arr];

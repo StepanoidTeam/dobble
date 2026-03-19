@@ -1,0 +1,137 @@
+/* ===== Logo ===== */
+.logo-container {
+  animation:
+    updown 2000ms ease-in-out infinite alternate,
+    rotleftright 3000ms ease-in-out infinite alternate;
+  transform-origin: center;
+  cursor: pointer;
+  filter: drop-shadow(0px 20px 10px var(--bg-primary));
+}
+
+.logo-icon {
+  width: 150px;
+  height: auto;
+
+  transition: all 300ms ease-in-out;
+
+  &.sepia,
+  &.blur,
+  &.invert,
+  &.opacity,
+  &.saturate,
+  &.bright,
+  &.acid {
+    animation-duration: 5s;
+    animation-timing-function: ease-in-out;
+    animation-direction: alternate;
+    animation-iteration-count: infinite;
+  }
+
+  &.sepia {
+    animation-name: sepiaspin;
+  }
+  &.blur {
+    animation-name: blurspin;
+  }
+  &.invert {
+    animation-name: invertspin;
+  }
+  &.opacity {
+    animation-name: opacityspin;
+  }
+  &.saturate {
+    animation-name: saturatespin;
+  }
+  &.bright {
+    animation-name: brightspin;
+  }
+  &.acid {
+    animation-name: huespin;
+  }
+
+  &.bubble {
+    padding: 15px;
+    border-radius: 90px;
+    background-color: #ffffff33;
+    border: 3px solid var(--bg-primary);
+    box-shadow: inset 0 0 3px 3px var(--ring-purple);
+    backdrop-filter: blur(1px);
+
+    animation: scale 3s ease-in-out alternate infinite;
+  }
+}
+
+@keyframes sepiaspin {
+  to {
+    filter: sepia(1);
+  }
+}
+@keyframes blurspin {
+  to {
+    filter: blur(3px);
+  }
+}
+@keyframes invertspin {
+  to {
+    filter: invert(1);
+  }
+}
+@keyframes opacityspin {
+  to {
+    filter: opacity(0.1);
+  }
+}
+@keyframes saturatespin {
+  to {
+    filter: saturate(5);
+  }
+}
+@keyframes huespin {
+  to {
+    filter: hue-rotate(360deg);
+  }
+}
+
+@keyframes scale {
+  from {
+    scale: 1.1;
+  }
+  to {
+    scale: 0.9;
+  }
+}
+
+@keyframes brightspin {
+  0% {
+    filter: brightness(0.5);
+  }
+  20% {
+    filter: brightness(0.9);
+  }
+
+  80% {
+    filter: brightness(1.1);
+  }
+
+  100% {
+    filter: brightness(3);
+  }
+}
+
+@keyframes updown {
+  from {
+    transform: translateY(-10%);
+  }
+  to {
+    transform: translateY(+10%);
+  }
+}
+
+@keyframes rotleftright {
+  from {
+    rotate: -10deg;
+  }
+  to {
+    rotate: 10deg;
+  }
+}

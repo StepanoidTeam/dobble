@@ -2,7 +2,7 @@
 
 import { getDeckStatsBySymbolsCount } from './dobble-math.js';
 import { AudioManager } from './audio-manager.js';
-import { buildDeck, shuffle, findCommonSymbol } from './deck.js';
+import { buildDeck, shuffle, findCommonSymbol, sample } from './deck.js';
 import { initI18n, setLang, t, getSupportedLangs, getLang } from './i18n.js';
 import {
   roundUiNumber,
@@ -232,6 +232,24 @@ const Game = {
   },
 
   bindEvents() {
+    const logoIcon = document.querySelector('.logo-icon');
+    const logoMods = [
+      'sepia',
+      'blur',
+      'invert',
+      'opacity',
+      'saturate',
+      'bright',
+      'acid',
+      'bubble',
+    ];
+    let currentLogoMod = null;
+    logoIcon.addEventListener('click', () => {
+      if (currentLogoMod) logoIcon.classList.remove(currentLogoMod);
+      currentLogoMod = sample(logoMods.filter((m) => m !== currentLogoMod));
+      logoIcon.classList.add(currentLogoMod);
+    });
+
     btnPlay.addEventListener('click', () => this.startGame());
     btnHowTo.addEventListener('click', () => this.showScreen(screenHowTo));
     btnOpenSettings.addEventListener('click', () => this.openSettings());
