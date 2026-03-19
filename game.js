@@ -14,6 +14,7 @@ import {
   EMOJI_SET_STORAGE_KEY,
   TIME_PER_CARD_STORAGE_KEY,
   ICON_ROTATION_STORAGE_KEY,
+  ROTATE_BY_POSITION_STORAGE_KEY,
   TIME_PER_CARD_MIN_SECONDS,
   TIME_PER_CARD_MAX_SECONDS,
   TIME_PER_CARD_STEP_SECONDS,
@@ -40,6 +41,7 @@ const Game = {
   previewAnimationFrameId: null,
   timePerCard: DEFAULT_TIME_PER_CARD_MS,
   iconRotationDegrees: DEFAULT_ICON_ROTATION_DEGREES,
+  rotateByPosition: false,
   cardStartTime: 0,
   previewCardStartTime: 0,
   pausedCardElapsed: 0,
@@ -54,6 +56,7 @@ const Game = {
     this.loadEmojiSetPreference();
     this.loadTimerPreference();
     this.loadIconRotationPreference();
+    this.loadRotateByPositionPreference();
     this.populateEmojiSetOptions();
     this.syncSettingsControls();
     this.bindEvents();
@@ -115,6 +118,11 @@ const Game = {
     if (Number.isNaN(parsedValue)) return;
 
     this.iconRotationDegrees = snapIconRotationDegrees(parsedValue);
+  },
+
+  loadRotateByPositionPreference() {
+    const saved = localStorage.getItem(ROTATE_BY_POSITION_STORAGE_KEY);
+    this.rotateByPosition = saved === 'true';
   },
 
   getTimePerCardSeconds() {
@@ -183,6 +191,10 @@ const Game = {
 
     this.updateTimerDisplay(this.getTimePerCardSeconds());
     this.updateRotationDisplay(this.iconRotationDegrees);
+
+    if (toggleRotateByPosition) {
+      toggleRotateByPosition.checked = this.rotateByPosition;
+    }
   },
 
   getCurrentSymbols() {
@@ -226,6 +238,17 @@ const Game = {
       AudioManager.enabled = e.target.checked;
       this.updateSoundIcon();
     });
+
+    if (toggleRotateByPosition) {
+      toggleRotateByPosition.addEventListener('change', (e) => {
+        this.rotateByPosition = e.target.checked;
+        localStorage.setItem(
+          ROTATE_BY_POSITION_STORAGE_KEY,
+          `${this.rotateByPosition}`,
+        );
+        this.renderPreviewCard();
+      });
+    }
 
     if (timerRange) {
       timerRange.addEventListener('input', (e) => {
@@ -333,6 +356,7 @@ const Game = {
     );
     positionEmojis(previewSymbols, cardPreview, false, null, {
       rotationRangeDegrees: this.iconRotationDegrees,
+      rotateByPosition: this.rotateByPosition,
     });
   },
 
@@ -403,8 +427,10 @@ const Game = {
 
   renderCards() {
     const onSymbolClick = (symbol, el) => this.handleSymbolClick(symbol, el);
-    const layoutOptions = { rotationRangeDegrees: this.iconRotationDegrees };
-
+    const layoutOptions = {
+      rotationRangeDegrees: this.iconRotationDegrees,
+      rotateByPosition: this.rotateByPosition,
+    };
     positionEmojis(this.topCard, cardTop, true, onSymbolClick, layoutOptions);
     positionEmojis(
       this.bottomCard,

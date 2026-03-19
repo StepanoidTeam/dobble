@@ -22,7 +22,7 @@
 +10 for top-2 player (with min)
 
 [] add language selector RU/EN.  
-[] add reset progress option in settings.  
+[x] add reset progress option in settings.  
 [] add profile settings:  
 -- select name.  
 -- register? firebase.  
@@ -44,9 +44,12 @@
 -- hint
 -- auto-answer
 
+-- rotate all icons randomly/upside-down for opponents
+-- rotate all icons normaly for self
+
 ## fix
 
-[] rotate images corresponding to their positions on card
+[x] rotate images corresponding to their positions on card
 
 ## ui
 

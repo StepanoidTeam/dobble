@@ -80,6 +80,7 @@ export function updateRingProgress(ringElements, remaining) {
     secondLength: segmentLength,
   };
 
+  return; //debug
   if (Array.isArray(ringElements)) {
     ringElements.forEach((ringEl) => setCardRingSegments(ringEl, config));
   } else if (ringElements) {
@@ -103,6 +104,7 @@ export function positionEmojis(
     typeof layoutOptions.rotationRangeDegrees === 'number'
       ? layoutOptions.rotationRangeDegrees
       : DEFAULT_ICON_ROTATION_DEGREES;
+  const rotateByPosition = layoutOptions.rotateByPosition === true;
 
   // Place one emoji in center, rest around
   shuffledCard.forEach((symbol, i) => {
@@ -112,6 +114,7 @@ export function positionEmojis(
     el.dataset.symbol = symbol;
 
     let x, y;
+    let posAngleDeg = 0;
     if (i === 0) {
       x = 50;
       y = 50;
@@ -120,17 +123,20 @@ export function positionEmojis(
       const radius = 30; // % from center
       x = 50 + radius * Math.cos(angle);
       y = 50 + radius * Math.sin(angle);
+      posAngleDeg = (angle * 180) / Math.PI - 90; // outward direction
     }
 
     el.style.left = `${roundUiNumber(x)}%`;
     el.style.top = `${roundUiNumber(y)}%`;
 
-    // Random slight size variation and rotation
+    // Size variation + rotation aligned to position with jitter
     const sizeVariation = 0.9 + Math.random() * 0.35;
-    const rotation =
+    const jitter =
       rotationRangeDegrees === 0
         ? 0
         : -rotationRangeDegrees / 2 + Math.random() * rotationRangeDegrees;
+    const rotation =
+      i === 0 ? jitter : (rotateByPosition ? posAngleDeg : 0) + jitter;
     el.style.scale = `${roundUiNumber(sizeVariation)}`;
     el.style.rotate = `${roundUiNumber(rotation)}deg`;
 
