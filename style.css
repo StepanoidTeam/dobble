@@ -255,3 +255,11 @@ body {
     font-size: 12px;
   }
 }
+
+.app-version {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  padding: 10px;
+  opacity: 0.5;
+}

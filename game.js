@@ -29,6 +29,7 @@ import {
   snapIconRotationDegrees,
 } from './settings.js';
 
+import './app-version.js';
 import './firebase.js';
 
 // ===== Game State =====
