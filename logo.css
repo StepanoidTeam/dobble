@@ -9,7 +9,7 @@
 }
 
 .logo-icon {
-  width: 150px;
+  width: clamp(80px, 25vw, 150px);
   height: auto;
 
   transition: all 300ms ease-in-out;

@@ -162,7 +162,7 @@ const Game = {
       timerRange.value = `${snappedSeconds}`;
       updateRangeProgress(timerRange);
     }
-    if (screenStart.classList.contains('active')) {
+    if (!screenStart.hidden) {
       this.startPreviewCycle();
     }
   },
@@ -263,11 +263,11 @@ const Game = {
       this.showScreen(screenStart),
     );
     btnResetProgress.addEventListener('click', () => {
-      screenResetConfirm.classList.add('active');
+      screenResetConfirm.hidden = false;
     });
     btnConfirmReset.addEventListener('click', () => this.resetProgress());
     btnCancelReset.addEventListener('click', () => {
-      screenResetConfirm.classList.remove('active');
+      screenResetConfirm.hidden = true;
     });
     btnContinueGame.addEventListener('click', () =>
       this.continueAfterConfirm(),
@@ -346,18 +346,18 @@ const Game = {
     this.isPlaying = false;
     this.stopCardTimer();
     this.showScreen(screenGame);
-    screenExitConfirm.classList.add('active');
+    screenExitConfirm.hidden = false;
   },
 
   continueAfterConfirm() {
-    screenExitConfirm.classList.remove('active');
+    screenExitConfirm.hidden = true;
     this.isPlaying = true;
     this.startCardTimer(this.pausedCardElapsed);
     this.pausedCardElapsed = 0;
   },
 
   startPreviewCycle() {
-    if (!this.previewCardRing || !screenStart.classList.contains('active')) {
+    if (!this.previewCardRing || screenStart.hidden) {
       return;
     }
 
@@ -366,7 +366,7 @@ const Game = {
     updateRingProgress(this.previewCardRing, 1);
 
     const tick = () => {
-      if (!screenStart.classList.contains('active')) {
+      if (screenStart.hidden) {
         this.stopPreviewCycle();
         return;
       }
@@ -432,8 +432,8 @@ const Game = {
   showScreen(screenEl) {
     document
       .querySelectorAll('.screen')
-      .forEach((s) => s.classList.remove('active'));
-    if (screenEl) screenEl.classList.add('active');
+      .forEach((s) => (s.hidden = true));
+    if (screenEl) screenEl.hidden = false;
 
     if (screenEl === screenStart) {
       this.renderPreviewCard();
@@ -629,7 +629,7 @@ const Game = {
     this.isInputLocked = false;
     this.stopCardTimer();
     this.pausedCardElapsed = 0;
-    screenExitConfirm.classList.remove('active');
+    screenExitConfirm.hidden = true;
     this.showScreen(screenStart);
   },
 
@@ -637,7 +637,7 @@ const Game = {
     this.isPlaying = false;
     this.isInputLocked = false;
     this.stopCardTimer();
-    screenExitConfirm.classList.remove('active');
+    screenExitConfirm.hidden = true;
 
     const elapsedMs = Date.now() - this.startTime;
 
@@ -659,7 +659,7 @@ const Game = {
 
   resetProgress() {
     localStorage.removeItem('dobble_best_score');
-    screenResetConfirm.classList.remove('active');
+    screenResetConfirm.hidden = true;
   },
 
   toggleSound() {
