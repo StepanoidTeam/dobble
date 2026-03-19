@@ -47,6 +47,7 @@ const Game = {
   previewCardRing: null,
   isPlaying: false,
   isInputLocked: false,
+  showHintOnWrong: true,
   totalCardsInGame: 20, // number of card pairs to play
 
   init() {
@@ -466,8 +467,30 @@ const Game = {
       this.score = Math.max(0, this.score - 5);
       currentScore.textContent = this.score;
 
-      setTimeout(() => el.classList.remove('wrong'), 400);
+      if (this.showHintOnWrong) {
+        this.highlightCommonSymbol();
+      }
+      setTimeout(() => {
+        el.classList.remove('wrong');
+        this.clearHints();
+      }, 1200);
     }
+  },
+
+  highlightCommonSymbol() {
+    const commonSymbol = findCommonSymbol(this.topCard, this.bottomCard);
+    if (!commonSymbol) return;
+    document.querySelectorAll('.emoji-item').forEach((el) => {
+      if (el.dataset.symbol === commonSymbol) {
+        el.classList.add('hint');
+      }
+    });
+  },
+
+  clearHints() {
+    document.querySelectorAll('.emoji-item.hint').forEach((el) => {
+      el.classList.remove('hint');
+    });
   },
 
   startCardTimer(initialElapsed = 0) {
@@ -503,7 +526,8 @@ const Game = {
       if (remaining <= 0) {
         // Time's up for this card — game over
         this.stopCardTimer();
-        this.endGame(false);
+        this.highlightCommonSymbol();
+        setTimeout(() => this.endGame(false), 1200);
         return;
       }
 

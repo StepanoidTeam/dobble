@@ -113,6 +113,22 @@
   animation: wrongShake 0.4s ease;
 }
 
+.emoji-item.hint {
+  animation: hintPulse 0.6s ease 2;
+  filter: drop-shadow(0 0 8px var(--accent)) drop-shadow(0 0 16px var(--accent));
+  z-index: 10;
+}
+
+@keyframes hintPulse {
+  0%,
+  100% {
+    scale: 1;
+  }
+  50% {
+    scale: 1.4;
+  }
+}
+
 @keyframes correctPop {
   0% {
     scale: 1;
