@@ -262,4 +262,6 @@ body {
   bottom: 0;
   padding: 10px;
   opacity: 0.5;
+  white-space: pre-wrap;
+  text-align: right;
 }
