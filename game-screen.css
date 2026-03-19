@@ -7,11 +7,7 @@
 }
 
 .game-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: 10px;
-  width: 100%;
   padding: 0 4px;
   flex: 0 0 auto;
 }
@@ -29,9 +25,6 @@
 }
 
 .hud-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   gap: 2px;
   border-radius: 10px;
   padding: 4px;
@@ -82,10 +75,6 @@
 .game-footer {
   width: 100%;
   padding: 12px 0 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
   flex: 0 0 auto;
 }
 

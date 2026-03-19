@@ -1,9 +1,5 @@
 /* ===== Game Over Screen ===== */
 .gameover-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
   padding: 40px 20px;
 }
 
@@ -23,10 +19,6 @@
 }
 
 .stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
   padding: 16px 12px;
   border-radius: 18px;
   background: rgba(20, 8, 36, 0.45);

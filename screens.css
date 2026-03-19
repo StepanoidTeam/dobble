@@ -24,20 +24,21 @@
 
 /* ===== Start Screen ===== */
 .start-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
   padding: 40px 20px;
+}
+
+.logo-icon {
+  width: 150px;
+  height: auto;
 }
 
 .game-title {
   font-size: 75px;
   font-weight: 900;
   letter-spacing: 8px;
-  text-shadow: 0 4px 20px rgba(245, 197, 24, 0.5);
+  /* text-shadow: 0 4px 20px rgba(245, 197, 24, 0.5); */
   color: var(--accent);
-  /* text-shadow: 5px 5px 10px #5800b2; */
+  text-shadow: 5px 5px 10px #5800b2;
 }
 
 .game-subtitle {
@@ -57,11 +58,6 @@
 /* ===== How To Play ===== */
 .howto-content {
   padding: 40px 30px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
 
   /* colors */
   background: #4a2272b8;
@@ -78,16 +74,10 @@
 }
 
 .howto-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
   max-width: 320px;
 }
 
 .howto-step {
-  display: flex;
-  align-items: center;
-  gap: 16px;
   text-align: left;
 }
 
@@ -97,9 +87,6 @@
   background: var(--accent);
   color: var(--text-dark);
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-weight: 700;
   font-size: 16px;
 }
