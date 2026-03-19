@@ -10,6 +10,9 @@
 .gameover-content h2 {
   font-size: 36px;
   color: var(--accent);
+
+  text-shadow: 2px 2px 2px #4b00b9;
+  text-transform: uppercase;
 }
 
 .stats {
