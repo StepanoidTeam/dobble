@@ -19,10 +19,10 @@
   <body>
     <!-- Start Screen -->
     <div id="screenStart" class="screen active">
-      <div class="start-content">
-        <div>
-          <img src="./images/favicon.png" width="100" alt="" />
-          <div>
+      <div class="start-content flex-col items-center gap-5">
+        <div class="flex-row items-center justify-center gap-1">
+          <img class="logo-icon" src="./images/favicon.png" alt="dobble" />
+          <div class="flex-col">
             <h1 class="game-title" data-i18n="game.title">DOBBLE</h1>
             <p class="game-subtitle" data-i18n="game.subtitle">
               Найди совпадение!
@@ -78,29 +78,29 @@
 
     <!-- How To Play Screen -->
     <div id="screenHowTo" class="screen">
-      <div class="howto-content">
+      <div class="howto-content flex-col items-center gap-6">
         <h2 data-i18n="howto.title">Как играть?</h2>
-        <div class="howto-steps">
-          <div class="howto-step">
-            <span class="step-num">1</span>
+        <div class="howto-steps flex-col gap-4">
+          <div class="howto-step flex-row items-center gap-4">
+            <span class="step-num flex items-center justify-center">1</span>
             <p data-i18n="howto.step1">
               На экране показаны две карточки с символами
             </p>
           </div>
-          <div class="howto-step">
-            <span class="step-num">2</span>
+          <div class="howto-step flex-row items-center gap-4">
+            <span class="step-num flex items-center justify-center">2</span>
             <p data-i18n="howto.step2">
               Найди один общий символ на обеих карточках
             </p>
           </div>
-          <div class="howto-step">
-            <span class="step-num">3</span>
+          <div class="howto-step flex-row items-center gap-4">
+            <span class="step-num flex items-center justify-center">3</span>
             <p data-i18n="howto.step3">
               Нажми на совпадающий символ как можно быстрее!
             </p>
           </div>
-          <div class="howto-step">
-            <span class="step-num">4</span>
+          <div class="howto-step flex-row items-center gap-4">
+            <span class="step-num flex items-center justify-center">4</span>
             <p data-i18n="howto.step4">
               Чем быстрее находишь — тем больше очков
             </p>
@@ -114,7 +114,7 @@
 
     <!-- Game Screen -->
     <div id="screenGame" class="screen">
-      <div class="game-header">
+      <div class="game-header flex-row items-center justify-between w-full">
         <button id="btnExitGame" class="icon-btn" aria-label="Выйти в меню">
           <svg viewBox="0 0 24 24" fill="white" width="28" height="28">
             <path
@@ -123,17 +123,17 @@
           </svg>
         </button>
         <div class="hud-panel" aria-label="Игровая статистика">
-          <div class="hud-item">
+          <div class="hud-item flex-col items-center">
             <span class="hud-icon" aria-hidden="true">⭐</span>
             <span class="hud-label" data-i18n="hud.score">Счёт</span>
             <span class="hud-value" id="currentScore">0</span>
           </div>
-          <div class="hud-item">
+          <div class="hud-item flex-col items-center">
             <span class="hud-icon" aria-hidden="true">🃏</span>
             <span class="hud-label" data-i18n="hud.level">Уровень</span>
             <span class="hud-value" id="cardsRemaining">0 / 0</span>
           </div>
-          <div class="hud-item">
+          <div class="hud-item flex-col items-center">
             <span class="hud-icon" aria-hidden="true">⏱️</span>
             <span class="hud-label" data-i18n="hud.time">Время</span>
             <span class="hud-value" id="elapsedTime">0:00</span>
@@ -232,7 +232,7 @@
         </div>
       </div>
 
-      <div class="game-footer">
+      <div class="game-footer flex-col items-center gap-2">
         <div class="timer-bar">
           <div class="timer-fill" id="timerFill"></div>
         </div>
@@ -241,7 +241,7 @@
 
     <!-- Pause/Settings Screen -->
     <div id="screenSettings" class="screen overlay">
-      <div class="settings-panel">
+      <div class="settings-panel flex-col items-center gap-5">
         <h2 data-i18n="settings.title">Настройки</h2>
         <div class="setting-row">
           <span data-i18n="settings.sound">Звук</span>
@@ -316,7 +316,7 @@
 
     <!-- Reset Confirm Overlay -->
     <div id="screenResetConfirm" class="screen overlay">
-      <div class="confirm-panel">
+      <div class="confirm-panel flex-col items-center text-center">
         <h2 data-i18n="confirm.resetTitle">Сбросить прогресс?</h2>
         <p data-i18n="confirm.resetMessage">
           Лучший результат будет удалён. Это нельзя отменить.
@@ -332,7 +332,7 @@
 
     <!-- Exit Confirm Overlay -->
     <div id="screenExitConfirm" class="screen overlay">
-      <div class="confirm-panel">
+      <div class="confirm-panel flex-col items-center text-center">
         <h2 data-i18n="confirm.exitTitle">Выйти из игры?</h2>
         <p data-i18n="confirm.exitMessage">
           Текущий прогресс раунда будет потерян.
@@ -352,20 +352,20 @@
 
     <!-- Game Over Screen -->
     <div id="screenGameOver" class="screen">
-      <div class="gameover-content">
+      <div class="gameover-content flex-col items-center gap-6">
         <h2 id="gameOverTitle">Отлично!</h2>
         <div class="stats">
-          <div class="stat">
+          <div class="stat flex-col items-center gap-1">
             <span class="stat-icon" aria-hidden="true">⭐</span>
             <span class="stat-value" id="finalScore">0</span>
             <span class="stat-label" data-i18n="stat.score">Очки</span>
           </div>
-          <div class="stat">
+          <div class="stat flex-col items-center gap-1">
             <span class="stat-icon" aria-hidden="true">⏱️</span>
             <span class="stat-value" id="finalTime">0:00</span>
             <span class="stat-label" data-i18n="stat.time">Время</span>
           </div>
-          <div class="stat">
+          <div class="stat flex-col items-center gap-1">
             <span class="stat-icon" aria-hidden="true">🏆</span>
             <span class="stat-value" id="finalBest">0:00</span>
             <span class="stat-label" data-i18n="stat.best">Лучшее среднее</span>

@@ -39,13 +39,13 @@
 [] emoji collection gallery
 [] restyle in-game score for VS mode
 [] win/loose screen emoji + bonuses?
-[] bonuses:
--- +5 sec (time bonus?)
--- hint
--- auto-answer
-
--- rotate all icons randomly/upside-down for opponents
--- rotate all icons normaly for self
+[] bonuses:  
+-- +5 sec (time bonus?)  
+-- hint  
+-- auto-answer  
+-- rotate all icons randomly/upside-down for opponents  
+-- rotate all icons normaly for self  
+-- shuffle symbols for opponents.
 
 ## fix
 
