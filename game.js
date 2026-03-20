@@ -539,7 +539,7 @@ const Game = {
         0,
         Math.floor((1 - elapsed / this.timePerCard) * 100),
       );
-      this.score += 10 + timeBonus;
+      this.score += 100 + timeBonus;
       currentScore.textContent = this.score;
 
       // Next card
@@ -565,7 +565,7 @@ const Game = {
       AudioManager.play(FEEDBACK_WRONG);
 
       // Penalty
-      this.score = Math.max(0, this.score - 5);
+      this.score -= 25;
       currentScore.textContent = this.score;
 
       if (this.showHintOnWrong) {
