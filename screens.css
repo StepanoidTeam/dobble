@@ -15,7 +15,7 @@
 }
 
 .screen.overlay {
-  z-index: 100;
+  z-index: 1;
   background: var(--overlay);
   backdrop-filter: blur(8px);
 }

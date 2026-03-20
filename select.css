@@ -1,6 +1,6 @@
 .settings-select {
   min-width: 140px;
-  width: 100%;
+  width: auto;
   background-color: rgba(255, 255, 255, 0.12);
   color: var(--text-light);
   border: 2px solid rgba(255, 255, 255, 0.25);
@@ -16,16 +16,16 @@
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 14px 10px;
-}
 
-.settings-select:focus {
-  border-color: rgba(245, 197, 24, 0.8);
-}
+  .settings-select:focus {
+    border-color: rgba(245, 197, 24, 0.8);
+  }
 
-.settings-select::-ms-expand {
-  display: none;
-}
+  .settings-select::-ms-expand {
+    display: none;
+  }
 
-.settings-select option {
-  color: #1b0d2f;
+  .settings-select option {
+    color: #1b0d2f;
+  }
 }

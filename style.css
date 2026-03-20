@@ -76,7 +76,7 @@ body {
   right: 0;
   bottom: 0;
   pointer-events: none;
-  z-index: 50;
+  z-index: 1;
   opacity: 0;
   transition: opacity 0.2s;
 }
@@ -176,4 +176,5 @@ body {
   opacity: 0.5;
   white-space: pre-wrap;
   text-align: right;
+  z-index: 1;
 }

@@ -242,73 +242,79 @@
 
     <!-- Pause/Settings Screen -->
     <div id="screenSettings" class="screen overlay" hidden>
-      <div class="settings-panel flex-col items-center gap-5">
+      <div class="settings-panel flex-col items-center gap-2">
         <h2 data-i18n="settings.title">Настройки</h2>
-        <div class="setting-row">
-          <span data-i18n="settings.sound">Звук</span>
-          <label class="toggle">
-            <input type="checkbox" id="toggleSound" checked />
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-        <div class="setting-row setting-row-timer">
-          <span data-i18n="settings.timer">Таймер на карточку</span>
-          <span class="setting-value" id="timerValue">10 с</span>
-        </div>
-        <input
-          type="range"
-          id="timerRange"
-          class="settings-range"
-          min="5"
-          max="20"
-          step="5"
-          value="10"
-        />
-        <div class="setting-row setting-row-rotation">
-          <span data-i18n="settings.rotation">Поворот иконок</span>
-          <span class="setting-value" id="rotationValue">40°</span>
-        </div>
-        <input
-          type="range"
-          id="rotationRange"
-          class="settings-range"
-          min="0"
-          max="360"
-          step="5"
-          value="40"
-        />
-        <div class="setting-row">
-          <span data-i18n="settings.rotateByPosition">Разворот от центра</span>
-          <label class="toggle">
-            <input type="checkbox" id="toggleRotateByPosition" />
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-        <div class="setting-row">
-          <span class="text-nowrap" data-i18n="settings.emojiSet"
-            >Набор эмодзи</span
-          >
-          <select id="emojiSetSelect" class="settings-select"></select>
+
+        <div class="settings-content flex-col gap-1">
+          <div class="setting-row">
+            <span data-i18n="settings.sound">Звук</span>
+            <label class="toggle">
+              <input type="checkbox" id="toggleSound" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-row setting-row-timer">
+            <span data-i18n="settings.timer">Таймер на карточку</span>
+            <span class="setting-value" id="timerValue">10 с</span>
+          </div>
+          <input
+            type="range"
+            id="timerRange"
+            class="settings-range"
+            min="5"
+            max="20"
+            step="5"
+            value="10"
+          />
+          <div class="setting-row setting-row-rotation">
+            <span data-i18n="settings.rotation">Поворот иконок</span>
+            <span class="setting-value" id="rotationValue">40°</span>
+          </div>
+          <input
+            type="range"
+            id="rotationRange"
+            class="settings-range"
+            min="0"
+            max="360"
+            step="5"
+            value="40"
+          />
+          <div class="setting-row">
+            <span data-i18n="settings.rotateByPosition"
+              >Разворот от центра</span
+            >
+            <label class="toggle">
+              <input type="checkbox" id="toggleRotateByPosition" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <span class="text-nowrap" data-i18n="settings.emojiSet"
+              >Набор эмодзи</span
+            >
+            <select id="emojiSetSelect" class="settings-select"></select>
+          </div>
+
+          <div class="setting-row">
+            <span class="text-nowrap" data-i18n="settings.language">Язык</span>
+            <select id="langSelect" class="settings-select"></select>
+          </div>
+
+          <div class="setting-row">
+            <span class="text-nowrap" data-i18n="settings.resetProgress"
+              >Сбросить прогресс</span
+            >
+
+            <button
+              id="btnResetProgress"
+              class="btn-danger"
+              data-i18n="btn.reset"
+            >
+              Сбросить
+            </button>
+          </div>
         </div>
 
-        <div class="setting-row">
-          <span class="text-nowrap" data-i18n="settings.language">Язык</span>
-          <select id="langSelect" class="settings-select"></select>
-        </div>
-
-        <div class="setting-row">
-          <span class="text-nowrap" data-i18n="settings.resetProgress"
-            >Сбросить прогресс</span
-          >
-
-          <button
-            id="btnResetProgress"
-            class="btn-danger"
-            data-i18n="btn.reset"
-          >
-            Сбросить
-          </button>
-        </div>
         <button id="btnCloseSettings" class="btn-primary" data-i18n="btn.done">
           Готово
         </button>
