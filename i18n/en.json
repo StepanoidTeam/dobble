@@ -38,5 +38,10 @@
   "gameover.lose": "Time's up!",
   "stat.score": "Score",
   "stat.time": "Time",
-  "stat.best": "Best average"
+  "stat.best": "Best average",
+  "mode.title": "SELECT MODE",
+  "mode.hint": "Mode choice affects the whole match",
+  "mode.classic": "Classic",
+  "mode.chain": "Chain",
+  "mode.hellpot": "Hell Cauldron"
 }

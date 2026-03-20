@@ -77,6 +77,46 @@
       </button>
     </div>
 
+    <!-- Mode Select Screen -->
+    <div id="screenModeSelect" class="screen" hidden>
+      <div class="mode-trophy" aria-hidden="true">🏆</div>
+      <h2 class="mode-title" data-i18n="mode.title">ВЫБЕРИТЕ РЕЖИМ</h2>
+
+      <div class="mode-cards">
+        <button
+          class="mode-card mode-card--classic mode-card--selected"
+          data-mode="classic"
+        >
+          <span class="mode-card-icon">🔍</span>
+          <span class="mode-card-name" data-i18n="mode.classic">Классика</span>
+        </button>
+        <button class="mode-card mode-card--chain" data-mode="chain">
+          <span class="mode-card-icon">⛓️</span>
+          <span class="mode-card-name" data-i18n="mode.chain">С цепочки</span>
+        </button>
+        <button class="mode-card mode-card--hellpot" data-mode="hellpot">
+          <span class="mode-card-icon">🔥</span>
+          <span class="mode-card-name" data-i18n="mode.hellpot"
+            >Адский котёл</span
+          >
+        </button>
+      </div>
+
+      <p class="mode-hint" data-i18n="mode.hint">
+        Выбор режима влияет на весь матч
+      </p>
+      <button
+        id="btnStartWithMode"
+        class="btn-primary btn-hero"
+        data-i18n="btn.play"
+      >
+        Играть
+      </button>
+      <button id="btnModeBack" class="btn-secondary" data-i18n="btn.exit">
+        Выйти
+      </button>
+    </div>
+
     <!-- How To Play Screen -->
     <div id="screenHowTo" class="screen" hidden>
       <div class="howto-content flex-col items-center gap-6">

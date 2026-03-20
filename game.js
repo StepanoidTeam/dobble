@@ -58,6 +58,7 @@ const Game = {
   isInputLocked: false,
   showHintOnWrong: true,
   totalCardsInGame: 20, // number of card pairs to play
+  selectedMode: 'classic',
 
   init() {
     this.loadEmojiSetPreference();
@@ -256,7 +257,12 @@ const Game = {
       logoIcon.classList.add(currentLogoMod);
     });
 
-    btnPlay.addEventListener('click', () => this.startGame());
+    btnPlay.addEventListener('click', () => this.showScreen(screenModeSelect));
+    btnStartWithMode.addEventListener('click', () => this.startGame());
+    btnModeBack.addEventListener('click', () => this.showScreen(screenStart));
+    document.querySelectorAll('.mode-card').forEach((card) => {
+      card.addEventListener('click', () => this.selectMode(card.dataset.mode));
+    });
     btnHowTo.addEventListener('click', () => this.showScreen(screenHowTo));
     btnOpenSettings.addEventListener('click', () => this.openSettings());
     btnBackHowTo.addEventListener('click', () => this.showScreen(screenStart));
@@ -335,6 +341,13 @@ const Game = {
     this.flashOverlay = document.createElement('div');
     this.flashOverlay.classList.add('flash-overlay');
     document.body.appendChild(this.flashOverlay);
+  },
+
+  selectMode(mode) {
+    this.selectedMode = mode;
+    document.querySelectorAll('.mode-card').forEach((card) => {
+      card.classList.toggle('mode-card--selected', card.dataset.mode === mode);
+    });
   },
 
   openSettings() {

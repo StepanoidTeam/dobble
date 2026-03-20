@@ -38,5 +38,10 @@
   "gameover.lose": "Время вышло!",
   "stat.score": "Очки",
   "stat.time": "Время",
-  "stat.best": "Лучшее среднее"
+  "stat.best": "Лучшее среднее",
+  "mode.title": "ВЫБЕРИТЕ РЕЖИМ",
+  "mode.hint": "Выбор режима влияет на весь матч",
+  "mode.classic": "Классика",
+  "mode.chain": "Цепочки",
+  "mode.hellpot": "Адский котёл"
 }

@@ -49,6 +49,144 @@
   height: min(40vw, 180px);
 }
 
+/* ===== Mode Select Screen ===== */
+#screenModeSelect {
+  gap: 16px;
+  padding: 16px 20px 30px;
+}
+
+.mode-screen-top {
+  padding: 0 4px;
+  align-self: stretch;
+}
+
+.mode-trophy {
+  font-size: clamp(56px, 16vw, 80px);
+  line-height: 1;
+  filter: drop-shadow(0 0 18px rgba(255, 210, 0, 0.75));
+  animation: trophy-float 2.4s ease-in-out infinite;
+}
+
+@keyframes trophy-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.mode-title {
+  font-size: clamp(20px, 6.5vw, 32px);
+  font-weight: 900;
+  color: white;
+  letter-spacing: clamp(2px, 1vw, 5px);
+  text-shadow: 2px 2px 8px #3b1d75;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.mode-cards {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+  max-width: 380px;
+}
+
+.mode-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 20px;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition:
+    transform 0.18s,
+    box-shadow 0.18s;
+
+  aspect-ratio: 0.75;
+  min-width: 0;
+
+  &:active {
+    transform: scale(0.94);
+  }
+}
+
+.mode-card-icon {
+  font-size: clamp(30px, 9vw, 46px);
+  line-height: 1;
+
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  background: #fbf5eb;
+  border-radius: 20px;
+  align-content: center;
+}
+
+.mode-card-name {
+  font-size: clamp(11px, 3.2vw, 14px);
+  font-weight: bold;
+  color: #3a1a6b;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.mode-card--classic {
+  border-color: #c8940a;
+  background-color: #dbb13d;
+  box-shadow: 0 4px 12px rgba(200, 148, 0, 0.25);
+}
+
+.mode-card--chain {
+  border-color: #3a9a3a;
+  background-color: #6cc46c;
+  box-shadow: 0 4px 12px rgba(50, 150, 50, 0.25);
+}
+
+.mode-card--hellpot {
+  border-color: #b83232;
+  background-color: #d47f7f;
+  box-shadow: 0 4px 12px rgba(180, 50, 50, 0.25);
+}
+
+.mode-card--selected.mode-card--classic {
+  border-color: #ffd700;
+  box-shadow:
+    0 0 0 2px #ffd700,
+    0 6px 22px rgba(220, 160, 0, 0.55);
+  transform: scale(1.06);
+}
+
+.mode-card--selected.mode-card--chain {
+  border-color: #4cdb4c;
+  box-shadow:
+    0 0 0 2px #4cdb4c,
+    0 6px 22px rgba(60, 210, 60, 0.55);
+  transform: scale(1.06);
+}
+
+.mode-card--selected.mode-card--hellpot {
+  border-color: #ff5555;
+  box-shadow:
+    0 0 0 2px #ff5555,
+    0 6px 22px rgba(220, 60, 60, 0.55);
+  transform: scale(1.06);
+}
+
+.mode-hint {
+  font-size: 13px;
+  opacity: 0.65;
+  text-align: center;
+  margin: 0;
+}
+
 /* ===== How To Play ===== */
 .howto-content {
   padding: 40px 30px;
