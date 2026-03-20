@@ -3,7 +3,7 @@
 ## feat
 
 [] add tutorial with samples and hints  
-[] show same symbols on fail
+[x] show same symbols on fail
 
 [] impl modes  
 -- helltower:  
@@ -21,7 +21,7 @@
 +20 for player who got min total cards  
 +10 for top-2 player (with min)
 
-[] add language selector RU/EN.  
+[x] add language selector RU/EN.  
 [x] add reset progress option in settings.  
 [] add profile settings:  
 -- select name.  
@@ -60,8 +60,10 @@
 
 ## style
 
-[] adjust bg to better fit mockups
-[] adjust buttons appearance
+[x] adjust bg to better fit mockups
+[x] adjust buttons appearance
+
+[] improve bg more
 
 ## sounds
 
