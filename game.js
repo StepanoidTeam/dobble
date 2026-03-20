@@ -30,7 +30,7 @@ import {
 } from './settings.js';
 
 import './app-version.js';
-import './firebase.js';
+import './auth.js';
 
 const FEEDBACK_CORRECT = 'correct';
 const FEEDBACK_WRONG = 'wrong';
