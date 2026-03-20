@@ -45,6 +45,7 @@
 /* Ring segments around the card */
 .card-ring {
   position: absolute;
+  pointer-events: none;
   z-index: 1;
   top: 0;
   left: 0;
