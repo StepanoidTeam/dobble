@@ -25,6 +25,9 @@
   /* box-shadow: 0 0 20px 20px #5d3293bf; */
   box-shadow: 0px 20px 50px 10px #4a1291;
 
+  background-image: url(./images/paper.png);
+  background-size: cover;
+
   &:after {
     content: '';
     position: absolute;
