@@ -18,7 +18,7 @@
   </head>
   <body>
     <!-- Start Screen -->
-    <div id="screenStart" class="screen">
+    <div id="$screenStart" class="screen">
       <div class="flex-row items-center justify-center gap-1">
         <div class="logo-container">
           <img class="logo-icon" src="./images/favicon.png" alt="dobble" />
@@ -58,18 +58,18 @@
             ></circle>
           </svg>
         </div>
-        <div class="card-circle" id="cardPreview">
+        <div class="card-circle" id="$cardPreview">
           <!-- Emojis placed by JS -->
         </div>
       </div>
-      <button id="btnPlay" class="btn-primary btn-hero" data-i18n="btn.play">
+      <button id="$btnPlay" class="btn-primary btn-hero" data-i18n="btn.play">
         играть!
       </button>
-      <button id="btnHowTo" class="btn-secondary" data-i18n="btn.howto">
+      <button id="$btnHowTo" class="btn-secondary" data-i18n="btn.howto">
         Как играть?
       </button>
       <button
-        id="btnOpenSettings"
+        id="$btnOpenSettings"
         class="btn-secondary"
         data-i18n="btn.settings"
       >
@@ -78,7 +78,7 @@
     </div>
 
     <!-- Mode Select Screen -->
-    <div id="screenModeSelect" class="screen" hidden>
+    <div id="$screenModeSelect" class="screen" hidden>
       <div class="mode-trophy" aria-hidden="true">🏆</div>
       <h2 class="mode-title" data-i18n="mode.title">ВЫБЕРИТЕ РЕЖИМ</h2>
 
@@ -106,19 +106,19 @@
         Выбор режима влияет на весь матч
       </p>
       <button
-        id="btnStartWithMode"
+        id="$btnStartWithMode"
         class="btn-primary btn-hero"
         data-i18n="btn.play"
       >
         Играть
       </button>
-      <button id="btnModeBack" class="btn-secondary" data-i18n="btn.exit">
+      <button id="$btnModeBack" class="btn-secondary" data-i18n="btn.exit">
         Выйти
       </button>
     </div>
 
     <!-- How To Play Screen -->
-    <div id="screenHowTo" class="screen" hidden>
+    <div id="$screenHowTo" class="screen" hidden>
       <div class="howto-content flex-col items-center gap-6">
         <h2 data-i18n="howto.title">Как играть?</h2>
         <div class="howto-steps flex-col gap-4">
@@ -147,16 +147,16 @@
             </p>
           </div>
         </div>
-        <button id="btnBackHowTo" class="btn-primary" data-i18n="btn.gotIt">
+        <button id="$btnBackHowTo" class="btn-primary" data-i18n="btn.gotIt">
           Понятно!
         </button>
       </div>
     </div>
 
     <!-- Game Screen -->
-    <div id="screenGame" class="screen" hidden>
+    <div id="$screenGame" class="screen" hidden>
       <div class="game-header flex-row items-center justify-between w-full">
-        <button id="btnExitGame" class="icon-btn" aria-label="Выйти в меню">
+        <button id="$btnExitGame" class="icon-btn" aria-label="Выйти в меню">
           <svg viewBox="0 0 24 24" fill="white" width="28" height="28">
             <path
               d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H9c-1.1 0-2 .9-2 2v3h2V5h10v14H9v-3H7v3c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
@@ -167,22 +167,22 @@
           <div class="hud-item flex-col items-center">
             <span class="hud-icon" aria-hidden="true">⭐</span>
             <span class="hud-label" data-i18n="hud.score">Счёт</span>
-            <span class="hud-value" id="currentScore">0</span>
+            <span class="hud-value" id="$currentScore">0</span>
           </div>
           <div class="hud-item flex-col items-center">
             <span class="hud-icon" aria-hidden="true">🃏</span>
             <span class="hud-label" data-i18n="hud.level">Уровень</span>
-            <span class="hud-value" id="cardsRemaining">0 / 0</span>
+            <span class="hud-value" id="$cardsRemaining">0 / 0</span>
           </div>
           <div class="hud-item flex-col items-center">
             <span class="hud-icon" aria-hidden="true">⏱️</span>
             <span class="hud-label" data-i18n="hud.time">Время</span>
-            <span class="hud-value" id="elapsedTime">0:00</span>
+            <span class="hud-value" id="$elapsedTime">0:00</span>
           </div>
         </div>
-        <button id="btnSound" class="icon-btn" aria-label="Звук">
+        <button id="$btnSound" class="icon-btn" aria-label="Звук">
           <svg
-            id="soundOnIcon"
+            id="$soundOnIcon"
             viewBox="0 0 24 24"
             fill="white"
             width="28"
@@ -193,7 +193,7 @@
             />
           </svg>
           <svg
-            id="soundOffIcon"
+            id="$soundOffIcon"
             viewBox="0 0 24 24"
             fill="white"
             width="28"
@@ -235,7 +235,7 @@
               ></circle>
             </svg>
           </div>
-          <div class="card-circle" id="cardTop">
+          <div class="card-circle" id="$cardTop">
             <!-- Emojis will be placed here by JS -->
           </div>
         </div>
@@ -273,7 +273,7 @@
               ></circle>
             </svg>
           </div>
-          <div class="card-circle" id="cardBottom">
+          <div class="card-circle" id="$cardBottom">
             <!-- Emojis will be placed here by JS -->
           </div>
         </div>
@@ -281,13 +281,13 @@
 
       <div class="game-footer flex-col items-center gap-2">
         <div class="timer-bar">
-          <div class="timer-fill" id="timerFill"></div>
+          <div class="timer-fill" id="$timerFill"></div>
         </div>
       </div>
     </div>
 
     <!-- Pause/Settings Screen -->
-    <div id="screenSettings" class="screen overlay" hidden>
+    <div id="$screenSettings" class="screen overlay" hidden>
       <div class="settings-panel flex-col items-center gap-2">
         <h2 data-i18n="settings.title">Настройки</h2>
 
@@ -295,17 +295,17 @@
           <div class="setting-row">
             <span data-i18n="settings.sound">Звук</span>
             <label class="toggle">
-              <input type="checkbox" id="toggleSound" checked />
+              <input type="checkbox" id="$toggleSound" checked />
               <span class="toggle-slider"></span>
             </label>
           </div>
           <div class="setting-row setting-row-timer">
             <span data-i18n="settings.timer">Таймер на карточку</span>
-            <span class="setting-value" id="timerValue">10 с</span>
+            <span class="setting-value" id="$timerValue">10 с</span>
           </div>
           <input
             type="range"
-            id="timerRange"
+            id="$timerRange"
             class="settings-range"
             min="5"
             max="20"
@@ -314,11 +314,11 @@
           />
           <div class="setting-row setting-row-rotation">
             <span data-i18n="settings.rotation">Поворот иконок</span>
-            <span class="setting-value" id="rotationValue">40°</span>
+            <span class="setting-value" id="$rotationValue">40°</span>
           </div>
           <input
             type="range"
-            id="rotationRange"
+            id="$rotationRange"
             class="settings-range"
             min="0"
             max="360"
@@ -330,7 +330,7 @@
               >Разворот от центра</span
             >
             <label class="toggle">
-              <input type="checkbox" id="toggleRotateByPosition" />
+              <input type="checkbox" id="$toggleRotateByPosition" />
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -338,12 +338,12 @@
             <span class="text-nowrap" data-i18n="settings.emojiSet"
               >Набор эмодзи</span
             >
-            <select id="emojiSetSelect" class="settings-select"></select>
+            <select id="$emojiSetSelect" class="settings-select"></select>
           </div>
 
           <div class="setting-row">
             <span class="text-nowrap" data-i18n="settings.language">Язык</span>
-            <select id="langSelect" class="settings-select"></select>
+            <select id="$langSelect" class="settings-select"></select>
           </div>
 
           <div class="setting-row">
@@ -352,7 +352,7 @@
             >
 
             <button
-              id="btnResetProgress"
+              id="$btnResetProgress"
               class="btn-danger"
               data-i18n="btn.reset"
             >
@@ -361,72 +361,72 @@
           </div>
         </div>
 
-        <button id="btnCloseSettings" class="btn-primary" data-i18n="btn.done">
+        <button id="$btnCloseSettings" class="btn-primary" data-i18n="btn.done">
           Готово
         </button>
       </div>
     </div>
 
     <!-- Reset Confirm Overlay -->
-    <div id="screenResetConfirm" class="screen overlay" hidden>
+    <div id="$screenResetConfirm" class="screen overlay" hidden>
       <div class="confirm-panel flex-col items-center text-center">
         <h2 data-i18n="confirm.resetTitle">Сбросить прогресс?</h2>
         <p data-i18n="confirm.resetMessage">
           Лучший результат будет удалён. Это нельзя отменить.
         </p>
-        <button id="btnConfirmReset" class="btn-danger" data-i18n="btn.reset">
+        <button id="$btnConfirmReset" class="btn-danger" data-i18n="btn.reset">
           Сбросить
         </button>
-        <button id="btnCancelReset" class="btn-primary" data-i18n="btn.cancel">
+        <button id="$btnCancelReset" class="btn-primary" data-i18n="btn.cancel">
           Отмена
         </button>
       </div>
     </div>
 
     <!-- Exit Confirm Overlay -->
-    <div id="screenExitConfirm" class="screen overlay" hidden>
+    <div id="$screenExitConfirm" class="screen overlay" hidden>
       <div class="confirm-panel flex-col items-center text-center">
         <h2 data-i18n="confirm.exitTitle">Выйти из игры?</h2>
         <p data-i18n="confirm.exitMessage">
           Текущий прогресс раунда будет потерян.
         </p>
         <button
-          id="btnContinueGame"
+          id="$btnContinueGame"
           class="btn-primary"
           data-i18n="btn.continue"
         >
           Продолжить
         </button>
-        <button id="btnConfirmExit" class="btn-secondary" data-i18n="btn.exit">
+        <button id="$btnConfirmExit" class="btn-secondary" data-i18n="btn.exit">
           Выйти
         </button>
       </div>
     </div>
 
     <!-- Game Over Screen -->
-    <div id="screenGameOver" class="screen" hidden>
-      <h2 id="gameOverTitle">Отлично!</h2>
+    <div id="$screenGameOver" class="screen" hidden>
+      <h2 id="$gameOverTitle">Отлично!</h2>
       <div class="stats">
         <div class="stat flex-col items-center gap-1">
           <span class="stat-icon" aria-hidden="true">⭐</span>
-          <span class="stat-value" id="finalScore">0</span>
+          <span class="stat-value" id="$finalScore">0</span>
           <span class="stat-label" data-i18n="stat.score">Очки</span>
         </div>
         <div class="stat flex-col items-center gap-1">
           <span class="stat-icon" aria-hidden="true">⏱️</span>
-          <span class="stat-value" id="finalTime">0:00</span>
+          <span class="stat-value" id="$finalTime">0:00</span>
           <span class="stat-label" data-i18n="stat.time">Время</span>
         </div>
         <div class="stat flex-col items-center gap-1">
           <span class="stat-icon" aria-hidden="true">🏆</span>
-          <span class="stat-value" id="finalBest">0:00</span>
+          <span class="stat-value" id="$finalBest">0:00</span>
           <span class="stat-label" data-i18n="stat.best">Лучшее среднее</span>
         </div>
       </div>
-      <button id="btnPlayAgain" class="btn-primary" data-i18n="btn.playAgain">
+      <button id="$btnPlayAgain" class="btn-primary" data-i18n="btn.playAgain">
         Играть снова
       </button>
-      <button id="btnMenu" class="btn-secondary" data-i18n="btn.menu">
+      <button id="$btnMenu" class="btn-secondary" data-i18n="btn.menu">
         В меню
       </button>
     </div>

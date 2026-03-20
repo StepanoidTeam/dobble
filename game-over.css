@@ -1,10 +1,10 @@
 /* ===== Game Over Screen ===== */
-#screenGameOver {
+#\$screenGameOver {
   padding: 40px 20px;
   gap: 24px;
 }
 
-#screenGameOver h2 {
+#\$screenGameOver h2 {
   font-size: 36px;
   color: var(--accent);
 

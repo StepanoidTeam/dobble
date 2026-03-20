@@ -93,35 +93,35 @@ const Game = {
   },
 
   populateEmojiSetOptions() {
-    if (!emojiSetSelect) return;
+    if (!$emojiSetSelect) return;
 
-    emojiSetSelect.innerHTML = '';
+    $emojiSetSelect.innerHTML = '';
     EMOJI_SETS.forEach((setConfig) => {
       const option = document.createElement('option');
       option.value = setConfig.key;
       option.textContent = setConfig.label;
-      emojiSetSelect.appendChild(option);
+      $emojiSetSelect.appendChild(option);
     });
 
-    emojiSetSelect.value = this.selectedEmojiSetKey;
+    $emojiSetSelect.value = this.selectedEmojiSetKey;
   },
 
   populateLangOptions() {
-    if (!langSelect) return;
-    langSelect.innerHTML = '';
+    if (!$langSelect) return;
+    $langSelect.innerHTML = '';
     getSupportedLangs().forEach((lang) => {
       const option = document.createElement('option');
       option.value = lang.key;
       option.textContent = lang.label;
-      langSelect.appendChild(option);
+      $langSelect.appendChild(option);
     });
-    langSelect.value = getLang();
+    $langSelect.value = getLang();
   },
 
   onLangApplied() {
     this.updateTimerDisplay(this.getTimePerCardSeconds());
     this.updateRotationDisplay(this.iconRotationDegrees);
-    if (langSelect) langSelect.value = getLang();
+    if ($langSelect) $langSelect.value = getLang();
   },
 
   loadEmojiSetPreference() {
@@ -162,11 +162,11 @@ const Game = {
     this.timePerCard = snappedSeconds * 1000;
     localStorage.setItem(TIME_PER_CARD_STORAGE_KEY, `${this.timePerCard}`);
     this.updateTimerDisplay(snappedSeconds);
-    if (timerRange) {
-      timerRange.value = `${snappedSeconds}`;
-      updateRangeProgress(timerRange);
+    if ($timerRange) {
+      $timerRange.value = `${snappedSeconds}`;
+      updateRangeProgress($timerRange);
     }
-    if (!screenStart.hidden) {
+    if (!$screenStart.hidden) {
       this.startPreviewCycle();
     }
   },
@@ -179,49 +179,49 @@ const Game = {
       `${this.iconRotationDegrees}`,
     );
     this.updateRotationDisplay(snappedDegrees);
-    if (rotationRange) {
-      rotationRange.value = `${snappedDegrees}`;
-      updateRangeProgress(rotationRange);
+    if ($rotationRange) {
+      $rotationRange.value = `${snappedDegrees}`;
+      updateRangeProgress($rotationRange);
     }
     this.renderPreviewCard();
   },
 
   updateTimerDisplay(seconds) {
-    if (!timerValue) return;
-    timerValue.textContent = t('timer.seconds', { value: seconds });
+    if (!$timerValue) return;
+    $timerValue.textContent = t('timer.seconds', { value: seconds });
   },
 
   updateRotationDisplay(degrees) {
-    if (!rotationValue) return;
-    rotationValue.textContent = t('rotation.degrees', { value: degrees });
+    if (!$rotationValue) return;
+    $rotationValue.textContent = t('rotation.degrees', { value: degrees });
   },
 
   syncSettingsControls() {
-    if (toggleSound) {
-      toggleSound.checked = AudioManager.enabled;
+    if ($toggleSound) {
+      $toggleSound.checked = AudioManager.enabled;
     }
 
-    if (timerRange) {
-      timerRange.min = `${TIME_PER_CARD_MIN_SECONDS}`;
-      timerRange.max = `${TIME_PER_CARD_MAX_SECONDS}`;
-      timerRange.step = `${TIME_PER_CARD_STEP_SECONDS}`;
-      timerRange.value = `${this.getTimePerCardSeconds()}`;
-      updateRangeProgress(timerRange);
+    if ($timerRange) {
+      $timerRange.min = `${TIME_PER_CARD_MIN_SECONDS}`;
+      $timerRange.max = `${TIME_PER_CARD_MAX_SECONDS}`;
+      $timerRange.step = `${TIME_PER_CARD_STEP_SECONDS}`;
+      $timerRange.value = `${this.getTimePerCardSeconds()}`;
+      updateRangeProgress($timerRange);
     }
 
-    if (rotationRange) {
-      rotationRange.min = `${ICON_ROTATION_MIN_DEGREES}`;
-      rotationRange.max = `${ICON_ROTATION_MAX_DEGREES}`;
-      rotationRange.step = `${ICON_ROTATION_STEP_DEGREES}`;
-      rotationRange.value = `${this.iconRotationDegrees}`;
-      updateRangeProgress(rotationRange);
+    if ($rotationRange) {
+      $rotationRange.min = `${ICON_ROTATION_MIN_DEGREES}`;
+      $rotationRange.max = `${ICON_ROTATION_MAX_DEGREES}`;
+      $rotationRange.step = `${ICON_ROTATION_STEP_DEGREES}`;
+      $rotationRange.value = `${this.iconRotationDegrees}`;
+      updateRangeProgress($rotationRange);
     }
 
     this.updateTimerDisplay(this.getTimePerCardSeconds());
     this.updateRotationDisplay(this.iconRotationDegrees);
 
-    if (toggleRotateByPosition) {
-      toggleRotateByPosition.checked = this.rotateByPosition;
+    if ($toggleRotateByPosition) {
+      $toggleRotateByPosition.checked = this.rotateByPosition;
     }
   },
 
@@ -257,41 +257,45 @@ const Game = {
       logoIcon.classList.add(currentLogoMod);
     });
 
-    btnPlay.addEventListener('click', () => this.showScreen(screenModeSelect));
-    btnStartWithMode.addEventListener('click', () => this.startGame());
-    btnModeBack.addEventListener('click', () => this.showScreen(screenStart));
+    $btnPlay.addEventListener('click', () =>
+      this.showScreen($screenModeSelect),
+    );
+    $btnStartWithMode.addEventListener('click', () => this.startGame());
+    $btnModeBack.addEventListener('click', () => this.showScreen($screenStart));
     document.querySelectorAll('.mode-card').forEach((card) => {
       card.addEventListener('click', () => this.selectMode(card.dataset.mode));
     });
-    btnHowTo.addEventListener('click', () => this.showScreen(screenHowTo));
-    btnOpenSettings.addEventListener('click', () => this.openSettings());
-    btnBackHowTo.addEventListener('click', () => this.showScreen(screenStart));
-    btnExitGame.addEventListener('click', () => this.openExitConfirm());
-    btnSound.addEventListener('click', () => this.toggleSound());
-    btnCloseSettings.addEventListener('click', () =>
-      this.showScreen(screenStart),
+    $btnHowTo.addEventListener('click', () => this.showScreen($screenHowTo));
+    $btnOpenSettings.addEventListener('click', () => this.openSettings());
+    $btnBackHowTo.addEventListener('click', () =>
+      this.showScreen($screenStart),
     );
-    btnResetProgress.addEventListener('click', () => {
-      screenResetConfirm.hidden = false;
+    $btnExitGame.addEventListener('click', () => this.openExitConfirm());
+    $btnSound.addEventListener('click', () => this.toggleSound());
+    $btnCloseSettings.addEventListener('click', () =>
+      this.showScreen($screenStart),
+    );
+    $btnResetProgress.addEventListener('click', () => {
+      $screenResetConfirm.hidden = false;
     });
-    btnConfirmReset.addEventListener('click', () => this.resetProgress());
-    btnCancelReset.addEventListener('click', () => {
-      screenResetConfirm.hidden = true;
+    $btnConfirmReset.addEventListener('click', () => this.resetProgress());
+    $btnCancelReset.addEventListener('click', () => {
+      $screenResetConfirm.hidden = true;
     });
-    btnContinueGame.addEventListener('click', () =>
+    $btnContinueGame.addEventListener('click', () =>
       this.continueAfterConfirm(),
     );
-    btnConfirmExit.addEventListener('click', () => this.quitGame());
-    btnPlayAgain.addEventListener('click', () => this.startGame());
-    btnMenu.addEventListener('click', () => this.quitGame());
+    $btnConfirmExit.addEventListener('click', () => this.quitGame());
+    $btnPlayAgain.addEventListener('click', () => this.startGame());
+    $btnMenu.addEventListener('click', () => this.quitGame());
 
-    toggleSound.addEventListener('change', (e) => {
+    $toggleSound.addEventListener('change', (e) => {
       AudioManager.enabled = e.target.checked;
       this.updateSoundIcon();
     });
 
-    if (toggleRotateByPosition) {
-      toggleRotateByPosition.addEventListener('change', (e) => {
+    if ($toggleRotateByPosition) {
+      $toggleRotateByPosition.addEventListener('change', (e) => {
         this.rotateByPosition = e.target.checked;
         localStorage.setItem(
           ROTATE_BY_POSITION_STORAGE_KEY,
@@ -301,8 +305,8 @@ const Game = {
       });
     }
 
-    if (timerRange) {
-      timerRange.addEventListener('input', (e) => {
+    if ($timerRange) {
+      $timerRange.addEventListener('input', (e) => {
         updateRangeProgress(e.target);
         const nextValue = parseInt(e.target.value, 10);
         if (Number.isNaN(nextValue)) return;
@@ -310,8 +314,8 @@ const Game = {
       });
     }
 
-    if (rotationRange) {
-      rotationRange.addEventListener('input', (e) => {
+    if ($rotationRange) {
+      $rotationRange.addEventListener('input', (e) => {
         updateRangeProgress(e.target);
         const nextValue = parseInt(e.target.value, 10);
         if (Number.isNaN(nextValue)) return;
@@ -319,9 +323,9 @@ const Game = {
       });
     }
 
-    if (!emojiSetSelect) return;
+    if (!$emojiSetSelect) return;
 
-    emojiSetSelect.addEventListener('change', (e) => {
+    $emojiSetSelect.addEventListener('change', (e) => {
       const nextSetKey = e.target.value;
       if (!EMOJI_SETS.find((x) => x.key === nextSetKey)) return;
 
@@ -330,8 +334,8 @@ const Game = {
       this.renderPreviewCard();
     });
 
-    if (langSelect) {
-      langSelect.addEventListener('change', (e) => {
+    if ($langSelect) {
+      $langSelect.addEventListener('change', (e) => {
         setLang(e.target.value, () => this.onLangApplied());
       });
     }
@@ -352,7 +356,7 @@ const Game = {
 
   openSettings() {
     this.syncSettingsControls();
-    this.showScreen(screenSettings);
+    this.showScreen($screenSettings);
   },
 
   openExitConfirm() {
@@ -361,19 +365,19 @@ const Game = {
     this.pausedCardElapsed = Date.now() - this.cardStartTime;
     this.isPlaying = false;
     this.stopCardTimer();
-    this.showScreen(screenGame);
-    screenExitConfirm.hidden = false;
+    this.showScreen($screenGame);
+    $screenExitConfirm.hidden = false;
   },
 
   continueAfterConfirm() {
-    screenExitConfirm.hidden = true;
+    $screenExitConfirm.hidden = true;
     this.isPlaying = true;
     this.startCardTimer(this.pausedCardElapsed);
     this.pausedCardElapsed = 0;
   },
 
   startPreviewCycle() {
-    if (!this.previewCardRing || screenStart.hidden) {
+    if (!this.previewCardRing || $screenStart.hidden) {
       return;
     }
 
@@ -382,7 +386,7 @@ const Game = {
     updateRingProgress(this.previewCardRing, 1);
 
     const tick = () => {
-      if (screenStart.hidden) {
+      if ($screenStart.hidden) {
         this.stopPreviewCycle();
         return;
       }
@@ -418,7 +422,7 @@ const Game = {
       0,
       symbolsPerCard,
     );
-    positionEmojis(previewSymbols, cardPreview, false, null, {
+    positionEmojis(previewSymbols, $cardPreview, false, null, {
       rotationRangeDegrees: this.iconRotationDegrees,
       rotateByPosition: this.rotateByPosition,
     });
@@ -433,7 +437,7 @@ const Game = {
 
   updateElapsedTime() {
     const elapsed = this.startTime > 0 ? Date.now() - this.startTime : 0;
-    elapsedTime.textContent = this.formatElapsedTime(elapsed);
+    $elapsedTime.textContent = this.formatElapsedTime(elapsed);
   },
 
   flash(feedbackType) {
@@ -473,7 +477,7 @@ const Game = {
     document.querySelectorAll('.screen').forEach((s) => (s.hidden = true));
     if (screenEl) screenEl.hidden = false;
 
-    if (screenEl === screenStart) {
+    if (screenEl === $screenStart) {
       this.renderPreviewCard();
       this.startPreviewCycle();
     } else {
@@ -498,7 +502,7 @@ const Game = {
     this.isPlaying = true;
     this.isInputLocked = false;
 
-    currentScore.textContent = '0';
+    $currentScore.textContent = '0';
     this.updateElapsedTime();
 
     // Set up first pair
@@ -508,7 +512,7 @@ const Game = {
     this.renderCards();
     this.updateCardsRemaining();
     this.startCardTimer();
-    this.showScreen(screenGame);
+    this.showScreen($screenGame);
   },
 
   renderCards() {
@@ -517,19 +521,19 @@ const Game = {
       rotationRangeDegrees: this.iconRotationDegrees,
       rotateByPosition: this.rotateByPosition,
     };
-    positionEmojis(this.topCard, cardTop, true, onSymbolClick, layoutOptions);
+    positionEmojis(this.topCard, $cardTop, true, onSymbolClick, layoutOptions);
     positionEmojis(
       this.bottomCard,
-      cardBottom,
+      $cardBottom,
       true,
       onSymbolClick,
       layoutOptions,
     );
 
     // Animate new cards
-    cardTop.classList.remove('card-enter');
-    void cardTop.offsetWidth;
-    cardTop.classList.add('card-enter');
+    $cardTop.classList.remove('card-enter');
+    void $cardTop.offsetWidth;
+    $cardTop.classList.add('card-enter');
   },
 
   handleSymbolClick(symbol, el) {
@@ -553,7 +557,7 @@ const Game = {
         Math.floor((1 - elapsed / this.timePerCard) * 100),
       );
       this.score += 100 + timeBonus;
-      currentScore.textContent = this.score;
+      $currentScore.textContent = this.score;
 
       // Next card
       this.currentCardIndex++;
@@ -579,7 +583,7 @@ const Game = {
 
       // Penalty
       this.score -= 25;
-      currentScore.textContent = this.score;
+      $currentScore.textContent = this.score;
 
       if (this.showHintOnWrong) {
         this.highlightCommonSymbol();
@@ -612,10 +616,10 @@ const Game = {
     this.stopCardTimer();
 
     const initialRemaining = Math.max(0, 1 - initialElapsed / this.timePerCard);
-    timerFill.style.width = `${roundUiNumber(initialRemaining * 100)}%`;
-    timerFill.classList.remove('warning');
+    $timerFill.style.width = `${roundUiNumber(initialRemaining * 100)}%`;
+    $timerFill.classList.remove('warning');
     if (initialRemaining < 0.3) {
-      timerFill.classList.add('warning');
+      $timerFill.classList.add('warning');
     }
 
     updateRingProgress(this.gameCardRings, initialRemaining);
@@ -630,11 +634,11 @@ const Game = {
       const remaining = Math.max(0, 1 - elapsed / this.timePerCard);
       this.updateElapsedTime();
 
-      timerFill.style.width = `${roundUiNumber(remaining * 100)}%`;
+      $timerFill.style.width = `${roundUiNumber(remaining * 100)}%`;
       updateRingProgress(this.gameCardRings, remaining);
 
       if (remaining < 0.3) {
-        timerFill.classList.add('warning');
+        $timerFill.classList.add('warning');
       }
 
       if (remaining <= 0) {
@@ -661,7 +665,7 @@ const Game = {
   updateCardsRemaining() {
     const total = Math.max(0, this.deck.length - 1);
     const done = Math.max(0, this.currentCardIndex - 1);
-    cardsRemaining.textContent = `${done} / ${total}`;
+    $cardsRemaining.textContent = `${done} / ${total}`;
   },
 
   quitGame() {
@@ -669,21 +673,21 @@ const Game = {
     this.isInputLocked = false;
     this.stopCardTimer();
     this.pausedCardElapsed = 0;
-    screenExitConfirm.hidden = true;
-    this.showScreen(screenStart);
+    $screenExitConfirm.hidden = true;
+    this.showScreen($screenStart);
   },
 
   endGame(won) {
     this.isPlaying = false;
     this.isInputLocked = false;
     this.stopCardTimer();
-    screenExitConfirm.hidden = true;
+    $screenExitConfirm.hidden = true;
 
     const elapsedMs = Date.now() - this.startTime;
 
-    gameOverTitle.textContent = won ? t('gameover.win') : t('gameover.lose');
-    finalScore.textContent = this.score;
-    finalTime.textContent = this.formatElapsedTime(elapsedMs);
+    $gameOverTitle.textContent = won ? t('gameover.win') : t('gameover.lose');
+    $finalScore.textContent = this.score;
+    $finalTime.textContent = this.formatElapsedTime(elapsedMs);
 
     // Best score from localStorage
     const bestKey = 'dobble_best_score';
@@ -691,30 +695,30 @@ const Game = {
     if (this.score > prevBest) {
       localStorage.setItem(bestKey, this.score.toString());
     }
-    finalBest.textContent = Math.max(this.score, prevBest);
+    $finalBest.textContent = Math.max(this.score, prevBest);
 
     AudioManager.play('gameover');
-    this.showScreen(screenGameOver);
+    this.showScreen($screenGameOver);
   },
 
   resetProgress() {
     localStorage.removeItem('dobble_best_score');
-    screenResetConfirm.hidden = true;
+    $screenResetConfirm.hidden = true;
   },
 
   toggleSound() {
     const enabled = AudioManager.toggle();
     this.updateSoundIcon();
-    toggleSound.checked = enabled;
+    $toggleSound.checked = enabled;
   },
 
   updateSoundIcon() {
     if (AudioManager.enabled) {
-      soundOnIcon.style.display = '';
-      soundOffIcon.style.display = 'none';
+      $soundOnIcon.style.display = '';
+      $soundOffIcon.style.display = 'none';
     } else {
-      soundOnIcon.style.display = 'none';
-      soundOffIcon.style.display = '';
+      $soundOnIcon.style.display = 'none';
+      $soundOffIcon.style.display = '';
     }
   },
 };
