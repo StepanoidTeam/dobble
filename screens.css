@@ -10,10 +10,6 @@
   z-index: 1;
 }
 
-.screen[hidden] {
-  display: none;
-}
-
 .screen.overlay {
   z-index: 1;
   background: var(--overlay);

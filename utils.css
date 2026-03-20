@@ -4,9 +4,10 @@
 .flex {
   display: flex;
 }
+
 .hidden,
 [hidden] {
-  display: none;
+  display: none !important;
 }
 
 /* -- Direction -- */

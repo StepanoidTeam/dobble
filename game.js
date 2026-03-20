@@ -32,6 +32,9 @@ import {
 import './app-version.js';
 import './firebase.js';
 
+const FEEDBACK_CORRECT = 'correct';
+const FEEDBACK_WRONG = 'wrong';
+
 // ===== Game State =====
 const Game = {
   deck: [],
@@ -420,19 +423,41 @@ const Game = {
     elapsedTime.textContent = this.formatElapsedTime(elapsed);
   },
 
-  flash(type) {
+  flash(feedbackType) {
     this.flashOverlay.className = 'flash-overlay';
     // Force reflow
     void this.flashOverlay.offsetWidth;
     this.flashOverlay.classList.add(
-      type === 'correct' ? 'flash-correct' : 'flash-wrong',
+      feedbackType === FEEDBACK_CORRECT ? 'flash-correct' : 'flash-wrong',
     );
   },
 
+  showFeedbackIcon(feedbackType) {
+    const $icon = $feedbackIcon;
+
+    const iconImgs = {
+      [FEEDBACK_CORRECT]: 'icon-correct',
+      [FEEDBACK_WRONG]: 'icon-wrong',
+    };
+
+    const $img = document.querySelector(`.${iconImgs[feedbackType]}`);
+
+    $img.hidden = false;
+
+    $icon.hidden = false;
+    // Re-trigger animation
+    $img.style.animation = 'none';
+    void $img.offsetWidth;
+    $img.style.animation = '';
+    clearTimeout(this._feedbackTimer);
+    this._feedbackTimer = setTimeout(() => {
+      $icon.hidden = true;
+      $img.hidden = true;
+    }, 500);
+  },
+
   showScreen(screenEl) {
-    document
-      .querySelectorAll('.screen')
-      .forEach((s) => (s.hidden = true));
+    document.querySelectorAll('.screen').forEach((s) => (s.hidden = true));
     if (screenEl) screenEl.hidden = false;
 
     if (screenEl === screenStart) {
@@ -503,9 +528,10 @@ const Game = {
       this.isInputLocked = true;
 
       // Correct!
-      el.classList.add('correct');
-      this.flash('correct');
-      AudioManager.play('correct');
+      el.classList.add(FEEDBACK_CORRECT);
+      this.flash(FEEDBACK_CORRECT);
+      this.showFeedbackIcon(FEEDBACK_CORRECT);
+      AudioManager.play(FEEDBACK_CORRECT);
 
       // Score based on remaining time
       const elapsed = Date.now() - this.cardStartTime;
@@ -533,9 +559,10 @@ const Game = {
       }
     } else {
       // Wrong!
-      el.classList.add('wrong');
-      this.flash('wrong');
-      AudioManager.play('wrong');
+      el.classList.add(FEEDBACK_WRONG);
+      this.flash(FEEDBACK_WRONG);
+      this.showFeedbackIcon(FEEDBACK_WRONG);
+      AudioManager.play(FEEDBACK_WRONG);
 
       // Penalty
       this.score = Math.max(0, this.score - 5);
@@ -545,7 +572,7 @@ const Game = {
         this.highlightCommonSymbol();
       }
       setTimeout(() => {
-        el.classList.remove('wrong');
+        el.classList.remove(FEEDBACK_WRONG);
         this.clearHints();
       }, 1200);
     }
