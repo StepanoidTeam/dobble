@@ -21,48 +21,48 @@ input[type='range'] {
   -webkit-appearance: none;
   accent-color: var(--accent);
   height: var(--thumb-size);
-}
 
-input[type='range']::-webkit-slider-runnable-track {
-  height: var(--track-height);
-  background:
-    linear-gradient(90deg, #ffe566 0%, var(--accent) 100%) left center /
-      var(--range-progress) 100% no-repeat,
-    var(--ring-purple);
-  border-radius: 999px;
-}
+  &::-webkit-slider-runnable-track {
+    height: var(--track-height);
+    background:
+      linear-gradient(90deg, #ffe566 0%, var(--accent) 100%) left center /
+        var(--range-progress) 100% no-repeat,
+      var(--ring-purple);
+    border-radius: 999px;
+  }
 
-input[type='range']::-webkit-slider-thumb {
-  appearance: none;
-  -webkit-appearance: none;
-  border: var(--thumb-stroke-width) solid var(--thumb-stroke);
-  height: var(--thumb-size);
-  width: var(--thumb-size);
-  border-radius: 50%;
-  background-color: var(--thumb-fill);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-  margin-top: calc((var(--track-height) - var(--thumb-size)) / 2);
-  cursor: pointer;
-}
+  &::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    border: var(--thumb-stroke-width) solid var(--thumb-stroke);
+    height: var(--thumb-size);
+    width: var(--thumb-size);
+    border-radius: 50%;
+    background-color: var(--thumb-fill);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    margin-top: calc((var(--track-height) - var(--thumb-size)) / 2);
+    cursor: pointer;
+  }
 
-input[type='range']::-moz-range-track {
-  height: var(--track-height);
-  background: var(--ring-purple);
-  border-radius: 999px;
-}
+  &::-moz-range-track {
+    height: var(--track-height);
+    background: var(--ring-purple);
+    border-radius: 999px;
+  }
 
-input[type='range']::-moz-range-progress {
-  height: var(--track-height);
-  background: linear-gradient(90deg, #ffe566 0%, var(--accent) 100%);
-  border-radius: 999px;
-}
+  &::-moz-range-progress {
+    height: var(--track-height);
+    background: linear-gradient(90deg, #ffe566 0%, var(--accent) 100%);
+    border-radius: 999px;
+  }
 
-input[type='range']::-moz-range-thumb {
-  border: var(--thumb-stroke-width) solid var(--thumb-stroke);
-  height: var(--thumb-size);
-  width: var(--thumb-size);
-  border-radius: 50%;
-  background-color: var(--thumb-fill);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-  cursor: pointer;
+  &::-moz-range-thumb {
+    border: var(--thumb-stroke-width) solid var(--thumb-stroke);
+    height: var(--thumb-size);
+    width: var(--thumb-size);
+    border-radius: 50%;
+    background-color: var(--thumb-fill);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+  }
 }

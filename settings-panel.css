@@ -7,11 +7,11 @@
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
 
   max-height: 100vh;
-}
 
-.settings-panel h2 {
-  font-size: 24px;
-  color: var(--accent);
+  h2 {
+    font-size: 24px;
+    color: var(--accent);
+  }
 }
 
 .settings-content {
@@ -29,17 +29,17 @@
   width: min(85vw, 340px);
   gap: 14px;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
-}
 
-.confirm-panel h2 {
-  font-size: 24px;
-  color: var(--accent);
-}
+  h2 {
+    font-size: 24px;
+    color: var(--accent);
+  }
 
-.confirm-panel p {
-  opacity: 0.85;
-  font-size: 14px;
-  margin-bottom: 6px;
+  p {
+    opacity: 0.85;
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
 }
 
 /* ===== Setting Rows ===== */
@@ -50,14 +50,14 @@
   width: 100%;
   padding: 8px 0;
   gap: 8px;
+
+  span {
+    font-size: 16px;
+  }
 }
 
 .text-nowrap {
   text-wrap-mode: nowrap;
-}
-
-.setting-row span {
-  font-size: 16px;
 }
 
 .setting-value {
@@ -71,43 +71,43 @@
   display: inline-block;
   width: 52px;
   height: 28px;
-}
 
-.toggle input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
 
-.toggle-slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 14px;
-  transition: 0.3s;
-}
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 14px;
+    transition: 0.3s;
 
-.toggle-slider::before {
-  content: '';
-  position: absolute;
-  height: 22px;
-  width: 22px;
-  left: 3px;
-  bottom: 3px;
-  background: white;
-  border: 2px solid var(--bg-primary);
-  border-radius: 50%;
-  transition: 0.3s;
-}
+    &::before {
+      content: '';
+      position: absolute;
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      border: 2px solid var(--bg-primary);
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+  }
 
-.toggle input:checked + .toggle-slider {
-  background: var(--accent);
-}
+  input:checked + .toggle-slider {
+    background: var(--accent);
 
-.toggle input:checked + .toggle-slider::before {
-  transform: translateX(24px);
+    &::before {
+      transform: translateX(24px);
+    }
+  }
 }

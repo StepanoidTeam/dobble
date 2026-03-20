@@ -17,15 +17,15 @@
   background-position: right 12px center;
   background-size: 14px 10px;
 
-  .settings-select:focus {
+  &:focus {
     border-color: rgba(245, 197, 24, 0.8);
   }
 
-  .settings-select::-ms-expand {
+  &::-ms-expand {
     display: none;
   }
 
-  .settings-select option {
+  option {
     color: #1b0d2f;
   }
 }
