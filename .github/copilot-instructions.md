@@ -13,7 +13,8 @@
 
 - Variables and functions: `camelCase`
 - Constants: `ALL_CAPS`
-- All DOM element references: prefix with `$` (e.g., `$btnStart`, `$cardLeft`) — applies to every variable holding a DOM element, not just cached ones
+- Single DOM element references: prefix with `$` (e.g., `$btnStart`, `$cardLeft`) — applies to every variable holding a DOM element, not just cached ones
+- Collections of DOM elements (arrays, NodeLists): prefix with `$$` (e.g., `$$modeCards`, `$$gameCardRings`) — mirrors the DevTools `$$()` convention
 - CSS classes in JS: `kebab-case` strings
 
 ### Module structure

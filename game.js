@@ -52,8 +52,9 @@ const Game = {
   cardStartTime: 0,
   previewCardStartTime: 0,
   pausedCardElapsed: 0,
-  gameCardRings: [],
-  previewCardRing: null,
+  $$gameCardRings: [],
+  $previewCardRing: null,
+  $flashOverlay: null,
   isPlaying: false,
   isInputLocked: false,
   showHintOnWrong: true,
@@ -81,7 +82,7 @@ const Game = {
   },
 
   cacheGameCardRings() {
-    this.gameCardRings = Array.from(
+    this.$$gameCardRings = Array.from(
       document.querySelectorAll(
         '.card-top .card-ring, .card-bottom .card-ring',
       ),
@@ -89,7 +90,7 @@ const Game = {
   },
 
   cachePreviewCardRing() {
-    this.previewCardRing = document.querySelector('.card-preview .card-ring');
+    this.$previewCardRing = document.querySelector('.card-preview .card-ring');
   },
 
   populateEmojiSetOptions() {
@@ -97,10 +98,10 @@ const Game = {
 
     $emojiSetSelect.innerHTML = '';
     EMOJI_SETS.forEach((setConfig) => {
-      const option = document.createElement('option');
-      option.value = setConfig.key;
-      option.textContent = setConfig.label;
-      $emojiSetSelect.appendChild(option);
+      const $option = document.createElement('option');
+      $option.value = setConfig.key;
+      $option.textContent = setConfig.label;
+      $emojiSetSelect.appendChild($option);
     });
 
     $emojiSetSelect.value = this.selectedEmojiSetKey;
@@ -110,10 +111,10 @@ const Game = {
     if (!$langSelect) return;
     $langSelect.innerHTML = '';
     getSupportedLangs().forEach((lang) => {
-      const option = document.createElement('option');
-      option.value = lang.key;
-      option.textContent = lang.label;
-      $langSelect.appendChild(option);
+      const $option = document.createElement('option');
+      $option.value = lang.key;
+      $option.textContent = lang.label;
+      $langSelect.appendChild($option);
     });
     $langSelect.value = getLang();
   },
@@ -239,7 +240,7 @@ const Game = {
   },
 
   bindEvents() {
-    const logoIcon = document.querySelector('.logo-icon');
+    const $logoIcon = document.querySelector('.logo-icon');
     const logoMods = [
       'sepia',
       'blur',
@@ -251,10 +252,10 @@ const Game = {
       'bubble',
     ];
     let currentLogoMod = null;
-    logoIcon.addEventListener('click', () => {
-      if (currentLogoMod) logoIcon.classList.remove(currentLogoMod);
+    $logoIcon.addEventListener('click', () => {
+      if (currentLogoMod) $logoIcon.classList.remove(currentLogoMod);
       currentLogoMod = sample(logoMods.filter((m) => m !== currentLogoMod));
-      logoIcon.classList.add(currentLogoMod);
+      $logoIcon.classList.add(currentLogoMod);
     });
 
     $btnPlay.addEventListener('click', () =>
@@ -262,8 +263,10 @@ const Game = {
     );
     $btnStartWithMode.addEventListener('click', () => this.startGame());
     $btnModeBack.addEventListener('click', () => this.showScreen($screenStart));
-    document.querySelectorAll('.mode-card').forEach((card) => {
-      card.addEventListener('click', () => this.selectMode(card.dataset.mode));
+    document.querySelectorAll('.mode-card').forEach(($card) => {
+      $card.addEventListener('click', () =>
+        this.selectMode($card.dataset.mode),
+      );
     });
     $btnHowTo.addEventListener('click', () => this.showScreen($screenHowTo));
     $btnOpenSettings.addEventListener('click', () => this.openSettings());
@@ -342,15 +345,18 @@ const Game = {
   },
 
   createFlashOverlay() {
-    this.flashOverlay = document.createElement('div');
-    this.flashOverlay.classList.add('flash-overlay');
-    document.body.appendChild(this.flashOverlay);
+    this.$flashOverlay = document.createElement('div');
+    this.$flashOverlay.classList.add('flash-overlay');
+    document.body.appendChild(this.$flashOverlay);
   },
 
   selectMode(mode) {
     this.selectedMode = mode;
-    document.querySelectorAll('.mode-card').forEach((card) => {
-      card.classList.toggle('mode-card--selected', card.dataset.mode === mode);
+    document.querySelectorAll('.mode-card').forEach(($card) => {
+      $card.classList.toggle(
+        'mode-card--selected',
+        $card.dataset.mode === mode,
+      );
     });
   },
 
@@ -377,13 +383,13 @@ const Game = {
   },
 
   startPreviewCycle() {
-    if (!this.previewCardRing || $screenStart.hidden) {
+    if (!this.$previewCardRing || $screenStart.hidden) {
       return;
     }
 
     this.stopPreviewCycle();
     this.previewCardStartTime = Date.now();
-    updateRingProgress(this.previewCardRing, 1);
+    updateRingProgress(this.$previewCardRing, 1);
 
     const tick = () => {
       if ($screenStart.hidden) {
@@ -394,12 +400,12 @@ const Game = {
       const elapsed = Date.now() - this.previewCardStartTime;
       const remaining = Math.max(0, 1 - elapsed / this.timePerCard);
 
-      updateRingProgress(this.previewCardRing, remaining);
+      updateRingProgress(this.$previewCardRing, remaining);
 
       if (remaining <= 0) {
         this.renderPreviewCard();
         this.previewCardStartTime = Date.now();
-        updateRingProgress(this.previewCardRing, 1);
+        updateRingProgress(this.$previewCardRing, 1);
       }
 
       this.previewAnimationFrameId = requestAnimationFrame(tick);
@@ -441,10 +447,10 @@ const Game = {
   },
 
   flash(feedbackType) {
-    this.flashOverlay.className = 'flash-overlay';
+    this.$flashOverlay.className = 'flash-overlay';
     // Force reflow
-    void this.flashOverlay.offsetWidth;
-    this.flashOverlay.classList.add(
+    void this.$flashOverlay.offsetWidth;
+    this.$flashOverlay.classList.add(
       feedbackType === FEEDBACK_CORRECT ? 'flash-correct' : 'flash-wrong',
     );
   },
@@ -473,11 +479,13 @@ const Game = {
     }, 500);
   },
 
-  showScreen(screenEl) {
-    document.querySelectorAll('.screen').forEach((s) => (s.hidden = true));
-    if (screenEl) screenEl.hidden = false;
+  showScreen($screenEl) {
+    document
+      .querySelectorAll('.screen')
+      .forEach(($screen) => ($screen.hidden = true));
+    if ($screenEl) $screenEl.hidden = false;
 
-    if (screenEl === $screenStart) {
+    if ($screenEl === $screenStart) {
       this.renderPreviewCard();
       this.startPreviewCycle();
     } else {
@@ -516,7 +524,7 @@ const Game = {
   },
 
   renderCards() {
-    const onSymbolClick = (symbol, el) => this.handleSymbolClick(symbol, el);
+    const onSymbolClick = (symbol, $el) => this.handleSymbolClick(symbol, $el);
     const layoutOptions = {
       rotationRangeDegrees: this.iconRotationDegrees,
       rotateByPosition: this.rotateByPosition,
@@ -536,7 +544,7 @@ const Game = {
     $cardTop.classList.add('card-enter');
   },
 
-  handleSymbolClick(symbol, el) {
+  handleSymbolClick(symbol, $el) {
     if (!this.isPlaying || this.isInputLocked) return;
 
     const commonSymbol = findCommonSymbol(this.topCard, this.bottomCard);
@@ -545,7 +553,7 @@ const Game = {
       this.isInputLocked = true;
 
       // Correct!
-      el.classList.add(FEEDBACK_CORRECT);
+      $el.classList.add(FEEDBACK_CORRECT);
       this.flash(FEEDBACK_CORRECT);
       this.showFeedbackIcon(FEEDBACK_CORRECT);
       AudioManager.play(FEEDBACK_CORRECT);
@@ -576,7 +584,7 @@ const Game = {
       }
     } else {
       // Wrong!
-      el.classList.add(FEEDBACK_WRONG);
+      $el.classList.add(FEEDBACK_WRONG);
       this.flash(FEEDBACK_WRONG);
       this.showFeedbackIcon(FEEDBACK_WRONG);
       AudioManager.play(FEEDBACK_WRONG);
@@ -589,7 +597,7 @@ const Game = {
         this.highlightCommonSymbol();
       }
       setTimeout(() => {
-        el.classList.remove(FEEDBACK_WRONG);
+        $el.classList.remove(FEEDBACK_WRONG);
         this.clearHints();
       }, 1200);
     }
@@ -598,16 +606,16 @@ const Game = {
   highlightCommonSymbol() {
     const commonSymbol = findCommonSymbol(this.topCard, this.bottomCard);
     if (!commonSymbol) return;
-    document.querySelectorAll('.emoji-item').forEach((el) => {
-      if (el.dataset.symbol === commonSymbol) {
-        el.classList.add('hint');
+    document.querySelectorAll('.emoji-item').forEach(($el) => {
+      if ($el.dataset.symbol === commonSymbol) {
+        $el.classList.add('hint');
       }
     });
   },
 
   clearHints() {
-    document.querySelectorAll('.emoji-item.hint').forEach((el) => {
-      el.classList.remove('hint');
+    document.querySelectorAll('.emoji-item.hint').forEach(($el) => {
+      $el.classList.remove('hint');
     });
   },
 
@@ -622,7 +630,7 @@ const Game = {
       $timerFill.classList.add('warning');
     }
 
-    updateRingProgress(this.gameCardRings, initialRemaining);
+    updateRingProgress(this.$$gameCardRings, initialRemaining);
 
     const tick = () => {
       if (!this.isPlaying) {
@@ -635,7 +643,7 @@ const Game = {
       this.updateElapsedTime();
 
       $timerFill.style.width = `${roundUiNumber(remaining * 100)}%`;
-      updateRingProgress(this.gameCardRings, remaining);
+      updateRingProgress(this.$$gameCardRings, remaining);
 
       if (remaining < 0.3) {
         $timerFill.classList.add('warning');

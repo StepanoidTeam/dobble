@@ -44,9 +44,9 @@ export function setCardRingSegments(cardRingEl, config = {}) {
 }
 
 export function initCardRings() {
-  const cardRings = document.querySelectorAll('.card-ring');
-  cardRings.forEach((cardRingEl, index) => {
-    setCardRingSegments(cardRingEl, {
+  const $$cardRings = document.querySelectorAll('.card-ring');
+  $$cardRings.forEach(($cardRingEl, index) => {
+    setCardRingSegments($cardRingEl, {
       firstLength: index === 0 ? 20 : 18,
       firstStart: 8,
       secondLength: index === 0 ? 16 : 18,
@@ -108,10 +108,10 @@ export function positionEmojis(
 
   // Place one emoji in center, rest around
   shuffledCard.forEach((symbol, i) => {
-    const el = document.createElement('div');
-    el.classList.add('emoji-item');
-    el.textContent = symbol;
-    el.dataset.symbol = symbol;
+    const $el = document.createElement('div');
+    $el.classList.add('emoji-item');
+    $el.textContent = symbol;
+    $el.dataset.symbol = symbol;
 
     let x, y;
     let posAngleDeg = 0;
@@ -126,8 +126,8 @@ export function positionEmojis(
       posAngleDeg = (angle * 180) / Math.PI - 90; // outward direction
     }
 
-    el.style.left = `${roundUiNumber(x)}%`;
-    el.style.top = `${roundUiNumber(y)}%`;
+    $el.style.left = `${roundUiNumber(x)}%`;
+    $el.style.top = `${roundUiNumber(y)}%`;
 
     // Size variation + rotation aligned to position with jitter
     const sizeVariation = 0.9 + Math.random() * 0.35;
@@ -137,16 +137,16 @@ export function positionEmojis(
         : -rotationRangeDegrees / 2 + Math.random() * rotationRangeDegrees;
     const rotation =
       i === 0 ? jitter : (rotateByPosition ? posAngleDeg : 0) + jitter;
-    el.style.scale = `${roundUiNumber(sizeVariation)}`;
-    el.style.rotate = `${roundUiNumber(rotation)}deg`;
+    $el.style.scale = `${roundUiNumber(sizeVariation)}`;
+    $el.style.rotate = `${roundUiNumber(rotation)}deg`;
 
     if (isClickable && onSymbolClick) {
-      el.addEventListener('click', (e) => {
+      $el.addEventListener('click', (e) => {
         e.preventDefault();
-        onSymbolClick(symbol, el);
+        onSymbolClick(symbol, $el);
       });
     }
 
-    containerEl.appendChild(el);
+    containerEl.appendChild($el);
   });
 }
