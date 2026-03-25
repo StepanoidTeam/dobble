@@ -16,6 +16,7 @@ import {
   TIME_PER_CARD_STORAGE_KEY,
   ICON_ROTATION_STORAGE_KEY,
   ROTATE_BY_POSITION_STORAGE_KEY,
+  CUSTOM_EMOJI_RENDER_STORAGE_KEY,
   TIME_PER_CARD_MIN_SECONDS,
   TIME_PER_CARD_MAX_SECONDS,
   TIME_PER_CARD_STEP_SECONDS,
@@ -49,6 +50,7 @@ const Game = {
   timePerCard: DEFAULT_TIME_PER_CARD_MS,
   iconRotationDegrees: DEFAULT_ICON_ROTATION_DEGREES,
   rotateByPosition: false,
+  useCustomEmojiRender: true,
   cardStartTime: 0,
   previewCardStartTime: 0,
   pausedCardElapsed: 0,
@@ -66,6 +68,7 @@ const Game = {
     this.loadTimerPreference();
     this.loadIconRotationPreference();
     this.loadRotateByPositionPreference();
+    this.loadCustomEmojiRenderPreference();
     this.populateEmojiSetOptions();
     this.populateLangOptions();
     this.syncSettingsControls();
@@ -154,6 +157,11 @@ const Game = {
     this.rotateByPosition = saved === 'true';
   },
 
+  loadCustomEmojiRenderPreference() {
+    const saved = localStorage.getItem(CUSTOM_EMOJI_RENDER_STORAGE_KEY);
+    this.useCustomEmojiRender = saved !== 'false';
+  },
+
   getTimePerCardSeconds() {
     return Math.round(this.timePerCard / 1000);
   },
@@ -223,6 +231,10 @@ const Game = {
 
     if ($toggleRotateByPosition) {
       $toggleRotateByPosition.checked = this.rotateByPosition;
+    }
+
+    if ($toggleCustomEmojiRender) {
+      $toggleCustomEmojiRender.checked = this.useCustomEmojiRender;
     }
   },
 
@@ -303,6 +315,17 @@ const Game = {
         localStorage.setItem(
           ROTATE_BY_POSITION_STORAGE_KEY,
           `${this.rotateByPosition}`,
+        );
+        this.renderPreviewCard();
+      });
+    }
+
+    if ($toggleCustomEmojiRender) {
+      $toggleCustomEmojiRender.addEventListener('change', (e) => {
+        this.useCustomEmojiRender = e.target.checked;
+        localStorage.setItem(
+          CUSTOM_EMOJI_RENDER_STORAGE_KEY,
+          `${this.useCustomEmojiRender}`,
         );
         this.renderPreviewCard();
       });
@@ -431,6 +454,7 @@ const Game = {
     positionEmojis(previewSymbols, $cardPreview, false, null, {
       rotationRangeDegrees: this.iconRotationDegrees,
       rotateByPosition: this.rotateByPosition,
+      useCustomEmojiImages: this.useCustomEmojiRender,
     });
   },
 
@@ -528,6 +552,7 @@ const Game = {
     const layoutOptions = {
       rotationRangeDegrees: this.iconRotationDegrees,
       rotateByPosition: this.rotateByPosition,
+      useCustomEmojiImages: this.useCustomEmojiRender,
     };
     positionEmojis(this.topCard, $cardTop, true, onSymbolClick, layoutOptions);
     positionEmojis(

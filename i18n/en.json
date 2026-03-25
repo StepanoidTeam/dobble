@@ -25,6 +25,7 @@
   "settings.timer": "Timer per card",
   "settings.rotation": "Icon rotation",
   "settings.rotateByPosition": "Rotate from center",
+  "settings.customEmojiRender": "Custom PNG emojis",
   "settings.emojiSet": "Emoji set",
   "settings.resetProgress": "Reset progress",
   "settings.language": "Language",

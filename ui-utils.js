@@ -106,6 +106,7 @@ export function positionEmojis(
       ? layoutOptions.rotationRangeDegrees
       : DEFAULT_ICON_ROTATION_DEGREES;
   const rotateByPosition = layoutOptions.rotateByPosition === true;
+  const useCustomEmojiImages = layoutOptions.useCustomEmojiImages !== false;
 
   // Place one emoji in center, rest around
   shuffledCard.forEach((symbol, i) => {
@@ -113,7 +114,7 @@ export function positionEmojis(
     $el.classList.add('emoji-item');
     $el.dataset.symbol = symbol;
 
-    const imageUrl = getEmojiImageUrl(symbol);
+    const imageUrl = useCustomEmojiImages ? getEmojiImageUrl(symbol) : null;
     if (imageUrl) {
       const $img = document.createElement('img');
       $img.src = imageUrl;

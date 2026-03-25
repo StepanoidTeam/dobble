@@ -7,6 +7,7 @@ export const EMOJI_SET_STORAGE_KEY = 'dobble_emoji_set';
 export const TIME_PER_CARD_STORAGE_KEY = 'dobble_time_per_card_ms';
 export const ICON_ROTATION_STORAGE_KEY = 'dobble_icon_rotation_deg';
 export const ROTATE_BY_POSITION_STORAGE_KEY = 'dobble_rotate_by_position';
+export const CUSTOM_EMOJI_RENDER_STORAGE_KEY = 'dobble_custom_emoji_render';
 
 // ===== Timer =====
 export const TIME_PER_CARD_MIN_SECONDS = 5;

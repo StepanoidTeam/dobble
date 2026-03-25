@@ -25,6 +25,7 @@
   "settings.timer": "Таймер на карточку",
   "settings.rotation": "Поворот иконок",
   "settings.rotateByPosition": "Разворот от центра",
+  "settings.customEmojiRender": "Кастомные PNG-эмодзи",
   "settings.emojiSet": "Набор эмодзи",
   "settings.resetProgress": "Сбросить прогресс",
   "settings.language": "Язык",
