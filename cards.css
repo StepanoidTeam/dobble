@@ -171,17 +171,25 @@
 /* Card transition animations */
 .card-circle {
   &.card-enter {
-    animation: cardSlideIn 0.35s ease-out;
+    animation: cardSwap 0.35s ease-out;
+  }
+
+  &.card-exit {
+    animation: cardSwap 0.35s ease-out reverse;
   }
 }
 
-@keyframes cardSlideIn {
+@keyframes cardSwap {
   from {
-    transform: scale(0.8);
+    transform: scale(0.8) rotate(0deg);
     opacity: 0;
   }
+  55% {
+    transform: scale(1.03) rotate(6deg);
+    opacity: 1;
+  }
   to {
-    transform: scale(1);
+    transform: scale(1) rotate(0deg);
     opacity: 1;
   }
 }

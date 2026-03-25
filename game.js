@@ -29,6 +29,7 @@ import './auth.js';
 
 const FEEDBACK_CORRECT = 'correct';
 const FEEDBACK_WRONG = 'wrong';
+const CARD_TRANSITION_DURATION_MS = 350;
 
 // ===== Game State =====
 const Game = {
@@ -483,10 +484,29 @@ const Game = {
       layoutOptions,
     );
 
-    // Animate new cards
-    $cardTop.classList.remove('card-enter');
-    void $cardTop.offsetWidth;
-    $cardTop.classList.add('card-enter');
+    this.playCardAnimation($cardTop, 'card-enter');
+    this.playCardAnimation($cardBottom, 'card-enter');
+  },
+
+  playCardAnimation($cardEl, className) {
+    if (!$cardEl) return;
+    $cardEl.classList.remove('card-enter', 'card-exit');
+    void $cardEl.offsetWidth;
+    $cardEl.classList.add(className);
+  },
+
+  transitionToNextCards() {
+    this.playCardAnimation($cardTop, 'card-exit');
+    this.playCardAnimation($cardBottom, 'card-exit');
+
+    setTimeout(() => {
+      this.topCard = this.bottomCard;
+      this.bottomCard = this.deck[this.currentCardIndex];
+      this.renderCards();
+      this.updateCardsRemaining();
+      this.startCardTimer();
+      this.isInputLocked = false;
+    }, CARD_TRANSITION_DURATION_MS);
   },
 
   handleSymbolClick(symbol, $el) {
@@ -518,14 +538,7 @@ const Game = {
         // Game over — won!
         setTimeout(() => this.endGame(true), 400);
       } else {
-        setTimeout(() => {
-          this.topCard = this.bottomCard;
-          this.bottomCard = this.deck[this.currentCardIndex];
-          this.renderCards();
-          this.updateCardsRemaining();
-          this.startCardTimer();
-          this.isInputLocked = false;
-        }, 350);
+        this.transitionToNextCards();
       }
     } else {
       // Wrong!
