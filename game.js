@@ -14,21 +14,15 @@ import {
 import {
   EMOJI_SET_STORAGE_KEY,
   TIME_PER_CARD_STORAGE_KEY,
-  ICON_ROTATION_STORAGE_KEY,
-  ROTATE_BY_POSITION_STORAGE_KEY,
-  CUSTOM_EMOJI_RENDER_STORAGE_KEY,
   TIME_PER_CARD_MIN_SECONDS,
   TIME_PER_CARD_MAX_SECONDS,
   TIME_PER_CARD_STEP_SECONDS,
   DEFAULT_TIME_PER_CARD_MS,
-  ICON_ROTATION_MIN_DEGREES,
-  ICON_ROTATION_MAX_DEGREES,
-  ICON_ROTATION_STEP_DEGREES,
   DEFAULT_ICON_ROTATION_DEGREES,
   EMOJI_SETS,
   snapTimerSeconds,
-  snapIconRotationDegrees,
 } from './settings.js';
+import { SettingsOptionsManager } from './settings-options/index.js';
 
 import './app-version.js';
 import './auth.js';
@@ -66,9 +60,7 @@ const Game = {
   init() {
     this.loadEmojiSetPreference();
     this.loadTimerPreference();
-    this.loadIconRotationPreference();
-    this.loadRotateByPositionPreference();
-    this.loadCustomEmojiRenderPreference();
+    SettingsOptionsManager.init(this);
     this.populateEmojiSetOptions();
     this.populateLangOptions();
     this.syncSettingsControls();
@@ -144,24 +136,6 @@ const Game = {
     this.timePerCard = normalizedSeconds * 1000;
   },
 
-  loadIconRotationPreference() {
-    const rawValue = localStorage.getItem(ICON_ROTATION_STORAGE_KEY);
-    const parsedValue = rawValue ? parseInt(rawValue, 10) : NaN;
-    if (Number.isNaN(parsedValue)) return;
-
-    this.iconRotationDegrees = snapIconRotationDegrees(parsedValue);
-  },
-
-  loadRotateByPositionPreference() {
-    const saved = localStorage.getItem(ROTATE_BY_POSITION_STORAGE_KEY);
-    this.rotateByPosition = saved === 'true';
-  },
-
-  loadCustomEmojiRenderPreference() {
-    const saved = localStorage.getItem(CUSTOM_EMOJI_RENDER_STORAGE_KEY);
-    this.useCustomEmojiRender = saved !== 'false';
-  },
-
   getTimePerCardSeconds() {
     return Math.round(this.timePerCard / 1000);
   },
@@ -181,17 +155,8 @@ const Game = {
   },
 
   applyIconRotationDegrees(degrees) {
-    const snappedDegrees = snapIconRotationDegrees(degrees);
-    this.iconRotationDegrees = snappedDegrees;
-    localStorage.setItem(
-      ICON_ROTATION_STORAGE_KEY,
-      `${this.iconRotationDegrees}`,
-    );
-    this.updateRotationDisplay(snappedDegrees);
-    if ($rotationRange) {
-      $rotationRange.value = `${snappedDegrees}`;
-      updateRangeProgress($rotationRange);
-    }
+    this.iconRotationDegrees = degrees;
+    this.updateRotationDisplay(degrees);
     this.renderPreviewCard();
   },
 
@@ -218,24 +183,8 @@ const Game = {
       updateRangeProgress($timerRange);
     }
 
-    if ($rotationRange) {
-      $rotationRange.min = `${ICON_ROTATION_MIN_DEGREES}`;
-      $rotationRange.max = `${ICON_ROTATION_MAX_DEGREES}`;
-      $rotationRange.step = `${ICON_ROTATION_STEP_DEGREES}`;
-      $rotationRange.value = `${this.iconRotationDegrees}`;
-      updateRangeProgress($rotationRange);
-    }
-
     this.updateTimerDisplay(this.getTimePerCardSeconds());
-    this.updateRotationDisplay(this.iconRotationDegrees);
-
-    if ($toggleRotateByPosition) {
-      $toggleRotateByPosition.checked = this.rotateByPosition;
-    }
-
-    if ($toggleCustomEmojiRender) {
-      $toggleCustomEmojiRender.checked = this.useCustomEmojiRender;
-    }
+    SettingsOptionsManager.syncControls(this);
   },
 
   getCurrentSymbols() {
@@ -309,28 +258,6 @@ const Game = {
       this.updateSoundIcon();
     });
 
-    if ($toggleRotateByPosition) {
-      $toggleRotateByPosition.addEventListener('change', (e) => {
-        this.rotateByPosition = e.target.checked;
-        localStorage.setItem(
-          ROTATE_BY_POSITION_STORAGE_KEY,
-          `${this.rotateByPosition}`,
-        );
-        this.renderPreviewCard();
-      });
-    }
-
-    if ($toggleCustomEmojiRender) {
-      $toggleCustomEmojiRender.addEventListener('change', (e) => {
-        this.useCustomEmojiRender = e.target.checked;
-        localStorage.setItem(
-          CUSTOM_EMOJI_RENDER_STORAGE_KEY,
-          `${this.useCustomEmojiRender}`,
-        );
-        this.renderPreviewCard();
-      });
-    }
-
     if ($timerRange) {
       $timerRange.addEventListener('input', (e) => {
         updateRangeProgress(e.target);
@@ -340,14 +267,7 @@ const Game = {
       });
     }
 
-    if ($rotationRange) {
-      $rotationRange.addEventListener('input', (e) => {
-        updateRangeProgress(e.target);
-        const nextValue = parseInt(e.target.value, 10);
-        if (Number.isNaN(nextValue)) return;
-        this.applyIconRotationDegrees(nextValue);
-      });
-    }
+    SettingsOptionsManager.bindEvents(this);
 
     if (!$emojiSetSelect) return;
 
