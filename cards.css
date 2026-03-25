@@ -104,6 +104,15 @@
   z-index: 1;
   translate: -50% -50%;
 
+  img {
+    width: 1em;
+    height: 1em;
+    object-fit: contain;
+    display: block;
+    pointer-events: none;
+    user-select: none;
+  }
+
   &:active {
     scale: 1.3;
   }

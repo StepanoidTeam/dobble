@@ -1,5 +1,6 @@
 import { shuffle } from './deck.js';
 import { DEFAULT_ICON_ROTATION_DEGREES } from './settings.js';
+import { getEmojiImageUrl } from './emoji-images.js';
 
 export function roundUiNumber(value) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
@@ -110,8 +111,18 @@ export function positionEmojis(
   shuffledCard.forEach((symbol, i) => {
     const $el = document.createElement('div');
     $el.classList.add('emoji-item');
-    $el.textContent = symbol;
     $el.dataset.symbol = symbol;
+
+    const imageUrl = getEmojiImageUrl(symbol);
+    if (imageUrl) {
+      const $img = document.createElement('img');
+      $img.src = imageUrl;
+      $img.alt = symbol;
+      $img.draggable = false;
+      $el.appendChild($img);
+    } else {
+      $el.textContent = symbol;
+    }
 
     let x, y;
     let posAngleDeg = 0;
