@@ -103,8 +103,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 8px;
-  border-radius: 20px;
+  padding: 3px;
+  border-radius: 26px;
   border: 3px solid transparent;
   cursor: pointer;
   transition:
@@ -118,6 +118,10 @@
     transform: scale(0.94);
   }
 
+  &.mode-card--selected {
+    transform: scale(1.06);
+  }
+
   .mode-card-icon {
     font-size: clamp(30px, 9vw, 46px);
     line-height: 1;
@@ -127,6 +131,9 @@
     background: #fbf5eb;
     border-radius: 20px;
     align-content: center;
+
+    box-shadow: 0px 0px 1px 1px var(--accent-dark);
+    background: url(./images/paper.png);
   }
 
   .mode-card-name {
@@ -135,56 +142,57 @@
     color: #3a1a6b;
     text-align: center;
     line-height: 1.2;
+
+    padding: 10px;
+    color: #f7eac9;
+    filter: drop-shadow(0px 1px 1px var(--shadow));
+    --shadow: #a05a00;
   }
 }
 
 .mode-card--classic {
   border-color: #c8940a;
   background-color: #dbb13d;
-  box-shadow: 0 4px 12px rgba(200, 148, 0, 0.25);
 
-  &.mode-card--selected {
-    border-color: #ffd700;
-    box-shadow:
-      0 0 0 2px #ffd700,
-      0 6px 22px rgba(220, 160, 0, 0.55);
-    transform: scale(1.06);
-  }
+  box-shadow:
+    0px 5px #c77d10,
+    0px 4px 10px 10px #30045da3;
+  border-color: #fcdd35;
+  background: linear-gradient(#fdd031, #ee9a12);
+  border-width: 4px;
 }
 
 .mode-card--chain {
   border-color: #3a9a3a;
   background-color: #6cc46c;
-  box-shadow: 0 4px 12px rgba(50, 150, 50, 0.25);
 
-  &.mode-card--selected {
-    border-color: #4cdb4c;
-    box-shadow:
-      0 0 0 2px #4cdb4c,
-      0 6px 22px rgba(60, 210, 60, 0.55);
-    transform: scale(1.06);
-  }
+  box-shadow:
+    0px 5px #48732a,
+    0px 4px 10px 10px #30045da3;
+  border-color: #b7df6a;
+  background: linear-gradient(#cad85a, #4d9548);
+  border-width: 4px;
 }
 
 .mode-card--hellpot {
   border-color: #b83232;
   background-color: #d47f7f;
-  box-shadow: 0 4px 12px rgba(180, 50, 50, 0.25);
 
-  &.mode-card--selected {
-    border-color: #ff5555;
-    box-shadow:
-      0 0 0 2px #ff5555,
-      0 6px 22px rgba(220, 60, 60, 0.55);
-    transform: scale(1.06);
-  }
+  box-shadow:
+    0px 5px #c71010,
+    0px 4px 10px 10px #30045da3;
+  border-color: #f86872;
+  background: linear-gradient(#f66982, #c3354a);
+  border-width: 4px;
 }
 
 .mode-hint {
-  font-size: 13px;
+  font-size: 20px;
   opacity: 0.65;
   text-align: center;
   margin: 0;
+  color: #ffffff;
+  filter: drop-shadow(2px 2px 1px black);
 }
 
 /* ===== How To Play ===== */
