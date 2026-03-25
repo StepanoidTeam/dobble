@@ -45,7 +45,7 @@ const CUSTOM_EMOJI_IMAGES = new Map([
   // ['🎼', './images/emojis/**'],   // скрипичный ключ?
 
   // emojis-origin.js — blue
-  // ['🧊', './images/emojis/ice-home.png'],
+  ['🧊', './images/emojis/ice-cube.png'],
   ['🏠', './images/emojis/ice-home.png'], // ледяной дом — тот же файл, конфликт с 🧊
   ['👻', './images/emojis/ghost.png'],
   ['⛄', './images/emojis/snowman.png'],
@@ -53,7 +53,7 @@ const CUSTOM_EMOJI_IMAGES = new Map([
   ['💧', './images/emojis/waterdrop.png'],
   // ['💧', './images/emojis/waterdrop2.png'],// альтернатива
   // ['✏️', './images/emojis/???'],           // карандаш — нет файла
-  // ['❄️', './images/emojis/???'],           // снежинка — нет файла
+  ['❄️', './images/emojis/snowflake.png'], // снежинка
 
   // emojis-origin.js — red
   ['🎯', './images/emojis/target.png'],
@@ -76,7 +76,7 @@ const CUSTOM_EMOJI_IMAGES = new Map([
   // ['⚡️', './images/emojis/???'],           // молния — нет файла
   // ['🌙', './images/emojis/???'],           // луна — нет файла
   // ['⚠️', './images/emojis/???'],           // предупреждение — нет файла
-  // ['🧀', './images/emojis/???'],           // сыр — нет файла
+  ['🧀', './images/emojis/cheese.png'], // сыр
   // ['🌼', './images/emojis/???'],           // ромашка — нет файла
 
   // emojis-origin.js — black
@@ -85,9 +85,9 @@ const CUSTOM_EMOJI_IMAGES = new Map([
   // ['☯️', './images/emojis/???'],           // инь-янь — нет файла
   // ['🕷️', './images/emojis/???'],           // паук — нет файла
   // ['☠️', './images/emojis/???'],           // череп — нет файла
-  // ['♟️', './images/emojis/???'],           // шахматная фигура — нет файла
-  // ['🕶️', './images/emojis/???'],           // очки — нет файла
-  // ['💣', './images/emojis/splash.png'],    // бомба (взрыв)? — неоднозначно
+  ['♟️', './images/emojis/chess.png'], // шахматная фигура
+  ['🕶️', './images/emojis/facesunglasses.png'], // очки — нет файла
+  ['💣', './images/emojis/bomb.png'], // бомба
 
   // emojis-claude.js
   ['🍕', './images/emojis/pizza.png'],
