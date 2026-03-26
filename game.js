@@ -216,6 +216,7 @@ const Game = {
 
   bindEvents() {
     const $logoIcon = document.querySelector('.logo-icon');
+    const $logoContainer = document.querySelector('.logo-container');
     const logoMods = [
       'sepia',
       'blur',
@@ -231,6 +232,10 @@ const Game = {
       if (currentLogoMod) $logoIcon.classList.remove(currentLogoMod);
       currentLogoMod = sample(logoMods.filter((m) => m !== currentLogoMod));
       $logoIcon.classList.add(currentLogoMod);
+
+      $logoContainer.classList.remove('logo-press');
+      void $logoContainer.offsetWidth;
+      $logoContainer.classList.add('logo-press');
     });
 
     $btnPlay.addEventListener('click', () =>
