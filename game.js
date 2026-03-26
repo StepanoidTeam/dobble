@@ -431,6 +431,40 @@ const Game = {
     return Math.round(SCORE_PENALTY_BASE * this.calcDifficultyMult());
   },
 
+  calcTotalMult() {
+    const difficultyMult = this.calcDifficultyMult();
+    const streakMult =
+      1 + Math.min(this.streak, STREAK_CAP) * STREAK_BONUS_PER_LEVEL;
+    const progressionMult =
+      1 + (this.currentCardIndex - 1) * PROGRESSION_BONUS_PER_CARD;
+    return difficultyMult * streakMult * progressionMult;
+  },
+
+  updateMultiplierDisplay() {
+    const mult = this.calcTotalMult();
+    $currentMultiplier.textContent = `×${mult.toFixed(1)}`;
+  },
+
+  hudBump($el) {
+    $el.classList.remove('hud-bump');
+    void $el.offsetWidth;
+    $el.classList.add('hud-bump');
+  },
+
+  showScorePopup(points) {
+    const $popup = document.createElement('div');
+    $popup.classList.add(
+      'score-popup',
+      points >= 0 ? 'score-positive' : 'score-negative',
+    );
+    $popup.textContent = points >= 0 ? `+${points}` : `${points}`;
+
+    const $gameArea = document.querySelector('.game-area');
+    $gameArea.appendChild($popup);
+
+    $popup.addEventListener('animationend', () => $popup.remove());
+  },
+
   updateElapsedTime() {
     const elapsed = this.startTime > 0 ? Date.now() - this.startTime : 0;
     $elapsedTime.textContent = this.formatElapsedTime(elapsed);
@@ -505,6 +539,7 @@ const Game = {
 
     $currentScore.textContent = '0';
     $currentStreak.textContent = '0';
+    this.updateMultiplierDisplay();
     this.updateElapsedTime();
 
     // Set up first pair
@@ -577,6 +612,8 @@ const Game = {
       const cardPoints = this.calcCardScore(elapsed, this.hintedCurrentCard);
       this.score += cardPoints;
       $currentScore.textContent = this.score;
+      this.hudBump($currentScore);
+      this.showScorePopup(cardPoints);
 
       // Streak: only grows on clean (not hinted) cards
       if (this.hintedCurrentCard) {
@@ -586,7 +623,10 @@ const Game = {
         if (this.streak > this.bestStreak) this.bestStreak = this.streak;
       }
       $currentStreak.textContent = this.streak;
+      this.hudBump($currentStreak);
       this.hintedCurrentCard = false;
+      this.updateMultiplierDisplay();
+      this.hudBump($currentMultiplier);
 
       // Next card
       this.currentCardIndex++;
@@ -604,12 +644,18 @@ const Game = {
       AudioManager.play(FEEDBACK_WRONG);
 
       // Penalty + streak reset
-      this.score -= this.calcPenalty();
+      const penalty = this.calcPenalty();
+      this.score -= penalty;
       $currentScore.textContent = this.score;
+      this.hudBump($currentScore);
+      this.showScorePopup(-penalty);
 
       this.streak = 0;
       $currentStreak.textContent = this.streak;
+      this.hudBump($currentStreak);
       this.hintedCurrentCard = true;
+      this.updateMultiplierDisplay();
+      this.hudBump($currentMultiplier);
 
       if (this.showHintOnWrong) {
         this.highlightCommonSymbol();
