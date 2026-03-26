@@ -28,7 +28,7 @@
 -- register? firebase.  
 -- select avatar.
 
-[] add select mode screen
+[~] add select mode screen
 [] restyle win/lose page
 [] add achievements (show in player profile)
 [] share score result with friends
@@ -36,7 +36,7 @@
 [] search other players/host screen
 [] shop / buy boosters
 [] profile stats: win rate/ best scores / achievements
-[] emoji collection gallery
+[x] emoji collection gallery
 [] restyle in-game score for VS mode
 [] win/loose screen emoji + bonuses?
 [] bonuses:  
@@ -46,6 +46,7 @@
 -- rotate all icons randomly/upside-down for opponents  
 -- rotate all icons normaly for self  
 -- shuffle symbols for opponents.
+[x] leaderboards
 
 ## fix
 
@@ -54,8 +55,8 @@
 ## ui
 
 [] update score / level / time ui
-[] remove segment animations?
-[] replace emojis with real images
+[x] remove segment animations?
+[~] replace emojis with real images
 []
 
 ## style
