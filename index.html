@@ -179,6 +179,11 @@
             <span class="hud-label" data-i18n="hud.time">Время</span>
             <span class="hud-value" id="$elapsedTime">0:00</span>
           </div>
+          <div class="hud-item flex-col items-center">
+            <span class="hud-icon" aria-hidden="true">🔥</span>
+            <span class="hud-label" data-i18n="hud.streak">Стрик</span>
+            <span class="hud-value" id="$currentStreak">0</span>
+          </div>
         </div>
         <button id="$btnSound" class="icon-btn" aria-label="Звук">
           <svg
@@ -430,6 +435,11 @@
           <span class="stat-icon" aria-hidden="true">🏆</span>
           <span class="stat-value" id="$finalBest">0:00</span>
           <span class="stat-label" data-i18n="stat.best">Лучшее среднее</span>
+        </div>
+        <div class="stat flex-col items-center gap-1">
+          <span class="stat-icon" aria-hidden="true">🔥</span>
+          <span class="stat-value" id="$finalStreak">0</span>
+          <span class="stat-label" data-i18n="stat.streak">Лучший стрик</span>
         </div>
       </div>
       <button id="$btnPlayAgain" class="btn-primary" data-i18n="btn.playAgain">

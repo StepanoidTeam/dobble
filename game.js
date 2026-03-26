@@ -31,6 +31,15 @@ const FEEDBACK_CORRECT = 'correct';
 const FEEDBACK_WRONG = 'wrong';
 const CARD_TRANSITION_DURATION_MS = 350;
 
+// ===== Scoring Constants =====
+const SCORE_BASE = 100;
+const SCORE_SPEED_MAX = 100;
+const SCORE_HINTED_BASE = 10;
+const SCORE_PENALTY_BASE = 50;
+const STREAK_CAP = 10;
+const STREAK_BONUS_PER_LEVEL = 0.1;
+const PROGRESSION_BONUS_PER_CARD = 0.02;
+
 // ===== Game State =====
 const Game = {
   deck: [],
@@ -49,6 +58,9 @@ const Game = {
   cardStartTime: 0,
   previewCardStartTime: 0,
   pausedCardElapsed: 0,
+  streak: 0,
+  bestStreak: 0,
+  hintedCurrentCard: false,
   $$gameCardRings: [],
   $previewCardRing: null,
   $flashOverlay: null,
@@ -386,6 +398,39 @@ const Game = {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   },
 
+  // ===== Scoring =====
+  calcDifficultyMult() {
+    const maxMs = TIME_PER_CARD_MAX_SECONDS * 1000;
+    return Math.sqrt(maxMs / this.timePerCard);
+  },
+
+  calcCardScore(elapsed, hinted) {
+    const difficultyMult = this.calcDifficultyMult();
+
+    if (hinted) {
+      const progressionMult =
+        1 + (this.currentCardIndex - 1) * PROGRESSION_BONUS_PER_CARD;
+      return Math.round(SCORE_HINTED_BASE * difficultyMult * progressionMult);
+    }
+
+    const speedBonus = Math.max(
+      0,
+      Math.floor((1 - elapsed / this.timePerCard) * SCORE_SPEED_MAX),
+    );
+    const streakMult =
+      1 + Math.min(this.streak, STREAK_CAP) * STREAK_BONUS_PER_LEVEL;
+    const progressionMult =
+      1 + (this.currentCardIndex - 1) * PROGRESSION_BONUS_PER_CARD;
+
+    return Math.round(
+      (SCORE_BASE + speedBonus) * difficultyMult * streakMult * progressionMult,
+    );
+  },
+
+  calcPenalty() {
+    return Math.round(SCORE_PENALTY_BASE * this.calcDifficultyMult());
+  },
+
   updateElapsedTime() {
     const elapsed = this.startTime > 0 ? Date.now() - this.startTime : 0;
     $elapsedTime.textContent = this.formatElapsedTime(elapsed);
@@ -450,12 +495,16 @@ const Game = {
 
     this.currentCardIndex = 1;
     this.score = 0;
+    this.streak = 0;
+    this.bestStreak = 0;
+    this.hintedCurrentCard = false;
     this.startTime = Date.now();
     this.pausedCardElapsed = 0;
     this.isPlaying = true;
     this.isInputLocked = false;
 
     $currentScore.textContent = '0';
+    $currentStreak.textContent = '0';
     this.updateElapsedTime();
 
     // Set up first pair
@@ -523,14 +572,21 @@ const Game = {
       this.showFeedbackIcon(FEEDBACK_CORRECT);
       AudioManager.play(FEEDBACK_CORRECT);
 
-      // Score based on remaining time
+      // Score based on remaining time, difficulty, streak, progression
       const elapsed = Date.now() - this.cardStartTime;
-      const timeBonus = Math.max(
-        0,
-        Math.floor((1 - elapsed / this.timePerCard) * 100),
-      );
-      this.score += 100 + timeBonus;
+      const cardPoints = this.calcCardScore(elapsed, this.hintedCurrentCard);
+      this.score += cardPoints;
       $currentScore.textContent = this.score;
+
+      // Streak: only grows on clean (not hinted) cards
+      if (this.hintedCurrentCard) {
+        this.streak = 0;
+      } else {
+        this.streak++;
+        if (this.streak > this.bestStreak) this.bestStreak = this.streak;
+      }
+      $currentStreak.textContent = this.streak;
+      this.hintedCurrentCard = false;
 
       // Next card
       this.currentCardIndex++;
@@ -547,9 +603,13 @@ const Game = {
       this.showFeedbackIcon(FEEDBACK_WRONG);
       AudioManager.play(FEEDBACK_WRONG);
 
-      // Penalty
-      this.score -= 25;
+      // Penalty + streak reset
+      this.score -= this.calcPenalty();
       $currentScore.textContent = this.score;
+
+      this.streak = 0;
+      $currentStreak.textContent = this.streak;
+      this.hintedCurrentCard = true;
 
       if (this.showHintOnWrong) {
         this.highlightCommonSymbol();
@@ -654,6 +714,7 @@ const Game = {
     $gameOverTitle.textContent = won ? t('gameover.win') : t('gameover.lose');
     $finalScore.textContent = this.score;
     $finalTime.textContent = this.formatElapsedTime(elapsedMs);
+    $finalStreak.textContent = this.bestStreak;
 
     // Best score from localStorage
     const bestKey = 'dobble_best_score';
