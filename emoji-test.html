@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Emoji Test</title>
+    <style>
+      :root {
+        --bg: #1a0a2e;
+        --accent: #f5c518;
+        --border: rgba(179, 117, 229, 0.35);
+        --card-bg: rgba(20, 8, 36, 0.5);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: system-ui, sans-serif;
+        background: var(--bg);
+        color: #fff;
+        padding: 20px;
+        min-height: 100vh;
+      }
+
+      h1 {
+        color: var(--accent);
+        margin-bottom: 16px;
+        font-size: 24px;
+      }
+
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      select {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--card-bg);
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      .summary {
+        font-size: 14px;
+        opacity: 0.7;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 12px;
+      }
+
+      .emoji-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 12px 8px;
+        border-radius: 12px;
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        text-align: center;
+      }
+
+      .emoji-card.has-image {
+        border-color: rgba(76, 235, 121, 0.4);
+      }
+
+      .emoji-card.no-image {
+        border-color: rgba(255, 82, 82, 0.4);
+      }
+
+      .emoji-native {
+        font-size: 48px;
+        line-height: 1;
+      }
+
+      .emoji-custom {
+        width: 64px;
+        height: 64px;
+        object-fit: contain;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .emoji-custom.missing {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        opacity: 0.4;
+        border: 1px dashed rgba(255, 82, 82, 0.5);
+      }
+
+      .emoji-label {
+        font-size: 11px;
+        opacity: 0.5;
+        word-break: break-all;
+      }
+
+      .emoji-path {
+        font-size: 10px;
+        opacity: 0.35;
+        word-break: break-all;
+      }
+
+      .legend {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 12px;
+        font-size: 13px;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+
+      .legend-dot.green {
+        background: rgba(76, 235, 121, 0.6);
+      }
+
+      .legend-dot.red {
+        background: rgba(255, 82, 82, 0.6);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🎨 Emoji Set Viewer</h1>
+
+    <div class="controls">
+      <select id="$setSelect"></select>
+      <span class="summary" id="$summary"></span>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot green"></div>
+        <span>Есть картинка</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot red"></div>
+        <span>Нет картинки</span>
+      </div>
+    </div>
+
+    <div class="grid" id="$grid"></div>
+
+    <script type="module">
+      import { EMOJI_SETS } from './settings.js';
+      import { getEmojiImageUrl } from './emoji-images.js';
+
+      // Populate select
+      EMOJI_SETS.forEach((set) => {
+        const $opt = document.createElement('option');
+        $opt.value = set.key;
+        $opt.textContent = set.label;
+        $setSelect.appendChild($opt);
+      });
+
+      function render(setKey) {
+        const set = EMOJI_SETS.find((s) => s.key === setKey) || EMOJI_SETS[0];
+        const symbols = set.symbols;
+
+        let withImage = 0;
+        let withoutImage = 0;
+
+        $grid.innerHTML = '';
+
+        symbols.forEach((emoji, i) => {
+          const imageUrl = getEmojiImageUrl(emoji);
+          const hasImage = !!imageUrl;
+
+          if (hasImage) withImage++;
+          else withoutImage++;
+
+          const $card = document.createElement('div');
+          $card.classList.add(
+            'emoji-card',
+            hasImage ? 'has-image' : 'no-image',
+          );
+
+          let customHtml;
+          if (hasImage) {
+            customHtml = `<img class="emoji-custom" src="${imageUrl}" alt="${emoji}" onerror="this.classList.add('missing'); this.outerHTML='<div class=\\'emoji-custom missing\\'>404</div>'">`;
+          } else {
+            customHtml = `<div class="emoji-custom missing">—</div>`;
+          }
+
+          $card.innerHTML = `
+            <span class="emoji-native">${emoji}</span>
+            ${customHtml}
+            <span class="emoji-label">#${i + 1} ${hasImage ? '✅' : '❌'}</span>
+            <span class="emoji-path">${imageUrl || 'no mapping'}</span>
+          `;
+
+          $grid.appendChild($card);
+        });
+
+        $summary.textContent = `${symbols.length} эмодзи · ${withImage} с картинкой · ${withoutImage} без картинки`;
+      }
+
+      $setSelect.addEventListener('change', () => render($setSelect.value));
+      render(EMOJI_SETS[0].key);
+    </script>
+  </body>
+</html>
