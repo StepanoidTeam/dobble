@@ -3,6 +3,7 @@
 // Drop PNGs into images/emojis/ and add an entry here.
 // Emojis without an entry fall back to native OS rendering.
 
+// todo(vmyshko): we can just name images using emojis, and do not rely on mappings at all
 const CUSTOM_EMOJI_IMAGES = new Map([
   // emojis-origin.js — green
   ['🦖', './images/emojis/dino.png'],
@@ -28,18 +29,15 @@ const CUSTOM_EMOJI_IMAGES = new Map([
   ['✋', './images/emojis/hand-green.png'],
   // ['✋', './images/emojis/hand-eye.png'],     // альтернатива (глаз на ладони)
   ['🕯️', './images/emojis/candle.png'],
-  // ['🐱', './images/emojis/???'],       // кот — нет файла
+  ['🐱', './images/emojis/cat.png'], // кот
 
   // emojis-origin.js — orange
   ['🚕', './images/emojis/taxi.png'],
   ['🔨', './images/emojis/hammer.png'],
   ['🍼', './images/emojis/milkbottle.png'],
   ['⚓️', './images/emojis/anchor.png'],
-  // ['⚓️', './images/emojis/anchor2.png'],  // альтернатива
-  // ['⚓️', './images/emojis/anchor3.png'],  // альтернатива
   ['🍪', './images/emojis/cookie.png'],
   ['⏰', './images/emojis/clock.png'],
-  // ['⏰', './images/emojis/clock2.png'],   // альтернатива
   ['🔑', './images/emojis/key.png'],
   ['🏆', './images/emojis/trophy.png'],
   ['🎼', './images/emojis/musical-score.png'], // скрипичный ключ?
@@ -49,11 +47,10 @@ const CUSTOM_EMOJI_IMAGES = new Map([
   ['🏠', './images/emojis/ice-home.png'], // ледяной дом — тот же файл, конфликт с 🧊
   ['👻', './images/emojis/ghost.png'],
   ['⛄', './images/emojis/snowman.png'],
-  // ['⛄', './images/emojis/snowman2.png'],  // альтернатива
   ['💧', './images/emojis/waterdrop.png'],
-  // ['💧', './images/emojis/waterdrop2.png'],// альтернатива
-  // ['✏️', './images/emojis/???'],           // карандаш — нет файла
+  ['✏️', './images/emojis/pencil.png'], // карандаш
   ['❄️', './images/emojis/snowflake.png'], // снежинка
+  ['🐬', './images/emojis/dolphin.png'],
 
   // emojis-origin.js — red
   ['🎯', './images/emojis/target.png'],
@@ -63,10 +60,9 @@ const CUSTOM_EMOJI_IMAGES = new Map([
   // ['💋', './images/emojis/lips2.png'],     // альтернатива
   ['🛑', './images/emojis/stop.png'],
   ['❓', './images/emojis/question-red.png'], // красный знак вопроса
-  // ['🤡', './images/emojis/???'],           // клоун — нет файла
-  // ['🐞', './images/emojis/???'],           // божья коровка — нет файла
-  // ['🔥', './images/emojis/splash.png'],    // огонь? splash = брызги — неоднозначно
-  // ['🔥', './images/emojis/splash2.png'],   // альтернатива
+  ['🤡', './images/emojis/clown.png'], // клоун
+  ['🐞', './images/emojis/ladybug.png'], // божья коровка
+  ['🔥', './images/emojis/fire.png'], // огонь
 
   // emojis-origin.js — yellow
   ['🐶', './images/emojis/puppy.png'],
