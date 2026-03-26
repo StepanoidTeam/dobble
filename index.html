@@ -75,6 +75,13 @@
       >
         Настройки
       </button>
+      <button
+        id="$btnLeaderboard"
+        class="btn-secondary"
+        data-i18n="btn.leaderboard"
+      >
+        Лидерборд
+      </button>
     </div>
 
     <!-- Mode Select Screen -->
@@ -420,6 +427,43 @@
           Выйти
         </button>
       </div>
+    </div>
+
+    <!-- Leaderboard Screen -->
+    <div id="$screenLeaderboard" class="screen" hidden>
+      <h2 class="lb-title" data-i18n="leaderboard.title">Лидерборд</h2>
+      <div class="lb-container">
+        <div class="lb-header">
+          <span class="lb-rank" data-i18n="leaderboard.rank">#</span>
+          <span class="lb-name" data-i18n="leaderboard.player">Игрок</span>
+          <span class="lb-score" data-i18n="leaderboard.score">Очки</span>
+          <span class="lb-meta" data-i18n="leaderboard.details">Инфо</span>
+        </div>
+        <div id="$leaderboardList" class="lb-list"></div>
+        <p
+          id="$leaderboardEmpty"
+          class="lb-empty"
+          hidden
+          data-i18n="leaderboard.empty"
+        >
+          Пока нет результатов
+        </p>
+        <p
+          id="$leaderboardLoading"
+          class="lb-loading"
+          hidden
+          data-i18n="leaderboard.loading"
+        >
+          Загрузка...
+        </p>
+      </div>
+      <button
+        id="$btnLeaderboardBack"
+        class="btn-secondary"
+        data-i18n="btn.menu"
+      >
+        В меню
+      </button>
     </div>
 
     <!-- Game Over Screen -->

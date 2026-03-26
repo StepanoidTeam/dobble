@@ -23,6 +23,7 @@ import {
   snapTimerSeconds,
 } from './settings.js';
 import { SettingsOptionsManager } from './settings-options/index.js';
+import { Leaderboard } from './leaderboard.js';
 
 import './app-version.js';
 import './auth.js';
@@ -265,6 +266,10 @@ const Game = {
     $btnConfirmExit.addEventListener('click', () => this.quitGame());
     $btnPlayAgain.addEventListener('click', () => this.startGame());
     $btnMenu.addEventListener('click', () => this.quitGame());
+    $btnLeaderboard.addEventListener('click', () => this.showLeaderboard());
+    $btnLeaderboardBack.addEventListener('click', () =>
+      this.showScreen($screenStart),
+    );
 
     $toggleSound.addEventListener('change', (e) => {
       AudioManager.enabled = e.target.checked;
@@ -770,6 +775,15 @@ const Game = {
     }
     $finalBest.textContent = Math.max(this.score, prevBest);
 
+    // Submit to leaderboard
+    Leaderboard.submitScore({
+      score: this.score,
+      timeMs: elapsedMs,
+      bestStreak: this.bestStreak,
+      timePerCardMs: this.timePerCard,
+      cardsPlayed: this.currentCardIndex - 1,
+    });
+
     AudioManager.play('gameover');
     this.showScreen($screenGameOver);
   },
@@ -777,6 +791,11 @@ const Game = {
   resetProgress() {
     localStorage.removeItem('dobble_best_score');
     $screenResetConfirm.hidden = true;
+  },
+
+  showLeaderboard() {
+    this.showScreen($screenLeaderboard);
+    Leaderboard.render();
   },
 
   toggleSound() {

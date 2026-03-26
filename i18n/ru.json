@@ -47,5 +47,13 @@
   "mode.hint": "Выбор режима влияет на весь матч",
   "mode.classic": "Классика",
   "mode.chain": "Цепочки",
-  "mode.hellpot": "Адский котёл"
+  "mode.hellpot": "Адский котёл",
+  "btn.leaderboard": "Лидерборд",
+  "leaderboard.title": "ЛИДЕРБОРД",
+  "leaderboard.rank": "#",
+  "leaderboard.player": "Игрок",
+  "leaderboard.score": "Очки",
+  "leaderboard.details": "Инфо",
+  "leaderboard.empty": "Пока нет результатов",
+  "leaderboard.loading": "Загрузка..."
 }

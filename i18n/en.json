@@ -47,5 +47,13 @@
   "mode.hint": "Mode choice affects the whole match",
   "mode.classic": "Classic",
   "mode.chain": "Chain",
-  "mode.hellpot": "Hell Cauldron"
+  "mode.hellpot": "Hell Cauldron",
+  "btn.leaderboard": "Leaderboard",
+  "leaderboard.title": "LEADERBOARD",
+  "leaderboard.rank": "#",
+  "leaderboard.player": "Player",
+  "leaderboard.score": "Score",
+  "leaderboard.details": "Details",
+  "leaderboard.empty": "No results yet",
+  "leaderboard.loading": "Loading..."
 }

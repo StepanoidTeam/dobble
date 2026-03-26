@@ -8,7 +8,18 @@ import {
   linkWithPopup,
   updateProfile,
 } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-auth.js';
-import { getFirestore } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js';
+import {
+  getFirestore,
+  collection,
+  query,
+  orderBy,
+  limit,
+  getDocs,
+  getDoc,
+  doc,
+  setDoc,
+  serverTimestamp,
+} from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-firestore.js';
 
 import { firebaseConfig } from './firebase.config.js';
 
@@ -23,4 +34,13 @@ export {
   GoogleAuthProvider,
   linkWithPopup,
   updateProfile,
+  collection,
+  query,
+  orderBy,
+  limit,
+  getDocs,
+  getDoc,
+  doc,
+  setDoc,
+  serverTimestamp,
 };
