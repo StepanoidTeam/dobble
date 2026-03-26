@@ -109,7 +109,7 @@ export const Leaderboard = {
         <span class="lb-rank">${medal || rank}</span>
         <span class="lb-name">${this.escapeHtml(entry.displayName)}</span>
         <span class="lb-score">${entry.score}</span>
-        <span class="lb-meta">${timePerCard}s · 🔥${entry.bestStreak || 0}</span>
+        <span class="lb-meta">⏱️${timePerCard}s 🔥${entry.bestStreak || 0} 🃏${entry.cardsPlayed || 0}</span>
       `;
 
       $leaderboardList.appendChild($row);
