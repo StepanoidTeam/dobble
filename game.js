@@ -58,6 +58,7 @@ const Game = {
   useCustomEmojiRender: true,
   cardStartTime: 0,
   previewCardStartTime: 0,
+  isPreviewTransitioning: false,
   pausedCardElapsed: 0,
   streak: 0,
   bestStreak: 0,
@@ -368,10 +369,17 @@ const Game = {
 
       updateRingProgress(this.$previewCardRing, remaining);
 
-      if (remaining <= 0) {
-        this.renderPreviewCard();
-        this.previewCardStartTime = Date.now();
-        updateRingProgress(this.$previewCardRing, 1);
+      if (remaining <= 0 && !this.isPreviewTransitioning) {
+        this.isPreviewTransitioning = true;
+        this.playCardAnimation($cardPreview, 'card-exit');
+
+        setTimeout(() => {
+          this.renderPreviewCard();
+          this.playCardAnimation($cardPreview, 'card-enter');
+          this.previewCardStartTime = Date.now();
+          updateRingProgress(this.$previewCardRing, 1);
+          this.isPreviewTransitioning = false;
+        }, CARD_TRANSITION_DURATION_MS);
       }
 
       this.previewAnimationFrameId = requestAnimationFrame(tick);
