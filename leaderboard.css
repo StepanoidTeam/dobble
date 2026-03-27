@@ -1,6 +1,6 @@
 /* ===== Leaderboard Screen ===== */
 #\$screenLeaderboard {
-  padding: 40px 20px;
+  padding: 10px;
   gap: 20px;
 }
 
@@ -20,13 +20,16 @@
   border-radius: 16px;
   padding: 8px;
   backdrop-filter: blur(3px);
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
 }
 
 .lb-header {
   display: grid;
-  grid-template-columns: 40px 1fr 70px 80px;
-  gap: 8px;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
   padding: 8px 12px;
+  gap: 8px;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -44,14 +47,19 @@
 }
 
 .lb-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
 }
 
 .lb-row {
   display: grid;
-  grid-template-columns: 40px 1fr 70px 80px;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
   gap: 8px;
+}
+
+.lb-row {
   align-items: center;
   padding: 10px 12px;
   border-radius: 10px;
@@ -97,6 +105,7 @@
 
 .lb-empty,
 .lb-loading {
+  grid-column: 1 / -1;
   text-align: center;
   padding: 24px;
   opacity: 0.6;
