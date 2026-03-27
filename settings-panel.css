@@ -65,6 +65,28 @@
   font-weight: 700;
 }
 
+/* ===== Text Input ===== */
+.settings-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  padding: 6px 12px;
+  width: 140px;
+  text-align: right;
+  outline: none;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: var(--accent);
+  }
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+  }
+}
+
 /* ===== Toggle Switch ===== */
 .toggle {
   position: relative;

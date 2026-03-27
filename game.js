@@ -24,6 +24,7 @@ import {
 } from './settings.js';
 import { SettingsOptionsManager } from './settings-options/index.js';
 import { Leaderboard } from './leaderboard.js';
+import { Profile } from './profile.js';
 
 import './app-version.js';
 import './auth.js';
@@ -89,6 +90,9 @@ const Game = {
     this.startPreviewCycle();
     this.updateCardsRemaining();
     this.updateElapsedTime();
+    Profile.init((displayName) => {
+      if ($playerNameInput) $playerNameInput.value = displayName;
+    });
   },
 
   cacheGameCardRings() {
@@ -281,6 +285,17 @@ const Game = {
       AudioManager.enabled = e.target.checked;
       this.updateSoundIcon();
     });
+
+    if ($playerNameInput) {
+      const saveName = () => Profile.updateDisplayName($playerNameInput.value);
+      $playerNameInput.addEventListener('blur', saveName);
+      $playerNameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          $playerNameInput.blur();
+        }
+      });
+    }
 
     if ($timerRange) {
       $timerRange.addEventListener('input', (e) => {

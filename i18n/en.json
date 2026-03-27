@@ -23,6 +23,7 @@
   "hud.streak": "Streak",
   "hud.multiplier": "Multiplier",
   "settings.title": "Settings",
+  "settings.playerName": "Player name",
   "settings.sound": "Sound",
   "settings.timer": "Timer per card",
   "settings.rotation": "Icon rotation",

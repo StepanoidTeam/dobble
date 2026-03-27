@@ -13,6 +13,7 @@ import {
   getDoc,
   serverTimestamp,
 } from './firebase.js';
+import { Profile } from './profile.js';
 
 const LEADERBOARD_COLLECTION = 'leaderboard';
 const LEADERBOARD_LIMIT = 50;
@@ -38,7 +39,7 @@ export const Leaderboard = {
 
       const entry = {
         uid: user.uid,
-        displayName: user.displayName || 'Anonymous',
+        displayName: Profile.displayName || 'Anonymous',
         score,
         timeMs,
         bestStreak,

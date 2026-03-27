@@ -310,6 +310,18 @@
 
         <div class="settings-content flex-col gap-1">
           <div class="setting-row">
+            <span class="text-nowrap" data-i18n="settings.playerName"
+              >Имя игрока</span
+            >
+            <input
+              type="text"
+              id="$playerNameInput"
+              class="settings-input"
+              maxlength="20"
+              placeholder="Anonymous"
+            />
+          </div>
+          <div class="setting-row">
             <span data-i18n="settings.sound">Звук</span>
             <label class="toggle">
               <input type="checkbox" id="$toggleSound" checked />
