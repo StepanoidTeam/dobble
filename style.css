@@ -61,7 +61,7 @@ body {
   /* radial-gradient(#f5c51880, #7846c580), */
 
   background-image:
-    url(./images/bg-pattern.png),
+    url(./images/bg-pattern-2.png),
     radial-gradient(circle, #ffd900 25%, #7f46c6 60%, black 100%),
     radial-gradient(circle, #ffffff00 80%, #577932 84%);
   background-blend-mode: soft-light;
