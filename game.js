@@ -924,8 +924,7 @@ const Game = {
     playerEntries.forEach(([playerUid, playerData]) => {
       const $row = document.createElement('div');
       $row.className = 'lobby-player';
-      if (playerUid === currentUid)
-        $row.classList.add('lobby-player--me');
+      if (playerUid === currentUid) $row.classList.add('lobby-player--me');
       if (!playerData.connected)
         $row.classList.add('lobby-player--disconnected');
 
@@ -1009,6 +1008,8 @@ const Game = {
     // Switch to game screen in multiplayer mode
     this.isPlaying = true;
     this.mpLastRenderedRound = -1;
+    this.mpLastPopupRound = -1;
+    this.mpLastWrongTaps = {};
     this.score = 0;
     this.streak = 0;
     this.bestStreak = 0;
@@ -1028,6 +1029,8 @@ const Game = {
         this.mpGameOver(data);
         return;
       }
+      this.mpShowRoundPopup(data);
+      this.mpShowWrongTapPopup(data);
       this.mpRenderCards(data);
     };
   },
@@ -1098,6 +1101,66 @@ const Game = {
     if (!$card || !symbols) return;
   },
 
+  mpShowRoundPopup(roomData) {
+    const game = roomData.game;
+    if (!game) return;
+
+    const currentRound = game.currentRound || 0;
+    const prevRound = currentRound - 1;
+    if (prevRound < 0 || prevRound <= this.mpLastPopupRound) return;
+
+    const roundData = roomData.rounds?.[prevRound];
+    if (!roundData) return;
+
+    this.mpLastPopupRound = prevRound;
+    const currentUid = auth?.currentUser?.uid;
+    const winnerId = roundData.winnerId;
+    const winnerName = roomData.players?.[winnerId]?.displayName || '???';
+
+    if (winnerId === currentUid) {
+      // Current player won this round
+      this.showScorePopup(1);
+    } else {
+      // Opponent won — show their name
+      this.mpShowOpponentPopup(winnerName);
+    }
+  },
+
+  mpShowOpponentPopup(name) {
+    const $popup = document.createElement('div');
+    $popup.classList.add('score-popup', 'score-negative');
+    $popup.textContent = `${name} 🎯`;
+
+    const $gameArea = document.querySelector('.game-area');
+    $gameArea.appendChild($popup);
+
+    $popup.addEventListener('animationend', () => $popup.remove());
+  },
+
+  mpShowWrongTapPopup(roomData) {
+    const wrongTaps = roomData.wrongTaps;
+    if (!wrongTaps) return;
+
+    const currentUid = auth?.currentUser?.uid;
+
+    for (const [uid, timestamp] of Object.entries(wrongTaps)) {
+      if (uid === currentUid) continue;
+      if (timestamp <= (this.mpLastWrongTaps[uid] || 0)) continue;
+
+      this.mpLastWrongTaps[uid] = timestamp;
+      const name = roomData.players?.[uid]?.displayName || '???';
+
+      const $popup = document.createElement('div');
+      $popup.classList.add('score-popup', 'score-negative');
+      $popup.textContent = `${name} ❌`;
+
+      const $gameArea = document.querySelector('.game-area');
+      $gameArea.appendChild($popup);
+
+      $popup.addEventListener('animationend', () => $popup.remove());
+    }
+  },
+
   async mpTapSymbol(symbol) {
     if (this.isInputLocked) return;
     this.isInputLocked = true;
@@ -1110,6 +1173,7 @@ const Game = {
     } else {
       this.showFeedbackIcon(FEEDBACK_WRONG);
       AudioManager.play('wrong');
+      Multiplayer.reportWrongTap();
     }
 
     setTimeout(() => {

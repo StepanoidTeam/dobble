@@ -377,6 +377,15 @@ export const Multiplayer = {
     };
   },
 
+  // ===== Report Wrong Tap =====
+  async reportWrongTap() {
+    const uid = auth.currentUser?.uid;
+    if (!uid || !this.roomCode) return;
+
+    const wrongRef = rtdbRef(rtdb, `rooms/${this.roomCode}/wrongTaps/${uid}`);
+    await rtdbSet(wrongRef, Date.now());
+  },
+
   // ===== Listen to Room =====
   listenToRoom() {
     if (!this.roomRef) return;
