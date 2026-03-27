@@ -36,3 +36,9 @@ File is ignored by git and regenerated on each deploy.
 to add readable tag use:
 
 `% git tag v0.0.1 && git push --tags`
+
+## references
+
+### rules
+
+https://planeta-igr.com/image/data/instrukcii/58122.pdf?srsltid=AfmBOooUbhL48KPJffYwcgcJfAo9KVlRmBgC-PkY700NIMK-pofpCxln
