@@ -25,6 +25,8 @@ import {
 import { SettingsOptionsManager } from './settings-options/index.js';
 import { Leaderboard } from './leaderboard.js';
 import { Profile } from './profile.js';
+import { Multiplayer } from './multiplayer.js';
+import { auth } from './firebase.js';
 
 import './app-version.js';
 import './auth.js';
@@ -72,6 +74,7 @@ const Game = {
   showHintOnWrong: true,
   totalCardsInGame: 20, // number of card pairs to play
   selectedMode: 'classic',
+  mpLastRenderedRound: -1,
 
   init() {
     this.loadEmojiSetPreference();
@@ -280,6 +283,25 @@ const Game = {
     $btnLeaderboardBack.addEventListener('click', () =>
       this.showScreen($screenStart),
     );
+
+    // ===== Multiplayer Events =====
+    $btnMultiplayer.addEventListener('click', () =>
+      this.showScreen($screenMultiplayer),
+    );
+    $btnMultiplayerBack.addEventListener('click', () =>
+      this.showScreen($screenStart),
+    );
+    $btnCreateRoom.addEventListener('click', () => this.mpCreateRoom());
+    $btnJoinRoom.addEventListener('click', () => this.mpJoinRoom());
+    $btnFindGame.addEventListener('click', () => this.mpFindGame());
+    $btnCopyCode.addEventListener('click', () => this.mpCopyCode());
+    $btnStartMultiplayer.addEventListener('click', () => this.mpStartGame());
+    $btnLeaveLobby.addEventListener('click', () => this.mpLeaveRoom());
+    $inputRoomCode.addEventListener('input', () => {
+      $inputRoomCode.value = $inputRoomCode.value
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, '');
+    });
 
     $toggleSound.addEventListener('change', (e) => {
       AudioManager.enabled = e.target.checked;
@@ -778,6 +800,7 @@ const Game = {
     this.isInputLocked = false;
     this.stopCardTimer();
     this.pausedCardElapsed = 0;
+    this.mpToggleHud(false);
     $screenExitConfirm.hidden = true;
     this.showScreen($screenStart);
   },
@@ -824,6 +847,321 @@ const Game = {
   showLeaderboard() {
     this.showScreen($screenLeaderboard);
     Leaderboard.render();
+  },
+
+  // ===== Multiplayer Methods =====
+  async mpCreateRoom() {
+    try {
+      const maxPlayers = parseInt($selectMaxPlayers.value, 10) || 2;
+      const autoMatchmaking = $toggleAutoMatch.checked;
+
+      const roomCode = await Multiplayer.createRoom({
+        maxPlayers,
+        autoMatchmaking,
+        emojiSet: this.selectedEmojiSetKey,
+      });
+
+      this.mpEnterLobby(roomCode);
+    } catch (err) {
+      console.log('🎮 Create room error:', err);
+    }
+  },
+
+  async mpJoinRoom() {
+    const code = $inputRoomCode.value.trim();
+    if (!code || code.length < 5) return;
+
+    try {
+      await Multiplayer.joinRoom(code);
+      this.mpEnterLobby(code);
+    } catch (err) {
+      console.log('🎮 Join error:', err.message);
+      const msgKey = {
+        ROOM_NOT_FOUND: 'mp.roomNotFound',
+        ROOM_FULL: 'mp.roomFull',
+        GAME_ALREADY_STARTED: 'mp.gameStarted',
+      }[err.message];
+      if (msgKey) $lobbyStatus.textContent = t(msgKey);
+    }
+  },
+
+  async mpFindGame() {
+    try {
+      $lobbyStatus.textContent = t('leaderboard.loading');
+      const roomCode = await Multiplayer.findRoom();
+      if (roomCode) {
+        this.mpEnterLobby(roomCode);
+      } else {
+        // No rooms found — create one with autoMatchmaking
+        $toggleAutoMatch.checked = true;
+        await this.mpCreateRoom();
+      }
+    } catch (err) {
+      console.log('🎮 Find game error:', err);
+    }
+  },
+
+  mpEnterLobby(roomCode) {
+    this.showScreen($screenLobby);
+    $lobbyRoomCode.textContent = roomCode;
+    $inputRoomCode.value = '';
+
+    Multiplayer.onRoomUpdate = (data) => this.mpRenderLobby(data);
+    Multiplayer.onPlayerLeft = (uid) => {
+      console.log('🎮 Player timed out:', uid);
+    };
+  },
+
+  mpRenderLobby(roomData) {
+    if (!roomData) return;
+
+    const currentUid = auth?.currentUser?.uid;
+    const players = roomData.players || {};
+    const playerEntries = Object.entries(players);
+
+    // Render player list
+    $lobbyPlayersList.innerHTML = '';
+    playerEntries.forEach(([playerUid, playerData]) => {
+      const $row = document.createElement('div');
+      $row.className = 'lobby-player';
+      if (playerUid === currentUid)
+        $row.classList.add('lobby-player--me');
+      if (!playerData.connected)
+        $row.classList.add('lobby-player--disconnected');
+
+      const isHost = playerUid === roomData.hostUid;
+      const statusEmoji = !playerData.connected
+        ? '🔌'
+        : playerData.ready
+          ? '✅'
+          : '⏳';
+      const statusClass = !playerData.connected
+        ? 'status-disconnected'
+        : playerData.ready
+          ? 'status-ready'
+          : 'status-waiting';
+      const statusText = !playerData.connected
+        ? t('mp.disconnected')
+        : playerData.ready
+          ? t('mp.ready')
+          : t('mp.notReady');
+
+      $row.innerHTML = `
+        <span class="lobby-player-icon">${isHost ? '👑' : '🎮'}</span>
+        <span class="lobby-player-name">${playerData.displayName || 'Anonymous'}</span>
+        <span class="lobby-player-status ${statusClass}">${statusEmoji} ${statusText}</span>
+      `;
+
+      $row.addEventListener('click', () => {
+        if (playerUid === auth?.currentUser?.uid) {
+          Multiplayer.toggleReady();
+        }
+      });
+
+      $lobbyPlayersList.appendChild($row);
+    });
+
+    // Update status text
+    const connectedCount = playerEntries.filter(([, p]) => p.connected).length;
+    $lobbyStatus.textContent =
+      t('mp.waitingPlayers') + ` (${connectedCount}/${roomData.maxPlayers})`;
+
+    // Show start button only for host when 2+ players connected
+    const allReady = playerEntries.every(([, p]) => p.ready);
+    $btnStartMultiplayer.hidden = !(
+      Multiplayer.isHost &&
+      connectedCount >= 2 &&
+      allReady
+    );
+
+    // If game started by host, transition to game screen
+    if (roomData.status === 'playing') {
+      this.mpStartPlaying(roomData);
+    }
+  },
+
+  async mpStartGame() {
+    if (!Multiplayer.isHost) return;
+    try {
+      const symbols = this.getCurrentSymbols();
+      await Multiplayer.startGame(symbols);
+    } catch (err) {
+      console.log('🎮 Start game error:', err.message);
+      if (err.message === 'NOT_ALL_READY') {
+        $lobbyStatus.textContent = t('mp.notAllReady');
+      }
+    }
+  },
+
+  mpToggleHud(isMultiplayer) {
+    const $hudTime = $elapsedTime.closest('.hud-item');
+    const $hudStreak = $currentStreak.closest('.hud-item');
+    const $hudMultiplier = $currentMultiplier.closest('.hud-item');
+    const $footer = document.querySelector('.game-footer');
+
+    if ($hudTime) $hudTime.hidden = isMultiplayer;
+    if ($hudStreak) $hudStreak.hidden = isMultiplayer;
+    if ($hudMultiplier) $hudMultiplier.hidden = isMultiplayer;
+    if ($footer) $footer.hidden = isMultiplayer;
+  },
+
+  mpStartPlaying(roomData) {
+    // Switch to game screen in multiplayer mode
+    this.isPlaying = true;
+    this.mpLastRenderedRound = -1;
+    this.score = 0;
+    this.streak = 0;
+    this.bestStreak = 0;
+    this.startTime = Date.now();
+    this.isInputLocked = false;
+
+    this.showScreen($screenGame);
+    this.mpToggleHud(true);
+
+    // Render initial cards
+    this.mpRenderCards(roomData);
+
+    // Listen for further updates
+    Multiplayer.onRoomUpdate = (data) => {
+      if (!data) return;
+      if (data.status === 'finished') {
+        this.mpGameOver(data);
+        return;
+      }
+      this.mpRenderCards(data);
+    };
+  },
+
+  mpRenderCards(roomData) {
+    const cards = Multiplayer.getCurrentCards(roomData);
+    if (!cards) return;
+
+    const uid = auth?.currentUser?.uid;
+    const myData = roomData.players?.[uid];
+    if (myData) {
+      this.score = myData.cardsWon || 0;
+      $currentScore.textContent = this.score;
+    }
+
+    $cardsRemaining.textContent = `${cards.currentRound} / ${cards.totalRounds}`;
+
+    // Skip re-render if same round already drawn (avoids flicker from intermediate DB updates)
+    if (cards.currentRound === this.mpLastRenderedRound) return;
+
+    const isFirstRender = this.mpLastRenderedRound === -1;
+    this.mpLastRenderedRound = cards.currentRound;
+
+    const layoutOptions = {
+      rotationRangeDegrees: this.iconRotationDegrees,
+      rotateByPosition: this.rotateByPosition,
+      useCustomEmojiImages: this.useCustomEmojiRender,
+    };
+
+    const renderNewCards = () => {
+      if (cards.isPlayerDone) {
+        positionEmojis(cards.centralCard, $cardTop, false, null, layoutOptions);
+        $cardBottom.innerHTML =
+          '<span style="font-size:2rem;opacity:0.5">⏳</span>';
+        this.playCardAnimation($cardTop, 'card-enter');
+        return;
+      }
+
+      const onSymbolClick = (symbol, $el) => this.mpTapSymbol(symbol);
+
+      // Central card (top) — not clickable
+      positionEmojis(cards.centralCard, $cardTop, false, null, layoutOptions);
+      // Player card (bottom) — clickable
+      positionEmojis(
+        cards.playerCard,
+        $cardBottom,
+        true,
+        onSymbolClick,
+        layoutOptions,
+      );
+
+      this.playCardAnimation($cardTop, 'card-enter');
+      this.playCardAnimation($cardBottom, 'card-enter');
+    };
+
+    if (isFirstRender) {
+      renderNewCards();
+    } else {
+      // Exit animation → then render new cards
+      this.playCardAnimation($cardTop, 'card-exit');
+      this.playCardAnimation($cardBottom, 'card-exit');
+      setTimeout(renderNewCards, CARD_TRANSITION_DURATION_MS);
+    }
+  },
+
+  renderCardSymbols($card, symbols, isClickable) {
+    // Kept for backwards compat — multiplayer now uses mpRenderCards
+    if (!$card || !symbols) return;
+  },
+
+  async mpTapSymbol(symbol) {
+    if (this.isInputLocked) return;
+    this.isInputLocked = true;
+
+    const claimed = await Multiplayer.claimRound(symbol);
+
+    if (claimed) {
+      this.showFeedbackIcon(FEEDBACK_CORRECT);
+      AudioManager.play('correct');
+    } else {
+      this.showFeedbackIcon(FEEDBACK_WRONG);
+      AudioManager.play('wrong');
+    }
+
+    setTimeout(() => {
+      this.isInputLocked = false;
+    }, CARD_TRANSITION_DURATION_MS);
+  },
+
+  mpGameOver(roomData) {
+    this.isPlaying = false;
+    this.mpToggleHud(false);
+    Multiplayer.cleanup();
+
+    // Find winner (most cardsWon)
+    const players = roomData.players || {};
+    const sorted = Object.entries(players).sort(
+      ([, a], [, b]) => (b.cardsWon || 0) - (a.cardsWon || 0),
+    );
+
+    const uid = auth?.currentUser?.uid;
+    const isWinner = sorted[0]?.[0] === uid;
+
+    $gameOverTitle.textContent = isWinner
+      ? t('gameover.win')
+      : t('gameover.lose');
+    $finalScore.textContent = roomData.players?.[uid]?.cardsWon || 0;
+    $finalTime.textContent = this.formatElapsedTime(
+      Date.now() - this.startTime,
+    );
+    $finalBest.textContent = '-';
+    $finalStreak.textContent = '-';
+
+    this.showScreen($screenGameOver);
+  },
+
+  async mpCopyCode() {
+    const code = $lobbyRoomCode.textContent;
+    try {
+      await navigator.clipboard.writeText(code);
+      $btnCopyCode.textContent = t('mp.copied');
+      setTimeout(() => {
+        $btnCopyCode.textContent = t('mp.copyCode');
+      }, 2000);
+    } catch {
+      // Fallback
+      $inputRoomCode.value = code;
+      $inputRoomCode.select();
+    }
+  },
+
+  async mpLeaveRoom() {
+    await Multiplayer.leaveRoom();
+    this.showScreen($screenStart);
   },
 
   toggleSound() {

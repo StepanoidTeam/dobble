@@ -62,8 +62,20 @@
           <!-- Emojis placed by JS -->
         </div>
       </div>
-      <button id="$btnPlay" class="btn-primary btn-hero" data-i18n="btn.play">
+      <button
+        id="$btnPlay"
+        class="btn-primary btn-hero"
+        data-i18n="btn.play"
+        style="z-index: 1"
+      >
         играть!
+      </button>
+      <button
+        id="$btnMultiplayer"
+        class="btn-primary"
+        data-i18n="btn.multiplayer"
+      >
+        Мультиплеер
       </button>
       <button id="$btnHowTo" class="btn-secondary" data-i18n="btn.howto">
         Как играть?
@@ -82,6 +94,8 @@
       >
         Лидерборд
       </button>
+
+      <div id="$appVersion" class="app-version">app version here</div>
     </div>
 
     <!-- Mode Select Screen -->
@@ -121,6 +135,108 @@
       </button>
       <button id="$btnModeBack" class="btn-secondary" data-i18n="btn.exit">
         Выйти
+      </button>
+    </div>
+
+    <!-- Multiplayer Screen -->
+    <div id="$screenMultiplayer" class="screen" hidden>
+      <h2 class="lobby-title" data-i18n="mp.title">МУЛЬТИПЛЕЕР</h2>
+
+      <div class="mp-actions flex-col items-center gap-2">
+        <button
+          id="$btnCreateRoom"
+          class="btn-primary btn-hero"
+          data-i18n="mp.createRoom"
+        >
+          Создать комнату
+        </button>
+
+        <div class="mp-join-row flex-row items-center gap-1">
+          <input
+            type="text"
+            id="$inputRoomCode"
+            class="settings-input room-code-input"
+            maxlength="5"
+            placeholder="CODE"
+          />
+          <button id="$btnJoinRoom" class="btn-primary" data-i18n="mp.join">
+            Войти
+          </button>
+        </div>
+
+        <div class="mp-divider flex-row items-center gap-1">
+          <span class="mp-divider-line"></span>
+          <span class="mp-divider-text" data-i18n="mp.or">или</span>
+          <span class="mp-divider-line"></span>
+        </div>
+
+        <button id="$btnFindGame" class="btn-secondary" data-i18n="mp.findGame">
+          Найти игру
+        </button>
+
+        <div class="mp-options">
+          <div class="setting-row">
+            <span data-i18n="mp.maxPlayers">Макс. игроков</span>
+            <select id="$selectMaxPlayers" class="settings-select">
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <span data-i18n="mp.autoMatchmaking">Открытая комната</span>
+            <label class="toggle">
+              <input type="checkbox" id="$toggleAutoMatch" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <button
+        id="$btnMultiplayerBack"
+        class="btn-secondary"
+        data-i18n="btn.menu"
+      >
+        В меню
+      </button>
+    </div>
+
+    <!-- Lobby Screen -->
+    <div id="$screenLobby" class="screen" hidden>
+      <h2 class="lobby-title" data-i18n="mp.lobby">ЛОББИ</h2>
+
+      <div class="lobby-code-box flex-col items-center gap-1">
+        <span class="lobby-code-label" data-i18n="mp.roomCode"
+          >Код комнаты</span
+        >
+        <span class="lobby-code" id="$lobbyRoomCode">-----</span>
+        <button id="$btnCopyCode" class="btn-small" data-i18n="mp.copyCode">
+          Копировать
+        </button>
+      </div>
+
+      <div class="lobby-players" id="$lobbyPlayersList">
+        <!-- Player rows rendered by JS -->
+      </div>
+
+      <div class="lobby-status" id="$lobbyStatus">
+        <span data-i18n="mp.waitingPlayers">Ожидание игроков...</span>
+      </div>
+
+      <button
+        id="$btnStartMultiplayer"
+        class="btn-primary btn-hero"
+        data-i18n="mp.startGame"
+        hidden
+      >
+        Начать игру
+      </button>
+
+      <button id="$btnLeaveLobby" class="btn-secondary" data-i18n="mp.leave">
+        Покинуть
       </button>
     </div>
 
@@ -510,7 +626,5 @@
         В меню
       </button>
     </div>
-
-    <div id="$appVersion" class="app-version">app version here</div>
   </body>
 </html>
