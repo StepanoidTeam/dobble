@@ -1,0 +1,51 @@
+/* ===== Animated Background Layer ===== */
+.bg-layer {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  z-index: -1;
+
+  /* todo(vmyshko): for bg animations */
+  /* width: 142vmax; */
+  /* aspect-ratio: 1; */
+  /* animation:
+    bgSpin 120s linear infinite,
+    bgBreath 40s ease-in-out infinite; */
+}
+
+.bg-gradient {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle,
+    #ffe342e3 11%,
+    #923bff 52%,
+    #220039d6 100%
+  );
+  background-blend-mode: soft-light;
+}
+
+.bg-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: url(./images/bg-pattern-2.png);
+  background-repeat: repeat;
+  background-size: 640px;
+  mix-blend-mode: soft-light;
+}
+
+@keyframes bgSpin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes bgBreath {
+  0%,
+  100% {
+    scale: 1;
+  }
+  50% {
+    scale: 1.08;
+  }
+}
