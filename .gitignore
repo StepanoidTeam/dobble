@@ -3,3 +3,4 @@
 .gitignore
 version.json
 images/_temp-drafts
+firebase-debug.log
