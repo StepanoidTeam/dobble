@@ -15,10 +15,11 @@
 }
 
 .settings-content {
-  overflow-y: auto;
-
   display: flex;
   flex-direction: column;
+  width: stretch;
+
+  overflow-y: auto;
 }
 
 /* ===== Confirm Panel ===== */

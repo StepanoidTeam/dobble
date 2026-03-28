@@ -5,7 +5,7 @@
   text-transform: capitalize;
   font-weight: bold;
   font-size: 20px;
-  padding: 12px;
+  padding: 8px 16px 10px;
   cursor: pointer;
   transition: all 0.15s;
   min-width: 200px;
