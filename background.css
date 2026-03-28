@@ -17,8 +17,12 @@
   position: absolute;
   inset: 0;
   background-image:
-    url(./images/paper.png),
-    radial-gradient(circle, #ffe342e3 10%, #923bff 52%, #220039d6 100%);
+    /* url(./images/paper.png), */ radial-gradient(
+    circle,
+    #ffe342e3 10%,
+    #923bff 52%,
+    #220039d6 100%
+  );
   background-blend-mode: multiply;
 }
 
