@@ -29,7 +29,9 @@
   border-radius: 16px;
   /* corner-shape: superellipse(1); */
   color: var(--card-bg);
-  text-shadow: 2px 2px 1px #965507;
+  text-shadow:
+    2px 2px 0px #965507,
+    0px 0px 2px #965507;
 }
 
 .btn-hero {
