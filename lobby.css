@@ -29,13 +29,15 @@
 
   .btn-primary {
     min-width: auto;
-    padding: 12px 20px;
   }
 }
 
 .mp-divider {
   width: 100%;
-  opacity: 0.4;
+  color: white;
+  /* //var(--accent); */
+  filter: drop-shadow(1px 1px 1px var(--bg-primary))
+    drop-shadow(1px 1px 2px var(--bg-primary));
 
   .mp-divider-line {
     flex: 1;
@@ -44,7 +46,8 @@
   }
 
   .mp-divider-text {
-    font-size: 12px;
+    font-size: 20px;
+    font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 1px;
   }

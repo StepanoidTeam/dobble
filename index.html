@@ -165,37 +165,6 @@
       <h2 class="lobby-title" data-i18n="mp.title">МУЛЬТИПЛЕЕР</h2>
 
       <div class="mp-actions flex-col items-center gap-2">
-        <button
-          id="$btnCreateRoom"
-          class="btn-primary btn-hero"
-          data-i18n="mp.createRoom"
-        >
-          Создать комнату
-        </button>
-
-        <div class="mp-join-row flex-row items-center gap-1">
-          <input
-            type="text"
-            id="$inputRoomCode"
-            class="settings-input room-code-input"
-            maxlength="5"
-            placeholder="CODE"
-          />
-          <button id="$btnJoinRoom" class="btn-primary" data-i18n="mp.join">
-            Войти
-          </button>
-        </div>
-
-        <div class="mp-divider flex-row items-center gap-1">
-          <span class="mp-divider-line"></span>
-          <span class="mp-divider-text" data-i18n="mp.or">или</span>
-          <span class="mp-divider-line"></span>
-        </div>
-
-        <button id="$btnFindGame" class="btn-secondary" data-i18n="mp.findGame">
-          Найти игру
-        </button>
-
         <div class="mp-options">
           <div class="setting-row">
             <span data-i18n="mp.maxPlayers">Макс. игроков</span>
@@ -214,6 +183,51 @@
               <span class="toggle-slider"></span>
             </label>
           </div>
+
+          <button
+            id="$btnCreateRoom"
+            class="btn-primary"
+            data-i18n="mp.createRoom"
+          >
+            Создать комнату
+          </button>
+        </div>
+
+        <div class="mp-divider flex-row items-center gap-1">
+          <span class="mp-divider-line"></span>
+          <span class="mp-divider-text" data-i18n="mp.or">или</span>
+          <span class="mp-divider-line"></span>
+        </div>
+
+        <div class="mp-options">
+          <div class="mp-join-row flex-row items-center gap-1">
+            <input
+              type="text"
+              id="$inputRoomCode"
+              class="settings-input room-code-input"
+              maxlength="5"
+              placeholder="CODE"
+            />
+            <button id="$btnJoinRoom" class="btn-primary" data-i18n="mp.join">
+              Войти
+            </button>
+          </div>
+        </div>
+
+        <div class="mp-divider flex-row items-center gap-1">
+          <span class="mp-divider-line"></span>
+          <span class="mp-divider-text" data-i18n="mp.or">или</span>
+          <span class="mp-divider-line"></span>
+        </div>
+
+        <div class="mp-options">
+          <button
+            id="$btnFindGame"
+            class="btn-secondary"
+            data-i18n="mp.findGame"
+          >
+            Найти игру
+          </button>
         </div>
       </div>
 
