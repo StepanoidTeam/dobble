@@ -246,16 +246,25 @@ const Game = {
       $logoContainer.classList.add('logo-press');
     });
 
-    $btnPlay.addEventListener('click', () =>
+    $btnPlay.addEventListener('click', () => this.showScreen($screenPlayType));
+    $btnSolo.addEventListener('click', () =>
       this.showScreen($screenModeSelect),
     );
+    $btnPvP.addEventListener('click', () =>
+      this.showScreen($screenMultiplayer),
+    );
+    $btnPlayTypeBack.addEventListener('click', () =>
+      this.showScreen($screenStart),
+    );
     $btnStartWithMode.addEventListener('click', () => this.startGame());
-    $btnModeBack.addEventListener('click', () => this.showScreen($screenStart));
-    document.querySelectorAll('.mode-card').forEach(($card) => {
-      $card.addEventListener('click', () =>
-        this.selectMode($card.dataset.mode),
-      );
-    });
+    $btnModeBack.addEventListener('click', () =>
+      this.showScreen($screenPlayType),
+    );
+    $screenModeSelect
+      .querySelector('.mode-cards')
+      .addEventListener('change', (e) => {
+        this.selectedMode = e.target.value;
+      });
     $btnHowTo.addEventListener('click', () => this.showScreen($screenHowTo));
     $btnOpenSettings.addEventListener('click', () => this.openSettings());
     $btnBackHowTo.addEventListener('click', () =>
@@ -285,11 +294,8 @@ const Game = {
     );
 
     // ===== Multiplayer Events =====
-    $btnMultiplayer.addEventListener('click', () =>
-      this.showScreen($screenMultiplayer),
-    );
     $btnMultiplayerBack.addEventListener('click', () =>
-      this.showScreen($screenStart),
+      this.showScreen($screenPlayType),
     );
     $btnCreateRoom.addEventListener('click', () => this.mpCreateRoom());
     $btnJoinRoom.addEventListener('click', () => this.mpJoinRoom());
@@ -356,12 +362,8 @@ const Game = {
 
   selectMode(mode) {
     this.selectedMode = mode;
-    document.querySelectorAll('.mode-card').forEach(($card) => {
-      $card.classList.toggle(
-        'mode-card--selected',
-        $card.dataset.mode === mode,
-      );
-    });
+    const $radio = $screenModeSelect.querySelector(`input[value="${mode}"]`);
+    if ($radio) $radio.checked = true;
   },
 
   openSettings() {

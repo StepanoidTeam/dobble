@@ -11,6 +11,7 @@
   "btn.reset": "Reset",
   "btn.continue": "Continue",
   "btn.exit": "Exit",
+  "btn.back": "Back",
   "btn.cancel": "Cancel",
   "howto.title": "How to play?",
   "howto.step1": "Two cards with symbols are shown on screen",
@@ -59,6 +60,9 @@
   "leaderboard.loading": "Loading...",
 
   "btn.multiplayer": "Multiplayer",
+  "playtype.title": "SELECT MODE",
+  "playtype.solo": "Solo",
+  "playtype.pvp": "Player vs Player",
   "mp.title": "MULTIPLAYER",
   "mp.createRoom": "Create room",
   "mp.join": "Join",

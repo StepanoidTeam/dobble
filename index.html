@@ -35,6 +35,7 @@
           <p class="game-subtitle" data-i18n="game.subtitle">
             Найди совпадение!
           </p>
+          <div id="$appVersion" class="app-version">app version here</div>
         </div>
       </div>
 
@@ -78,22 +79,14 @@
       </button>
 
       <button id="$btnHowTo" class="btn-secondary" data-i18n="btn.howto">
-        Как играть?
+        <span aria-hidden="true">🤨</span> Как играть?
       </button>
       <button
         id="$btnOpenSettings"
         class="btn-secondary"
         data-i18n="btn.settings"
       >
-        Настройки
-      </button>
-
-      <button
-        id="$btnMultiplayer"
-        class="btn-primary"
-        data-i18n="btn.multiplayer"
-      >
-        Мультиплеер
+        <span aria-hidden="true">⚙️</span> Настройки
       </button>
 
       <button
@@ -101,10 +94,32 @@
         class="btn-secondary"
         data-i18n="btn.leaderboard"
       >
-        Лидерборд
+        <span aria-hidden="true">🏆</span> Лидерборд
       </button>
+    </div>
 
-      <div id="$appVersion" class="app-version">app version here</div>
+    <!-- Play Type Screen -->
+    <div id="$screenPlayType" class="screen" hidden>
+      <h2 class="mode-title" data-i18n="playtype.title">ВЫБЕРИТЕ РЕЖИМ</h2>
+
+      <div class="mode-cards">
+        <button id="$btnSolo" class="mode-card mode-card--classic">
+          <span class="mode-card-icon">😎</span>
+          <span class="mode-card-name" data-i18n="playtype.solo"
+            >Одиночная</span
+          >
+        </button>
+        <button id="$btnPvP" class="mode-card mode-card--chain">
+          <span class="mode-card-icon">🤼‍♂️</span>
+          <span class="mode-card-name" data-i18n="playtype.pvp"
+            >Игрок vs Игрок</span
+          >
+        </button>
+      </div>
+
+      <button id="$btnPlayTypeBack" class="btn-secondary" data-i18n="btn.back">
+        Назад
+      </button>
     </div>
 
     <!-- Mode Select Screen -->
@@ -112,25 +127,25 @@
       <div class="mode-trophy" aria-hidden="true">🏆</div>
       <h2 class="mode-title" data-i18n="mode.title">ВЫБЕРИТЕ РЕЖИМ</h2>
 
-      <div class="mode-cards">
-        <button
-          class="mode-card mode-card--classic mode-card--selected"
-          data-mode="classic"
-        >
+      <form class="mode-cards">
+        <label class="mode-card mode-card--classic">
+          <input type="radio" name="gameMode" value="classic" checked />
           <span class="mode-card-icon">🔍</span>
           <span class="mode-card-name" data-i18n="mode.classic">Классика</span>
-        </button>
-        <button class="mode-card mode-card--chain" data-mode="chain">
+        </label>
+        <label class="mode-card mode-card--chain">
+          <input type="radio" name="gameMode" value="chain" disabled />
           <span class="mode-card-icon">⛓️</span>
           <span class="mode-card-name" data-i18n="mode.chain">С цепочки</span>
-        </button>
-        <button class="mode-card mode-card--hellpot" data-mode="hellpot">
+        </label>
+        <label class="mode-card mode-card--hellpot">
+          <input type="radio" name="gameMode" value="hellpot" disabled />
           <span class="mode-card-icon">🔥</span>
           <span class="mode-card-name" data-i18n="mode.hellpot"
             >Адский котёл</span
           >
-        </button>
-      </div>
+        </label>
+      </form>
 
       <p class="mode-hint" data-i18n="mode.hint">
         Выбор режима влияет на весь матч
@@ -142,8 +157,8 @@
       >
         Играть
       </button>
-      <button id="$btnModeBack" class="btn-secondary" data-i18n="btn.exit">
-        Выйти
+      <button id="$btnModeBack" class="btn-secondary" data-i18n="btn.back">
+        Назад
       </button>
     </div>
 
@@ -207,9 +222,9 @@
       <button
         id="$btnMultiplayerBack"
         class="btn-secondary"
-        data-i18n="btn.menu"
+        data-i18n="btn.back"
       >
-        В меню
+        Назад
       </button>
     </div>
 
@@ -511,7 +526,7 @@
 
           <div class="setting-row">
             <span class="text-nowrap" data-i18n="settings.resetProgress"
-              >Сбросить прогресс</span
+              >Сброс прогресса</span
             >
 
             <button
@@ -533,7 +548,7 @@
     <!-- Reset Confirm Overlay -->
     <div id="$screenResetConfirm" class="screen overlay" hidden>
       <div class="confirm-panel flex-col items-center text-center">
-        <h2 data-i18n="confirm.resetTitle">Сбросить прогресс?</h2>
+        <h2 data-i18n="confirm.resetTitle">Сброс прогресса?</h2>
         <p data-i18n="confirm.resetMessage">
           Лучший результат будет удалён. Это нельзя отменить.
         </p>
@@ -597,9 +612,9 @@
       <button
         id="$btnLeaderboardBack"
         class="btn-secondary"
-        data-i18n="btn.menu"
+        data-i18n="btn.back"
       >
-        В меню
+        Назад
       </button>
     </div>
 
