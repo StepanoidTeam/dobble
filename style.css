@@ -155,12 +155,13 @@ body {
 }
 
 .app-version {
-  position: fixed;
+  /* position: fixed;
   right: 0;
   bottom: 0;
   padding: 10px;
-  opacity: 0.5;
   white-space: pre-wrap;
   text-align: right;
-  z-index: 1;
+  z-index: 1; */
+  opacity: 0.5;
+  cursor: not-allowed;
 }
