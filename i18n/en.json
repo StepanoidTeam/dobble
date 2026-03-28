@@ -63,6 +63,7 @@
   "playtype.title": "SELECT MODE",
   "playtype.solo": "Solo",
   "playtype.pvp": "Player vs Player",
+  "playtype.online": "Online",
   "mp.title": "MULTIPLAYER",
   "mp.createRoom": "Create room",
   "mp.join": "Join",

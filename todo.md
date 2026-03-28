@@ -71,3 +71,7 @@
 [] add new sounds
 [] add music?
 [] add diff sound per each emoji?
+
+## modes
+
+two-player hot-seat -- one taps on top card, p2 taps on bottom card. different modes?

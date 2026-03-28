@@ -63,6 +63,7 @@
   "playtype.title": "ВЫБЕРИТЕ РЕЖИМ",
   "playtype.solo": "Одиночная",
   "playtype.pvp": "Игрок vs Игрок",
+  "playtype.online": "Сетевая",
   "mp.title": "МУЛЬТИПЛЕЕР",
   "mp.createRoom": "Создать комнату",
   "mp.join": "Войти",

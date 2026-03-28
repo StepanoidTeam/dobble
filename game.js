@@ -253,6 +253,9 @@ const Game = {
     $btnPvP.addEventListener('click', () =>
       this.showScreen($screenMultiplayer),
     );
+    $btnOnline.addEventListener('click', () =>
+      this.showScreen($screenMultiplayer),
+    );
     $btnPlayTypeBack.addEventListener('click', () =>
       this.showScreen($screenStart),
     );

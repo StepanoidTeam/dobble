@@ -133,7 +133,8 @@
     transform: scale(1.06);
   }
 
-  &:has(:disabled) {
+  &:has(:disabled),
+  &:disabled {
     filter: grayscale(0.65);
     opacity: 0.5;
     cursor: not-allowed;

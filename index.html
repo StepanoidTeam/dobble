@@ -101,10 +101,16 @@
             >Одиночная</span
           >
         </button>
-        <button id="$btnPvP" class="mode-card mode-card--chain">
+        <button id="$btnPvP" class="mode-card mode-card--chain" disabled>
           <span class="mode-card-icon">🤼‍♂️</span>
           <span class="mode-card-name" data-i18n="playtype.pvp"
             >Игрок vs Игрок</span
+          >
+        </button>
+        <button id="$btnOnline" class="mode-card mode-card--hellpot">
+          <span class="mode-card-icon">🌐</span>
+          <span class="mode-card-name" data-i18n="playtype.online"
+            >Сетевая</span
           >
         </button>
       </div>
@@ -204,7 +210,7 @@
           <div class="setting-row">
             <span data-i18n="mp.autoMatchmaking">Открытая комната</span>
             <label class="toggle">
-              <input type="checkbox" id="$toggleAutoMatch" />
+              <input type="checkbox" id="$toggleAutoMatch" checked />
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -259,7 +265,10 @@
     <!-- How To Play Screen -->
     <div id="$screenHowTo" class="screen" hidden>
       <div class="howto-content flex-col items-center gap-6">
-        <h2 data-i18n="howto.title">Как играть?</h2>
+        <h2>
+          <span aria-hidden="true">🤨</span>
+          <span data-i18n="howto.title">Как играть?</span>
+        </h2>
         <div class="howto-steps flex-col gap-4">
           <div class="howto-step flex-row items-center gap-4">
             <span class="step-num flex items-center justify-center">1</span>
@@ -438,7 +447,10 @@
     <!-- Pause/Settings Screen -->
     <div id="$screenSettings" class="screen overlay" hidden>
       <div class="settings-panel flex-col items-center gap-2">
-        <h2 data-i18n="settings.title">Настройки</h2>
+        <h2>
+          <span aria-hidden="true">⚙️</span>
+          <span data-i18n="settings.title">Настройки</span>
+        </h2>
 
         <div class="settings-content flex-col gap-1">
           <div class="setting-row">
@@ -575,7 +587,10 @@
 
     <!-- Leaderboard Screen -->
     <div id="$screenLeaderboard" class="screen" hidden>
-      <h2 class="lb-title" data-i18n="leaderboard.title">Лидерборд</h2>
+      <h2 class="lb-title">
+        <span aria-hidden="true">🏆</span>
+        <span data-i18n="leaderboard.title">Лидерборд</span>
+      </h2>
       <div class="lb-container">
         <div class="lb-header">
           <span class="lb-rank" data-i18n="leaderboard.rank">#</span>
