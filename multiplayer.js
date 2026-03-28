@@ -22,7 +22,7 @@ const ROOM_CODE_LENGTH = 5;
 const ROOM_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no I/O/0/1 to avoid confusion
 const DISCONNECT_TIMEOUT_MS = 30_000;
 const MAX_PLAYERS_DEFAULT = 2;
-const TOTAL_CARDS_MULTIPLAYER = 20;
+const CARDS_PER_PLAYER = 10;
 
 // ===== Multiplayer Manager =====
 export const Multiplayer = {
@@ -228,7 +228,7 @@ export const Multiplayer = {
     const shuffledDeck = shuffle(deck);
 
     // Take cards: first = central, rest = shared draw pile
-    const totalCardsNeeded = 1 + TOTAL_CARDS_MULTIPLAYER;
+    const totalCardsNeeded = 1 + CARDS_PER_PLAYER * playerUids.length;
     const cardsToUse = shuffledDeck.slice(
       0,
       Math.min(totalCardsNeeded, shuffledDeck.length),
