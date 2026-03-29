@@ -20,6 +20,14 @@ if fails, re-login first:
 
 `% firebase login --reauth`
 
+to update only fb🔥 firestore rules:
+
+`% firebase deploy --only firestore:rules`
+
+for realtime database:
+
+`% firebase deploy --only database`
+
 ## deployment versioning
 
 A predeploy hook writes version.json with git metadata and timestamp.
