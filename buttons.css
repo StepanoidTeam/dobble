@@ -8,7 +8,6 @@
   padding: 8px 16px 10px;
   cursor: pointer;
   transition: all 0.15s;
-  min-width: 200px;
 
   &:active {
     transform: scale(0.95);
@@ -67,7 +66,6 @@
     0px 3px 7px 3px #441b80;
   color: var(--card-bg);
   text-shadow: 2px 2px 1px #7a0f0f;
-  padding: 8px 16px;
 }
 
 .icon-btn {
