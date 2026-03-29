@@ -68,8 +68,6 @@
   color: var(--card-bg);
   text-shadow: 2px 2px 1px #7a0f0f;
   padding: 8px 16px;
-
-  min-width: auto;
 }
 
 .icon-btn {
