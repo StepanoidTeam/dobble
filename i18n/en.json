@@ -70,6 +70,7 @@
   "mp.codePlaceholder": "CODE",
   "mp.or": "or",
   "mp.findGame": "Find game",
+  "mp.roomsAvailable": "Rooms available:",
   "mp.maxPlayers": "Max players",
   "mp.autoMatchmaking": "Open room",
   "mp.lobby": "LOBBY",

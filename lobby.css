@@ -63,6 +63,24 @@
   gap: 8px;
 }
 
+.mp-room-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--color-text-dim, rgba(255, 255, 255, 0.5));
+
+  .mp-room-stats-icon {
+    font-size: 1rem;
+  }
+
+  .mp-room-stats-count {
+    font-weight: 600;
+    color: var(--color-text, #fff);
+  }
+}
+
 /* ===== Lobby Screen ===== */
 #\$screenLobby {
   padding: 20px;

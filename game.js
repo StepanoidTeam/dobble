@@ -253,9 +253,10 @@ const Game = {
     $btnPvP.addEventListener('click', () =>
       this.showScreen($screenMultiplayer),
     );
-    $btnOnline.addEventListener('click', () =>
-      this.showScreen($screenMultiplayer),
-    );
+    $btnOnline.addEventListener('click', () => {
+      this.showScreen($screenMultiplayer);
+      this.mpRefreshRoomStats();
+    });
     $btnPlayTypeBack.addEventListener('click', () =>
       this.showScreen($screenStart),
     );
@@ -906,6 +907,15 @@ const Game = {
     }
   },
 
+  async mpRefreshRoomStats() {
+    try {
+      const { total, available } = await Multiplayer.getRoomStats();
+      $roomStatsCount.textContent = `${available} / ${total}`;
+    } catch {
+      $roomStatsCount.textContent = '–';
+    }
+  },
+
   mpEnterLobby(roomCode) {
     this.showScreen($screenLobby);
     $lobbyRoomCode.textContent = roomCode;
@@ -1230,7 +1240,7 @@ const Game = {
 
   async mpLeaveRoom() {
     await Multiplayer.leaveRoom();
-    this.showScreen($screenStart);
+    this.showScreen($screenMultiplayer);
   },
 
   toggleSound() {

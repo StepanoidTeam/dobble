@@ -4,15 +4,18 @@
 import { auth } from './firebase.js';
 import {
   rtdb,
-  rtdbRef,
-  rtdbSet,
-  rtdbGet,
-  rtdbUpdate,
+  ref,
+  set,
+  get,
+  update,
   rtdbOnValue,
   rtdbOnDisconnect,
-  rtdbRemove,
-  rtdbPush,
-  rtdbRunTransaction,
+  remove,
+  push,
+  runTransaction,
+  query,
+  orderByChild,
+  equalTo,
 } from './firebase-rtdb.js';
 import { buildDeck, shuffle, findCommonSymbol } from './deck.js';
 import { Profile } from './profile.js';
@@ -23,6 +26,8 @@ const ROOM_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no I/O/0/1 to avo
 const DISCONNECT_TIMEOUT_MS = 30_000;
 const MAX_PLAYERS_DEFAULT = 2;
 const CARDS_PER_PLAYER = 10;
+const HEARTBEAT_INTERVAL_MS = 30_000;
+const STALE_THRESHOLD_MS = 90_000;
 
 // ===== Multiplayer Manager =====
 export const Multiplayer = {
@@ -36,6 +41,7 @@ export const Multiplayer = {
   onRoundResult: null, // callback(roundData)
   onPlayerLeft: null, // callback(uid)
   disconnectTimers: {},
+  heartbeatInterval: null,
 
   // ===== Room Code Generation =====
   generateRoomCode() {
@@ -53,10 +59,10 @@ export const Multiplayer = {
     if (!uid) throw new Error('Not authenticated');
 
     const roomCode = this.generateRoomCode();
-    const roomRef = rtdbRef(rtdb, `rooms/${roomCode}`);
+    const roomRef = ref(rtdb, `rooms/${roomCode}`);
 
     // Check if room code already exists
-    const snapshot = await rtdbGet(roomRef);
+    const snapshot = await get(roomRef);
     if (snapshot.exists()) {
       // Extremely unlikely collision — retry once
       return this.createRoom(settings);
@@ -70,6 +76,7 @@ export const Multiplayer = {
       maxPlayers: settings.maxPlayers || MAX_PLAYERS_DEFAULT,
       autoMatchmaking: settings.autoMatchmaking || false,
       createdAt: Date.now(),
+      lastActive: Date.now(),
       settings: {
         emojiSet: settings.emojiSet || 'base',
       },
@@ -85,17 +92,7 @@ export const Multiplayer = {
       },
     };
 
-    await rtdbSet(roomRef, roomData);
-
-    // If autoMatchmaking, also register in matchmaking index
-    if (settings.autoMatchmaking) {
-      const matchRef = rtdbRef(rtdb, `matchmaking/${roomCode}`);
-      await rtdbSet(matchRef, {
-        maxPlayers: roomData.maxPlayers,
-        currentPlayers: 1,
-        createdAt: Date.now(),
-      });
-    }
+    await set(roomRef, roomData);
 
     this.roomCode = roomCode;
     this.roomRef = roomRef;
@@ -103,6 +100,7 @@ export const Multiplayer = {
 
     this.setupDisconnectHandlers(uid);
     this.listenToRoom();
+    this.startHeartbeat();
 
     console.log('🎮 Room created:', roomCode);
     return roomCode;
@@ -114,8 +112,8 @@ export const Multiplayer = {
     if (!uid) throw new Error('Not authenticated');
 
     roomCode = roomCode.toUpperCase().trim();
-    const roomRef = rtdbRef(rtdb, `rooms/${roomCode}`);
-    const snapshot = await rtdbGet(roomRef);
+    const roomRef = ref(rtdb, `rooms/${roomCode}`);
+    const snapshot = await get(roomRef);
 
     if (!snapshot.exists()) {
       throw new Error('ROOM_NOT_FOUND');
@@ -146,8 +144,8 @@ export const Multiplayer = {
 
     const displayName = Profile.displayName;
 
-    const playerRef = rtdbRef(rtdb, `rooms/${roomCode}/players/${uid}`);
-    await rtdbSet(playerRef, {
+    const playerRef = ref(rtdb, `rooms/${roomCode}/players/${uid}`);
+    await set(playerRef, {
       displayName,
       ready: false,
       score: 0,
@@ -156,37 +154,40 @@ export const Multiplayer = {
       joinedAt: Date.now(),
     });
 
-    // Update matchmaking count
-    if (roomData.autoMatchmaking) {
-      const matchRef = rtdbRef(rtdb, `matchmaking/${roomCode}/currentPlayers`);
-      await rtdbSet(matchRef, playerCount + 1);
-    }
-
     this.roomCode = roomCode;
     this.roomRef = roomRef;
     this.isHost = false;
 
     this.setupDisconnectHandlers(uid);
     this.listenToRoom();
+    this.startHeartbeat();
 
     console.log('🎮 Joined room:', roomCode);
     return roomCode;
   },
 
-  // ===== Find Room (Auto-matchmaking) =====
+  // ===== Find Room =====
   async findRoom() {
-    const matchRef = rtdbRef(rtdb, 'matchmaking');
-    const snapshot = await rtdbGet(matchRef);
+    const roomsRef = ref(rtdb, 'rooms');
+    const q = query(roomsRef, orderByChild('status'), equalTo('waiting'));
+    const snapshot = await get(q);
 
     if (!snapshot.exists()) return null;
 
     const rooms = snapshot.val();
+    const now = Date.now();
     for (const [code, data] of Object.entries(rooms)) {
-      if (data.currentPlayers < data.maxPlayers) {
+      if (!data.autoMatchmaking) continue;
+      if (data.lastActive && now - data.lastActive > STALE_THRESHOLD_MS) {
+        // Stale room — clean up silently
+        remove(ref(rtdb, `rooms/${code}`));
+        continue;
+      }
+      const playerCount = data.players ? Object.keys(data.players).length : 0;
+      if (playerCount < data.maxPlayers) {
         try {
           return await this.joinRoom(code);
         } catch {
-          // Room may have filled up, try next
           continue;
         }
       }
@@ -195,25 +196,66 @@ export const Multiplayer = {
     return null;
   },
 
+  // ===== Room Stats =====
+  async getRoomStats() {
+    const roomsRef = ref(rtdb, 'rooms');
+    const q = query(roomsRef, orderByChild('status'), equalTo('waiting'));
+    const snapshot = await get(q);
+
+    if (!snapshot.exists()) return { total: 0, available: 0 };
+
+    const rooms = snapshot.val();
+    let total = 0;
+    let available = 0;
+    const now = Date.now();
+
+    for (const data of Object.values(rooms)) {
+      if (data.lastActive && now - data.lastActive > STALE_THRESHOLD_MS)
+        continue;
+      total++;
+      if (!data.autoMatchmaking) continue;
+      const playerCount = data.players ? Object.keys(data.players).length : 0;
+      if (playerCount < data.maxPlayers) available++;
+    }
+
+    return { total, available };
+  },
+
+  // ===== Heartbeat =====
+  startHeartbeat() {
+    this.stopHeartbeat();
+    const ping = () => {
+      if (!this.roomCode) return;
+      const lastActiveRef = ref(rtdb, `rooms/${this.roomCode}/lastActive`);
+      set(lastActiveRef, Date.now());
+    };
+    ping();
+    this.heartbeatInterval = setInterval(ping, HEARTBEAT_INTERVAL_MS);
+  },
+
+  stopHeartbeat() {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+  },
+
   // ===== Toggle Ready =====
   async toggleReady() {
     const uid = auth.currentUser?.uid;
     if (!uid || !this.roomCode) return;
 
-    const readyRef = rtdbRef(
-      rtdb,
-      `rooms/${this.roomCode}/players/${uid}/ready`,
-    );
-    const snapshot = await rtdbGet(readyRef);
+    const readyRef = ref(rtdb, `rooms/${this.roomCode}/players/${uid}/ready`);
+    const snapshot = await get(readyRef);
     const currentReady = snapshot.val();
-    await rtdbSet(readyRef, !currentReady);
+    await set(readyRef, !currentReady);
   },
 
   // ===== Start Game (Host Only) =====
   async startGame(symbols) {
     if (!this.isHost || !this.roomCode) return;
 
-    const roomSnapshot = await rtdbGet(this.roomRef);
+    const roomSnapshot = await get(this.roomRef);
     const roomData = roomSnapshot.val();
     const playerUids = Object.keys(roomData.players || {});
 
@@ -264,17 +306,11 @@ export const Multiplayer = {
       playerUpdates[`players/${uid}/cardsWon`] = 0;
     });
 
-    await rtdbUpdate(this.roomRef, {
+    await update(this.roomRef, {
       status: 'playing',
       game: gameState,
       ...playerUpdates,
     });
-
-    // Remove from matchmaking
-    if (roomData.autoMatchmaking) {
-      const matchRef = rtdbRef(rtdb, `matchmaking/${this.roomCode}`);
-      await rtdbRemove(matchRef);
-    }
 
     console.log('🎮 Game started! Rounds:', remainingCards.length);
   },
@@ -284,7 +320,7 @@ export const Multiplayer = {
     const uid = auth.currentUser?.uid;
     if (!uid || !this.roomCode) return false;
 
-    const roomSnapshot = await rtdbGet(this.roomRef);
+    const roomSnapshot = await get(this.roomRef);
     const roomData = roomSnapshot.val();
 
     if (roomData.status !== 'playing') return false;
@@ -293,11 +329,8 @@ export const Multiplayer = {
     const currentRound = game.currentRound;
 
     // Check if this round already claimed
-    const roundRef = rtdbRef(
-      rtdb,
-      `rooms/${this.roomCode}/rounds/${currentRound}`,
-    );
-    const roundSnapshot = await rtdbGet(roundRef);
+    const roundRef = ref(rtdb, `rooms/${this.roomCode}/rounds/${currentRound}`);
+    const roundSnapshot = await get(roundRef);
     if (roundSnapshot.exists()) {
       console.log('🎮 Round already claimed');
       return false;
@@ -318,7 +351,7 @@ export const Multiplayer = {
 
     // Try to claim — first write wins via DB rules
     try {
-      await rtdbSet(roundRef, {
+      await set(roundRef, {
         winnerId: uid,
         symbol,
         timestamp: Date.now(),
@@ -351,7 +384,7 @@ export const Multiplayer = {
       updates['status'] = 'finished';
     }
 
-    await rtdbUpdate(this.roomRef, updates);
+    await update(this.roomRef, updates);
 
     console.log('🎮 Round claimed by', uid, 'symbol:', symbol);
     return true;
@@ -382,8 +415,8 @@ export const Multiplayer = {
     const uid = auth.currentUser?.uid;
     if (!uid || !this.roomCode) return;
 
-    const wrongRef = rtdbRef(rtdb, `rooms/${this.roomCode}/wrongTaps/${uid}`);
-    await rtdbSet(wrongRef, Date.now());
+    const wrongRef = ref(rtdb, `rooms/${this.roomCode}/wrongTaps/${uid}`);
+    await set(wrongRef, Date.now());
   },
 
   // ===== Listen to Room =====
@@ -411,7 +444,7 @@ export const Multiplayer = {
   setupDisconnectHandlers(uid) {
     if (!this.roomCode) return;
 
-    const connectedRef = rtdbRef(
+    const connectedRef = ref(
       rtdb,
       `rooms/${this.roomCode}/players/${uid}/connected`,
     );
@@ -450,18 +483,15 @@ export const Multiplayer = {
     if (!uid || !this.roomCode) return;
 
     try {
-      const playerRef = rtdbRef(rtdb, `rooms/${this.roomCode}/players/${uid}`);
-      await rtdbRemove(playerRef);
+      const playerRef = ref(rtdb, `rooms/${this.roomCode}/players/${uid}`);
+      await remove(playerRef);
 
       // If host leaves and room is waiting, delete the room
       if (this.isHost) {
-        const snapshot = await rtdbGet(this.roomRef);
+        const snapshot = await get(this.roomRef);
         const data = snapshot.val();
         if (data && data.status === 'waiting') {
-          await rtdbRemove(this.roomRef);
-          // Also clean matchmaking
-          const matchRef = rtdbRef(rtdb, `matchmaking/${this.roomCode}`);
-          await rtdbRemove(matchRef);
+          await remove(this.roomRef);
         }
       }
     } catch (err) {
@@ -488,6 +518,8 @@ export const Multiplayer = {
     Object.values(this.disconnectTimers).forEach(clearTimeout);
     this.disconnectTimers = {};
 
+    this.stopHeartbeat();
+
     this.roomCode = null;
     this.roomRef = null;
     this.isHost = false;
@@ -500,7 +532,7 @@ export const Multiplayer = {
   // ===== Get Room Status =====
   async getRoomData() {
     if (!this.roomRef) return null;
-    const snapshot = await rtdbGet(this.roomRef);
+    const snapshot = await get(this.roomRef);
     return snapshot.val();
   },
 };

@@ -12,6 +12,9 @@ import {
   onDisconnect,
   runTransaction,
   off,
+  query,
+  orderByChild,
+  equalTo,
 } from 'https://www.gstatic.com/firebasejs/12.10.0/firebase-database.js';
 
 import {
@@ -41,14 +44,17 @@ function rtdbOnDisconnect(refObj) {
 
 export {
   rtdb,
-  ref as rtdbRef,
-  set as rtdbSet,
-  get as rtdbGet,
-  update as rtdbUpdate,
-  remove as rtdbRemove,
-  push as rtdbPush,
+  ref,
+  set,
+  get,
+  update,
+  remove,
+  push,
   onValue as rtdbOnValueRaw,
   rtdbOnValue,
   rtdbOnDisconnect,
-  runTransaction as rtdbRunTransaction,
+  runTransaction,
+  query,
+  orderByChild,
+  equalTo,
 };

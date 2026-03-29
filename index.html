@@ -224,6 +224,11 @@
           <button id="$btnFindGame" class="btn-primary" data-i18n="mp.findGame">
             Найти игру
           </button>
+          <div class="mp-room-stats" id="$roomStats">
+            <span class="mp-room-stats-icon">🌐</span>
+            <span data-i18n="mp.roomsAvailable">Доступно комнат:</span>
+            <span id="$roomStatsCount" class="mp-room-stats-count">–</span>
+          </div>
         </div>
       </div>
 
@@ -582,15 +587,15 @@
         <p data-i18n="confirm.exitMessage">
           Текущий прогресс раунда будет потерян.
         </p>
+        <button id="$btnConfirmExit" class="btn-danger" data-i18n="btn.exit">
+          Выйти
+        </button>
         <button
           id="$btnContinueGame"
-          class="btn-primary"
+          class="btn-secondary"
           data-i18n="btn.continue"
         >
           Продолжить
-        </button>
-        <button id="$btnConfirmExit" class="btn-secondary" data-i18n="btn.exit">
-          Выйти
         </button>
       </div>
     </div>
