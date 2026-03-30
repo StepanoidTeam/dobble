@@ -91,6 +91,95 @@ export function updateRingProgress(ringElements, remaining) {
 }
 
 // ===== Position emojis in a circle layout =====
+
+// Base emoji diameter as % of container (mirrors --emoji-size = card-size * 0.1625)
+const BASE_EMOJI_DIAMETER = 16.25;
+const BASE_EMOJI_RADIUS = BASE_EMOJI_DIAMETER / 2;
+const CARD_CIRCLE_RADIUS = 42.5; // card-circle is 85% of container → radius 42.5%
+const RING_RADIUS = 30; // % from center for ring emojis
+const MIN_SCALE = 0.75;
+const MAX_SCALE = 1.5;
+const SCALE_PADDING = 1.5; // % gap between emoji circles
+
+function computeEmojiPositions(count) {
+  return Array.from({ length: count }, (_, i) => {
+    if (i === 0) return { x: 50, y: 50, angleDeg: 0 };
+    const angle = ((i - 1) / (count - 1)) * Math.PI * 2 - Math.PI / 2;
+    return {
+      x: 50 + RING_RADIUS * Math.cos(angle),
+      y: 50 + RING_RADIUS * Math.sin(angle),
+      angleDeg: (angle * 180) / Math.PI - 90,
+    };
+  });
+}
+
+// todo(vmyshko): unused, prev approach
+function computeMaxScales(positions) {
+  return positions.map((pos, i) => {
+    // min distance to any other emoji
+    let minDist = Infinity;
+    for (let j = 0; j < positions.length; j++) {
+      if (i === j) continue;
+      const dx = pos.x - positions[j].x;
+      const dy = pos.y - positions[j].y;
+      minDist = Math.min(minDist, Math.sqrt(dx * dx + dy * dy));
+    }
+
+    // max scale so two emojis (both at this scale) don't overlap
+    const scaleFromNeighbors =
+      (minDist - SCALE_PADDING) / (2 * BASE_EMOJI_RADIUS);
+
+    // max scale so emoji stays within card circle
+    const distFromCenter = Math.sqrt((pos.x - 50) ** 2 + (pos.y - 50) ** 2);
+    const scaleFromBounds =
+      (CARD_CIRCLE_RADIUS - distFromCenter - SCALE_PADDING) / BASE_EMOJI_RADIUS;
+
+    return Math.max(
+      MIN_SCALE,
+      Math.min(MAX_SCALE, scaleFromNeighbors, scaleFromBounds),
+    );
+  });
+}
+
+// Greedy sequential: first emojis claim max scale, later ones fit around them
+function computeGreedyScales(positions) {
+  const scales = new Array(positions.length);
+
+  for (let i = 0; i < positions.length; i++) {
+    const pos = positions[i];
+    let maxAllowed = MAX_SCALE;
+
+    // card circle boundary
+    const distFromCenter = Math.sqrt((pos.x - 50) ** 2 + (pos.y - 50) ** 2);
+    const scaleFromBounds =
+      (CARD_CIRCLE_RADIUS - distFromCenter - SCALE_PADDING) / BASE_EMOJI_RADIUS;
+    maxAllowed = Math.min(maxAllowed, scaleFromBounds);
+
+    // already-placed emojis
+    for (let j = 0; j < i; j++) {
+      const dx = pos.x - positions[j].x;
+      const dy = pos.y - positions[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      // available space = dist minus the already-claimed radius of j
+      const available = dist - scales[j] * BASE_EMOJI_RADIUS - SCALE_PADDING;
+      maxAllowed = Math.min(maxAllowed, available / BASE_EMOJI_RADIUS);
+    }
+
+    // not-yet-placed emojis (assume symmetric MIN_SCALE for them)
+    for (let j = i + 1; j < positions.length; j++) {
+      const dx = pos.x - positions[j].x;
+      const dy = pos.y - positions[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const available = dist - MIN_SCALE * BASE_EMOJI_RADIUS - SCALE_PADDING;
+      maxAllowed = Math.min(maxAllowed, available / BASE_EMOJI_RADIUS);
+    }
+
+    scales[i] = Math.max(MIN_SCALE, maxAllowed);
+  }
+
+  return scales;
+}
+
 export function positionEmojis(
   card,
   containerEl,
@@ -109,7 +198,9 @@ export function positionEmojis(
   const rotateByPosition = layoutOptions.rotateByPosition === true;
   const useCustomEmojiImages = layoutOptions.useCustomEmojiImages !== false;
 
-  // Place one emoji in center, rest around
+  const positions = computeEmojiPositions(count);
+  const maxScales = computeGreedyScales(positions);
+
   shuffledCard.forEach((symbol, i) => {
     const $el = document.createElement('div');
     $el.classList.add('emoji-item');
@@ -126,30 +217,20 @@ export function positionEmojis(
       $el.textContent = symbol;
     }
 
-    let x, y;
-    let posAngleDeg = 0;
-    if (i === 0) {
-      x = 50;
-      y = 50;
-    } else {
-      const angle = ((i - 1) / (count - 1)) * Math.PI * 2 - Math.PI / 2;
-      const radius = 30; // % from center
-      x = 50 + radius * Math.cos(angle);
-      y = 50 + radius * Math.sin(angle);
-      posAngleDeg = (angle * 180) / Math.PI - 90; // outward direction
-    }
-
+    const { x, y, angleDeg } = positions[i];
     $el.style.left = `${roundUiNumber(x)}%`;
     $el.style.top = `${roundUiNumber(y)}%`;
 
-    // Size variation + rotation aligned to position with jitter
-    const sizeVariation = 0.9 + Math.random() * 0.35;
+    // Scale within safe bounds to avoid overlap
+    const safeMax = maxScales[i];
+    const sizeVariation = MIN_SCALE + Math.random() * (safeMax - MIN_SCALE);
+
     const jitter =
       rotationRangeDegrees === 0
         ? 0
         : -rotationRangeDegrees / 2 + Math.random() * rotationRangeDegrees;
     const rotation =
-      i === 0 ? jitter : (rotateByPosition ? posAngleDeg : 0) + jitter;
+      i === 0 ? jitter : (rotateByPosition ? angleDeg : 0) + jitter;
     $el.style.scale = `${roundUiNumber(sizeVariation)}`;
     $el.style.rotate = `${roundUiNumber(rotation)}deg`;
 
