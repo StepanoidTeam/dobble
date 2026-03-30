@@ -28,12 +28,14 @@
 -- register? firebase.  
 -- select avatar.
 
+[ ] split settings into: profile/custom-extras/main
+
 [~] add select mode screen
 [] restyle win/lose page
 [] add achievements (show in player profile)
 [] share score result with friends
 [] search opponent screen
-[] search other players/host screen
+[x] search other players/host screen
 [] shop / buy boosters
 [] profile stats: win rate/ best scores / achievements
 [x] emoji collection gallery
@@ -64,7 +66,7 @@
 [x] adjust bg to better fit mockups
 [x] adjust buttons appearance
 
-[] improve bg more
+[~] improve bg more
 
 ## sounds
 
