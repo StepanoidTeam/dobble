@@ -1,9 +1,4 @@
 (async function showAppVersion({ $versionEl }) {
-  // todo(vmyshko): for debug
-  $versionEl.onclick = () => {
-    location.reload();
-  };
-
   try {
     const res = await fetch('./version.json', { cache: 'no-store' });
     if (!res.ok) {
