@@ -1105,6 +1105,7 @@ const Game = {
     this.isPlaying = true;
     this.mpLastRenderedRound = -1;
     this.mpLastPopupRound = -1;
+    this.mpLastPlayerCard = null;
     this.mpLastWrongTaps = {};
     this.score = 0;
     this.streak = 0;
@@ -1148,7 +1149,10 @@ const Game = {
     if (cards.currentRound === this.mpLastRenderedRound) return;
 
     const isFirstRender = this.mpLastRenderedRound === -1;
+    const playerCardChanged = !this.mpLastPlayerCard ||
+      JSON.stringify(this.mpLastPlayerCard) !== JSON.stringify(cards.playerCard);
     this.mpLastRenderedRound = cards.currentRound;
+    this.mpLastPlayerCard = cards.playerCard;
 
     const roomSeed = stringToSeed(Multiplayer.roomCode || '');
     const layoutOptions = {
@@ -1183,15 +1187,21 @@ const Game = {
       });
 
       this.playCardAnimation($cardTop, 'card-enter');
-      this.playCardAnimation($cardBottom, 'card-enter');
+      if (playerCardChanged) {
+        this.playCardAnimation($cardBottom, 'card-enter');
+      }
     };
 
     if (isFirstRender) {
       renderNewCards();
-    } else {
-      // Exit animation → then render new cards
+    } else if (playerCardChanged) {
+      // Current player won — animate both cards
       this.playCardAnimation($cardTop, 'card-exit');
       const exitAnim = this.playCardAnimation($cardBottom, 'card-exit');
+      exitAnim?.finished.then(renderNewCards);
+    } else {
+      // Another player won — only top card changes, bottom stays
+      const exitAnim = this.playCardAnimation($cardTop, 'card-exit');
       exitAnim?.finished.then(renderNewCards);
     }
   },
@@ -1234,7 +1244,16 @@ const Game = {
     const $gameArea = document.querySelector('.game-area');
     $gameArea.appendChild($popup);
 
-    $popup.addEventListener('animationend', () => $popup.remove());
+    $popup
+      .animate(
+        [
+          { opacity: 1, translate: '-50% -50%', scale: 0.6 },
+          { opacity: 1, scale: 1.15, offset: 0.2 },
+          { opacity: 0, translate: '-50% -180%', scale: 1 },
+        ],
+        { duration: 900, easing: 'ease-out', fill: 'forwards' },
+      )
+      .finished.then(() => $popup.remove());
   },
 
   mpShowWrongTapPopup(roomData) {
@@ -1257,7 +1276,16 @@ const Game = {
       const $gameArea = document.querySelector('.game-area');
       $gameArea.appendChild($popup);
 
-      $popup.addEventListener('animationend', () => $popup.remove());
+      $popup
+        .animate(
+          [
+            { opacity: 1, translate: '-50% -50%', scale: 0.6 },
+            { opacity: 1, scale: 1.15, offset: 0.2 },
+            { opacity: 0, translate: '-50% -180%', scale: 1 },
+          ],
+          { duration: 900, easing: 'ease-out', fill: 'forwards' },
+        )
+        .finished.then(() => $popup.remove());
     }
   },
 
