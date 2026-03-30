@@ -177,12 +177,16 @@ export const Multiplayer = {
     const rooms = snapshot.val();
     const now = Date.now();
     for (const [code, data] of Object.entries(rooms)) {
-      if (!data.autoMatchmaking) continue;
-      if (data.lastActive && now - data.lastActive > STALE_THRESHOLD_MS) {
+      // delete old rooms at first
+      if (!data.lastActive || now - data.lastActive > STALE_THRESHOLD_MS) {
         // Stale room — clean up silently
         remove(ref(rtdb, `rooms/${code}`));
         continue;
       }
+
+      //skip closed
+      if (!data.autoMatchmaking) continue;
+
       const playerCount = data.players ? Object.keys(data.players).length : 0;
       if (playerCount < data.maxPlayers) {
         try {
