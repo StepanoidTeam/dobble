@@ -81,6 +81,7 @@ export function updateRingProgress(ringElements, remaining) {
     secondLength: segmentLength,
   };
 
+  // todo(vmyshko): this is performance heavy for chrome devtools
   return; //debug
   if (Array.isArray(ringElements)) {
     ringElements.forEach((ringEl) => setCardRingSegments(ringEl, config));
