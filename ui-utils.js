@@ -1,4 +1,4 @@
-import { shuffle } from './deck.js';
+import { SeededRandom, cardToSeed } from './seeded-random.js';
 import { DEFAULT_ICON_ROTATION_DEGREES } from './settings.js';
 import { getEmojiImageUrl } from './emoji-images.js';
 
@@ -189,7 +189,10 @@ export function positionEmojis(
 ) {
   containerEl.innerHTML = '';
 
-  const shuffledCard = shuffle(card);
+  const seed = layoutOptions.seed ?? cardToSeed(card);
+  const rng = new SeededRandom(seed);
+
+  const shuffledCard = rng.shuffle(card);
   const count = shuffledCard.length;
   const rotationRangeDegrees =
     typeof layoutOptions.rotationRangeDegrees === 'number'
@@ -223,12 +226,12 @@ export function positionEmojis(
 
     // Scale within safe bounds to avoid overlap
     const safeMax = maxScales[i];
-    const sizeVariation = MIN_SCALE + Math.random() * (safeMax - MIN_SCALE);
+    const sizeVariation = MIN_SCALE + rng.random() * (safeMax - MIN_SCALE);
 
     const jitter =
       rotationRangeDegrees === 0
         ? 0
-        : -rotationRangeDegrees / 2 + Math.random() * rotationRangeDegrees;
+        : -rotationRangeDegrees / 2 + rng.random() * rotationRangeDegrees;
     const rotation =
       i === 0 ? jitter : (rotateByPosition ? angleDeg : 0) + jitter;
     $el.style.scale = `${roundUiNumber(sizeVariation)}`;

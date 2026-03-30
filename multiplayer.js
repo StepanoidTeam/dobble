@@ -17,7 +17,8 @@ import {
   orderByChild,
   equalTo,
 } from './firebase-rtdb.js';
-import { buildDeck, shuffle, findCommonSymbol } from './deck.js';
+import { buildDeck, findCommonSymbol } from './deck.js';
+import { Random } from './seeded-random.js';
 import { Profile } from './profile.js';
 
 // ===== Constants =====
@@ -271,7 +272,7 @@ export const Multiplayer = {
 
     // Generate and shuffle deck
     const { deck } = buildDeck(symbols);
-    const shuffledDeck = shuffle(deck);
+    const shuffledDeck = Random.shuffle(deck);
 
     // Take cards: first = central, rest = shared draw pile
     const totalCardsNeeded = 1 + CARDS_PER_PLAYER * playerUids.length;

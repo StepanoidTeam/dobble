@@ -211,6 +211,28 @@
   }
 }
 
+/* Card overlay animation — bottom card flies to top card position */
+.card-container.card-fly-to-top {
+  z-index: 1;
+  animation: cardFlyToTop 500ms ease-in-out forwards;
+}
+
+@keyframes cardFlyToTop {
+  0% {
+    transform: translateY(0);
+    scale: 1;
+  }
+
+  50% {
+    scale: 1.2;
+  }
+
+  100% {
+    transform: translateY(var(--fly-offset-y));
+    scale: 1;
+  }
+}
+
 /* ===== Game Area Card Sizing ===== */
 .game-area .card-container {
   width: auto;

@@ -2,7 +2,8 @@
 
 import { getDeckStatsBySymbolsCount } from './dobble-math.js';
 import { AudioManager } from './audio-manager.js';
-import { buildDeck, shuffle, findCommonSymbol, sample } from './deck.js';
+import { buildDeck, findCommonSymbol } from './deck.js';
+import { Random } from './seeded-random.js';
 import { initI18n, setLang, t, getSupportedLangs, getLang } from './i18n.js';
 import {
   roundUiNumber,
@@ -34,6 +35,7 @@ import './auth.js';
 const FEEDBACK_CORRECT = 'correct';
 const FEEDBACK_WRONG = 'wrong';
 const CARD_TRANSITION_DURATION_MS = 350;
+const CARD_FLY_DURATION_MS = 500;
 
 // ===== Scoring Constants =====
 const SCORE_BASE = 100;
@@ -238,7 +240,9 @@ const Game = {
     let currentLogoMod = null;
     $logoIcon.addEventListener('click', () => {
       if (currentLogoMod) $logoIcon.classList.remove(currentLogoMod);
-      currentLogoMod = sample(logoMods.filter((m) => m !== currentLogoMod));
+      currentLogoMod = Random.sample(
+        logoMods.filter((m) => m !== currentLogoMod),
+      );
       $logoIcon.classList.add(currentLogoMod);
 
       $logoContainer.classList.remove('logo-press');
@@ -441,7 +445,7 @@ const Game = {
   renderPreviewCard() {
     const stats = this.getCurrentDeckStats();
     const symbolsPerCard = stats ? stats.symbolsPerCard : 8;
-    const previewSymbols = shuffle(this.getCurrentSymbols()).slice(
+    const previewSymbols = Random.shuffle(this.getCurrentSymbols()).slice(
       0,
       symbolsPerCard,
     );
@@ -583,7 +587,7 @@ const Game = {
 
     // Generate and shuffle deck
     const { deck } = buildDeck(this.getCurrentSymbols());
-    this.deck = shuffle(deck);
+    this.deck = Random.shuffle(deck);
 
     // Limit to totalCardsInGame + 1 cards (need pairs)
     this.deck = this.deck.slice(0, this.totalCardsInGame + 1);
@@ -641,17 +645,60 @@ const Game = {
   },
 
   transitionToNextCards() {
-    this.playCardAnimation($cardTop, 'card-exit');
-    this.playCardAnimation($cardBottom, 'card-exit');
+    const $bottomContainer = $cardBottom.closest('.card-container');
+    const $topContainer = $cardTop.closest('.card-container');
+
+    // Calculate fly distance between card centers
+    const topRect = $topContainer.getBoundingClientRect();
+    const bottomRect = $bottomContainer.getBoundingClientRect();
+    const offsetY =
+      topRect.top +
+      topRect.height / 2 -
+      (bottomRect.top + bottomRect.height / 2);
+
+    // Animate bottom card flying up to overlay the top card
+    $bottomContainer.style.setProperty('--fly-offset-y', `${offsetY}px`);
+    $bottomContainer.classList.add('card-fly-to-top');
 
     setTimeout(() => {
+      // Clean up fly animation
+      $bottomContainer.classList.remove('card-fly-to-top');
+      $bottomContainer.style.removeProperty('--fly-offset-y');
+
+      // Swap card data
       this.topCard = this.bottomCard;
       this.bottomCard = this.deck[this.currentCardIndex];
-      this.renderCards();
+
+      // Render top card silently (visually same content that just flew up)
+      const onSymbolClick = (symbol, $el) =>
+        this.handleSymbolClick(symbol, $el);
+      const layoutOptions = {
+        rotationRangeDegrees: this.iconRotationDegrees,
+        rotateByPosition: this.rotateByPosition,
+        useCustomEmojiImages: this.useCustomEmojiRender,
+      };
+      positionEmojis(
+        this.topCard,
+        $cardTop,
+        true,
+        onSymbolClick,
+        layoutOptions,
+      );
+
+      // Render new bottom card with enter animation
+      positionEmojis(
+        this.bottomCard,
+        $cardBottom,
+        true,
+        onSymbolClick,
+        layoutOptions,
+      );
+      this.playCardAnimation($cardBottom, 'card-enter');
+
       this.updateCardsRemaining();
       this.startCardTimer();
       this.isInputLocked = false;
-    }, CARD_TRANSITION_DURATION_MS);
+    }, CARD_FLY_DURATION_MS);
   },
 
   handleSymbolClick(symbol, $el) {

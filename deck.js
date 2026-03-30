@@ -61,21 +61,6 @@ export function buildDeck(symbols) {
   };
 }
 
-// Pick a random element from arr
-export function sample(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-// Fisher-Yates shuffle
-export function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
 // Find the common symbol between two cards
 export function findCommonSymbol(card1, card2) {
   for (const sym of card1) {

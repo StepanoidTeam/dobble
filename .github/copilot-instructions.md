@@ -20,7 +20,7 @@
 ### Module structure
 
 - Pure utility functions → free-standing `export function` in a `utils`-style module
-- Stateful managers → exported singleton object (e.g., `Game`, `AudioManager`), not ES6 classes
+- Stateful managers → exported singleton object (e.g., `Game`, `AudioManager`) or ES6 classes when they better fit (e.g., multiple instances, seeded helpers)
 - Each module has a single responsibility and is imported where needed
 
 ### DOM
