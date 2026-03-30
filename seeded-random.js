@@ -11,14 +11,18 @@ function mulberry32(seed) {
   };
 }
 
-// Deterministic seed from card symbols
-export function cardToSeed(card) {
+// Deterministic seed from a string
+export function stringToSeed(str) {
   let hash = 0;
-  const str = card.join('|');
   for (let i = 0; i < str.length; i++) {
     hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
   }
   return hash;
+}
+
+// Deterministic seed from card symbols
+export function cardToSeed(card) {
+  return stringToSeed(card.join('|'));
 }
 
 export class SeededRandom {

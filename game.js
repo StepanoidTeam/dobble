@@ -3,7 +3,7 @@
 import { getDeckStatsBySymbolsCount } from './dobble-math.js';
 import { AudioManager } from './audio-manager.js';
 import { buildDeck, findCommonSymbol } from './deck.js';
-import { Random } from './seeded-random.js';
+import { Random, stringToSeed, cardToSeed } from './seeded-random.js';
 import { initI18n, setLang, t, getSupportedLangs, getLang } from './i18n.js';
 import {
   roundUiNumber,
@@ -1116,6 +1116,7 @@ const Game = {
     const isFirstRender = this.mpLastRenderedRound === -1;
     this.mpLastRenderedRound = cards.currentRound;
 
+    const roomSeed = stringToSeed(Multiplayer.roomCode || '');
     const layoutOptions = {
       rotationRangeDegrees: this.iconRotationDegrees,
       rotateByPosition: this.rotateByPosition,
@@ -1124,7 +1125,10 @@ const Game = {
 
     const renderNewCards = () => {
       if (cards.isPlayerDone) {
-        positionEmojis(cards.centralCard, $cardTop, false, null, layoutOptions);
+        positionEmojis(cards.centralCard, $cardTop, false, null, {
+          ...layoutOptions,
+          seed: cardToSeed(cards.centralCard) ^ roomSeed,
+        });
         $cardBottom.innerHTML =
           '<span style="font-size:2rem;opacity:0.5">⏳</span>';
         this.playCardAnimation($cardTop, 'card-enter');
@@ -1133,16 +1137,16 @@ const Game = {
 
       const onSymbolClick = (symbol, $el) => this.mpTapSymbol(symbol);
 
-      // Central card (top) — not clickable
-      positionEmojis(cards.centralCard, $cardTop, false, null, layoutOptions);
-      // Player card (bottom) — clickable
-      positionEmojis(
-        cards.playerCard,
-        $cardBottom,
-        true,
-        onSymbolClick,
-        layoutOptions,
-      );
+      // Central card (top) — not clickable, seed shared across all players
+      positionEmojis(cards.centralCard, $cardTop, false, null, {
+        ...layoutOptions,
+        seed: cardToSeed(cards.centralCard) ^ roomSeed,
+      });
+      // Player card (bottom) — clickable, seed shared across all players
+      positionEmojis(cards.playerCard, $cardBottom, true, onSymbolClick, {
+        ...layoutOptions,
+        seed: cardToSeed(cards.playerCard) ^ roomSeed,
+      });
 
       this.playCardAnimation($cardTop, 'card-enter');
       this.playCardAnimation($cardBottom, 'card-enter');
