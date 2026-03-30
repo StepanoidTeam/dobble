@@ -186,37 +186,65 @@
 
         $grid.innerHTML = '';
 
-        symbols.forEach((emoji, i) => {
-          const imageUrl = getEmojiImageUrl(emoji);
-          const hasImage = !!imageUrl;
+        const updateSummary = () => {
+          $summary.textContent = `${symbols.length} эмодзи · ${withImage} с картинкой · ${withoutImage} без картинки`;
+        };
+        updateSummary();
 
-          if (hasImage) withImage++;
-          else withoutImage++;
+        symbols.forEach((emoji, i) => {
+          const imageUrl = getEmojiImageUrl(emoji, setKey);
 
           const $card = document.createElement('div');
-          $card.classList.add(
-            'emoji-card',
-            hasImage ? 'has-image' : 'no-image',
-          );
+          $card.classList.add('emoji-card');
 
-          let customHtml;
-          if (hasImage) {
-            customHtml = `<img class="emoji-custom" src="${imageUrl}" alt="${emoji}" onerror="this.classList.add('missing'); this.outerHTML='<div class=\\'emoji-custom missing\\'>404</div>'">`;
-          } else {
-            customHtml = `<div class="emoji-custom missing">—</div>`;
+          const $native = document.createElement('span');
+          $native.classList.add('emoji-native');
+          $native.textContent = emoji;
+
+          const $custom = document.createElement('div');
+          $custom.classList.add('emoji-custom', 'missing');
+          $custom.textContent = '…';
+
+          const $label = document.createElement('span');
+          $label.classList.add('emoji-label');
+          $label.textContent = `#${i + 1}`;
+
+          const $path = document.createElement('span');
+          $path.classList.add('emoji-path');
+          $path.textContent = imageUrl || 'no set key';
+
+          $card.append($native, $custom, $label, $path);
+          $grid.appendChild($card);
+
+          if (!imageUrl) {
+            $card.classList.add('no-image');
+            $custom.textContent = '—';
+            $label.textContent += ' ❌';
+            withoutImage++;
+            updateSummary();
+            return;
           }
 
-          $card.innerHTML = `
-            <span class="emoji-native">${emoji}</span>
-            ${customHtml}
-            <span class="emoji-label">#${i + 1} ${hasImage ? '✅' : '❌'}</span>
-            <span class="emoji-path">${imageUrl || 'no mapping'}</span>
-          `;
-
-          $grid.appendChild($card);
+          const $img = new Image();
+          $img.classList.add('emoji-custom');
+          $img.alt = emoji;
+          $img.draggable = false;
+          $img.onload = () => {
+            $card.classList.add('has-image');
+            $custom.replaceWith($img);
+            $label.textContent += ' ✅';
+            withImage++;
+            updateSummary();
+          };
+          $img.onerror = () => {
+            $card.classList.add('no-image');
+            $custom.textContent = '404';
+            $label.textContent += ' ❌';
+            withoutImage++;
+            updateSummary();
+          };
+          $img.src = imageUrl;
         });
-
-        $summary.textContent = `${symbols.length} эмодзи · ${withImage} с картинкой · ${withoutImage} без картинки`;
       }
 
       $setSelect.addEventListener('change', () => render($setSelect.value));

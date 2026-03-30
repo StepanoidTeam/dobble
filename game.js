@@ -454,6 +454,7 @@ const Game = {
       rotationRangeDegrees: this.iconRotationDegrees,
       rotateByPosition: this.rotateByPosition,
       useCustomEmojiImages: this.useCustomEmojiRender,
+      emojiSetKey: this.selectedEmojiSetKey,
     });
   },
 
@@ -643,6 +644,7 @@ const Game = {
       rotationRangeDegrees: this.iconRotationDegrees,
       rotateByPosition: this.rotateByPosition,
       useCustomEmojiImages: this.useCustomEmojiRender,
+      emojiSetKey: this.selectedEmojiSetKey,
     };
     positionEmojis(this.topCard, $cardTop, true, onSymbolClick, layoutOptions);
     positionEmojis(
@@ -704,6 +706,7 @@ const Game = {
         rotationRangeDegrees: this.iconRotationDegrees,
         rotateByPosition: this.rotateByPosition,
         useCustomEmojiImages: this.useCustomEmojiRender,
+        emojiSetKey: this.selectedEmojiSetKey,
       };
       positionEmojis(
         this.topCard,
@@ -1161,6 +1164,7 @@ const Game = {
       rotationRangeDegrees: this.iconRotationDegrees,
       rotateByPosition: this.rotateByPosition,
       useCustomEmojiImages: this.useCustomEmojiRender,
+      emojiSetKey: this.selectedEmojiSetKey,
     };
 
     const renderNewCards = () => {

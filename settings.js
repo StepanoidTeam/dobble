@@ -24,7 +24,7 @@ export const DEFAULT_ICON_ROTATION_DEGREES = 40;
 // ===== Emoji Sets =====
 export const EMOJI_SETS = [
   {
-    key: 'origin',
+    key: 'classic',
     label: `${EMOJIS_CLASSIC.at(0)}Классический`,
     symbols: EMOJIS_CLASSIC,
   },

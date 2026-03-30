@@ -200,6 +200,7 @@ export function positionEmojis(
       : DEFAULT_ICON_ROTATION_DEGREES;
   const rotateByPosition = layoutOptions.rotateByPosition === true;
   const useCustomEmojiImages = layoutOptions.useCustomEmojiImages !== false;
+  const emojiSetKey = layoutOptions.emojiSetKey;
 
   const positions = computeEmojiPositions(count);
   const maxScales = computeGreedyScales(positions);
@@ -209,12 +210,18 @@ export function positionEmojis(
     $el.classList.add('emoji-item');
     $el.dataset.symbol = symbol;
 
-    const imageUrl = useCustomEmojiImages ? getEmojiImageUrl(symbol) : null;
+    const imageUrl = useCustomEmojiImages
+      ? getEmojiImageUrl(symbol, emojiSetKey)
+      : null;
     if (imageUrl) {
       const $img = document.createElement('img');
       $img.src = imageUrl;
       $img.alt = symbol;
       $img.draggable = false;
+      $img.onerror = () => {
+        $el.removeChild($img);
+        $el.textContent = symbol;
+      };
       $el.appendChild($img);
     } else {
       $el.textContent = symbol;
