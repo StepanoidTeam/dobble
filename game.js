@@ -683,7 +683,7 @@ const Game = {
       (bottomRect.top + bottomRect.height / 2);
 
     // Animate bottom card flying up to overlay the top card
-    const flyAnimation = $bottomContainer.animate(
+    const flyAnimation = $cardBottom.animate(
       [
         { transform: 'translateY(0)', scale: 1, zIndex: 1 },
         { scale: 1.2, zIndex: 1, offset: 0.5 },
@@ -1149,8 +1149,10 @@ const Game = {
     if (cards.currentRound === this.mpLastRenderedRound) return;
 
     const isFirstRender = this.mpLastRenderedRound === -1;
-    const playerCardChanged = !this.mpLastPlayerCard ||
-      JSON.stringify(this.mpLastPlayerCard) !== JSON.stringify(cards.playerCard);
+    const playerCardChanged =
+      !this.mpLastPlayerCard ||
+      JSON.stringify(this.mpLastPlayerCard) !==
+        JSON.stringify(cards.playerCard);
     this.mpLastRenderedRound = cards.currentRound;
     this.mpLastPlayerCard = cards.playerCard;
 

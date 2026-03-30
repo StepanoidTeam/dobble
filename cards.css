@@ -28,8 +28,8 @@
   overflow: hidden;
 
   /* box-shadow: 0 0 20px 20px #5d3293bf; */
-  /* box-shadow: 0px 8px 10px 10px #3b0e74bf; */
-  box-shadow: 0px 20px 50px 10px #4a1291;
+  box-shadow: 0px 8px 10px 10px #3b0e74bf;
+  /* box-shadow: 0px 20px 50px 10px #4a1291; */
 
   background-image: url(./images/paper.png);
   background-size: cover;
@@ -56,7 +56,6 @@
 .card-ring {
   position: absolute;
   pointer-events: none;
-  z-index: 1;
   top: 0;
   left: 0;
   width: 100%;
@@ -122,7 +121,6 @@
   cursor: pointer;
   transition: scale 0.15s;
   line-height: 1;
-  z-index: 1;
   translate: -50% -50%;
 
   img {

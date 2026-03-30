@@ -1,5 +1,7 @@
-.emoji-item {
-  background-color: rgba(255, 192, 203, 0.704);
-  border-radius: 50%;
-  border: 2px solid rgba(255, 0, 0, 0.676);
+[debug] {
+  .emoji-item {
+    background-color: rgba(255, 192, 203, 0.704);
+    border-radius: 50%;
+    border: 2px solid rgba(255, 0, 0, 0.676);
+  }
 }
