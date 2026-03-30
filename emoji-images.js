@@ -5,7 +5,7 @@
 
 // todo(vmyshko): we can just name images using emojis, and do not rely on mappings at all
 const CUSTOM_EMOJI_IMAGES = new Map([
-  // emojis-origin.js — green
+  // emojis-classic.js — green
   ['🦖', './images/emojis/dino.png'],
   ['🐢', './images/emojis/turtle.png'],
   ['🥕', './images/emojis/carrot.png'],
@@ -17,7 +17,7 @@ const CUSTOM_EMOJI_IMAGES = new Map([
   ['🦠', './images/emojis/splatter2.png'], // клякса
   ['🫟', './images/emojis/splatter.png'], // клякса
 
-  // emojis-origin.js — violet
+  // emojis-classic.js — violet
   ['🐉', './images/emojis/dragon.png'],
   ['✂️', './images/emojis/scissors-violet.png'],
   ['🐦', './images/emojis/bird.png'],
@@ -31,7 +31,7 @@ const CUSTOM_EMOJI_IMAGES = new Map([
   ['🕯️', './images/emojis/candle.png'],
   ['🐱', './images/emojis/cat.png'], // кот
 
-  // emojis-origin.js — orange
+  // emojis-classic.js — orange
   ['🚕', './images/emojis/taxi.png'],
   ['🔨', './images/emojis/hammer.png'],
   ['🍼', './images/emojis/milkbottle.png'],
@@ -42,7 +42,7 @@ const CUSTOM_EMOJI_IMAGES = new Map([
   ['🏆', './images/emojis/trophy.png'],
   ['🎼', './images/emojis/musical-score.png'], // скрипичный ключ?
 
-  // emojis-origin.js — blue
+  // emojis-classic.js — blue
   ['🧊', './images/emojis/ice-cube.png'],
   ['🏠', './images/emojis/ice-home.png'], // ледяной дом — тот же файл, конфликт с 🧊
   ['👻', './images/emojis/ghost.png'],
@@ -52,7 +52,7 @@ const CUSTOM_EMOJI_IMAGES = new Map([
   ['❄️', './images/emojis/snowflake.png'], // снежинка
   ['🐬', './images/emojis/dolphin.png'],
 
-  // emojis-origin.js — red
+  // emojis-classic.js — red
   ['🎯', './images/emojis/target.png'],
   ['❤️', './images/emojis/heart.png'],
   ['🍁', './images/emojis/mapleleaf.png'],
@@ -64,7 +64,7 @@ const CUSTOM_EMOJI_IMAGES = new Map([
   ['🐞', './images/emojis/ladybug.png'], // божья коровка
   ['🔥', './images/emojis/fire.png'], // огонь
 
-  // emojis-origin.js — yellow
+  // emojis-classic.js — yellow
   ['🐶', './images/emojis/puppy.png'],
   ['💡', './images/emojis/lightbulb.png'],
   // ['💡', './images/emojis/lightbulb2.png'],// альтернатива
@@ -75,7 +75,7 @@ const CUSTOM_EMOJI_IMAGES = new Map([
   ['🧀', './images/emojis/cheese.png'], // сыр
   ['🌼', './images/emojis/flower.png'], // ромашка
 
-  // emojis-origin.js — black
+  // emojis-classic.js — black
   ['🦓', './images/emojis/zebra.png'], // зебра
   ['🔒', './images/emojis/padlock.png'], // замок
   ['☯️', './images/emojis/yinyang.png'], // инь-янь

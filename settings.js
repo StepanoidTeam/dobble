@@ -1,6 +1,6 @@
-import { ALL_SYMBOLS as BASE_SYMBOLS } from './emojis-claude.js';
-import { ALL_SYMBOLS as ORIGIN_SYMBOLS } from './emojis-origin.js';
-import { ALL_SYMBOLS as INSECT_SYMBOLS } from './emojis-insects.js';
+import { EMOJIS_CLAUDE } from './emojis-claude.js';
+import { EMOJIS_CLASSIC } from './emojis-classic.js';
+import { EMOJIS_INSECTS } from './emojis-insects.js';
 
 // ===== Storage Keys =====
 export const EMOJI_SET_STORAGE_KEY = 'dobble_emoji_set';
@@ -24,19 +24,19 @@ export const DEFAULT_ICON_ROTATION_DEGREES = 40;
 // ===== Emoji Sets =====
 export const EMOJI_SETS = [
   {
-    key: 'base',
-    label: `${BASE_SYMBOLS.at(0)}Базовый`,
-    symbols: BASE_SYMBOLS,
+    key: 'origin',
+    label: `${EMOJIS_CLASSIC.at(0)}Классический`,
+    symbols: EMOJIS_CLASSIC,
   },
   {
-    key: 'origin',
-    label: `${ORIGIN_SYMBOLS.at(0)}Классический`,
-    symbols: ORIGIN_SYMBOLS,
+    key: 'base',
+    label: `${EMOJIS_CLAUDE.at(0)}Базовый`,
+    symbols: EMOJIS_CLAUDE,
   },
   {
     key: 'insects',
-    label: `${INSECT_SYMBOLS.at(0)}Насекомые`,
-    symbols: INSECT_SYMBOLS,
+    label: `${EMOJIS_INSECTS.at(0)}Насекомые`,
+    symbols: EMOJIS_INSECTS,
   },
 ];
 

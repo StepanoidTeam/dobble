@@ -1,4 +1,4 @@
-export const ALL_SYMBOLS = [
+export const EMOJIS_CLASSIC = [
   // green
   '🦠', // Клякса
   '🦖', // динозавр
