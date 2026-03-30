@@ -499,11 +499,32 @@ export const Multiplayer = {
           await remove(this.roomRef);
         }
       }
+
+      // Auto-finish if only one player remains during an active game
+      await this.autoFinishIfAlone();
     } catch (err) {
       console.log('🎮 Error leaving room:', err);
     }
 
     this.cleanup();
+  },
+
+  // Auto-finish game when only one player is left
+  async autoFinishIfAlone() {
+    if (!this.roomRef) return;
+    try {
+      const snapshot = await get(this.roomRef);
+      const data = snapshot.val();
+      if (!data || data.status !== 'playing') return;
+
+      const remainingPlayers = Object.keys(data.players || {});
+      if (remainingPlayers.length <= 1) {
+        console.log('🎮 Only one player left — auto-finishing game');
+        await update(this.roomRef, { status: 'finished' });
+      }
+    } catch {
+      /* room may already be deleted */
+    }
   },
 
   // ===== Cleanup =====

@@ -855,6 +855,12 @@ const Game = {
     this.pausedCardElapsed = 0;
     this.mpToggleHud(false);
     $screenExitConfirm.hidden = true;
+
+    // Leave multiplayer room if in one
+    if (Multiplayer.roomCode) {
+      Multiplayer.leaveRoom();
+    }
+
     this.showScreen($screenStart);
   },
 
