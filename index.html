@@ -203,7 +203,7 @@
         </div>
 
         <div class="mp-options">
-          <div class="mp-join-row flex-row items-center gap-1">
+          <div class="mp-join-row flex-row items-center gap-4">
             <input
               type="text"
               id="$inputRoomCode"
@@ -590,16 +590,18 @@
         <p data-i18n="confirm.exitMessage">
           Текущий прогресс раунда будет потерян.
         </p>
-        <button id="$btnConfirmExit" class="btn-danger" data-i18n="btn.exit">
-          Выйти
-        </button>
-        <button
-          id="$btnContinueGame"
-          class="btn-secondary"
-          data-i18n="btn.continue"
-        >
-          Продолжить
-        </button>
+        <div class="flex-col gap-4">
+          <button id="$btnConfirmExit" class="btn-danger" data-i18n="btn.exit">
+            Выйти
+          </button>
+          <button
+            id="$btnContinueGame"
+            class="btn-secondary"
+            data-i18n="btn.continue"
+          >
+            Продолжить
+          </button>
+        </div>
       </div>
     </div>
 
@@ -668,12 +670,18 @@
           <span class="stat-label" data-i18n="stat.streak">Лучший стрик</span>
         </div>
       </div>
-      <button id="$btnPlayAgain" class="btn-primary" data-i18n="btn.playAgain">
-        Играть снова
-      </button>
-      <button id="$btnMenu" class="btn-secondary" data-i18n="btn.menu">
-        В меню
-      </button>
+      <div class="flex-col gap-4">
+        <button
+          id="$btnPlayAgain"
+          class="btn-primary w-200p"
+          data-i18n="btn.playAgain"
+        >
+          Играть снова
+        </button>
+        <button id="$btnMenu" class="btn-secondary" data-i18n="btn.menu">
+          В меню
+        </button>
+      </div>
     </div>
   </body>
 </html>
