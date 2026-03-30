@@ -96,17 +96,6 @@ body {
   .hud-value {
     font-size: 12px;
   }
-  .card-container {
-    width: min(70vw, 260px);
-    height: min(70vw, 260px);
-  }
-  .game-area .card-container {
-    width: auto;
-    height: min(100%, 260px);
-  }
-  .emoji-item {
-    font-size: 42px;
-  }
   .game-area {
     gap: 10px;
   }
@@ -118,17 +107,6 @@ body {
   }
   .hud-value {
     font-size: 11px;
-  }
-  .card-container {
-    width: min(60vw, 220px);
-    height: min(60vw, 220px);
-  }
-  .game-area .card-container {
-    width: auto;
-    height: min(100%, 220px);
-  }
-  .emoji-item {
-    font-size: 34px;
   }
 }
 

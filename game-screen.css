@@ -76,16 +76,7 @@
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  max-width: 400px;
   overflow: hidden;
-
-  .card-container {
-    width: auto;
-    max-width: 100%;
-    height: min(100%, 80vw, 320px);
-    aspect-ratio: 1;
-    flex-shrink: 1;
-  }
 }
 
 /* ===== Feedback Icon (check / cross) ===== */

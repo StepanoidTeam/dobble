@@ -1,19 +1,24 @@
 /* ===== Cards ===== */
 .card-container {
+  --card-size: min(80vw, 420px);
+  --emoji-size: calc(var(--card-size) * 0.1625);
+
   display: flex;
   position: relative;
   align-items: center;
   justify-content: center;
 
-  width: min(80vw, 320px);
-  height: min(80vw, 320px);
+  width: var(--card-size);
+  height: var(--card-size);
 }
 
 .card-circle {
   position: absolute;
 
-  width: 85%;
-  height: 85%;
+  --size: 85%;
+
+  width: var(--size);
+  height: var(--size);
   background: var(--card-bg);
   border-radius: 50%;
   display: flex;
@@ -23,6 +28,7 @@
   overflow: hidden;
 
   /* box-shadow: 0 0 20px 20px #5d3293bf; */
+  /* box-shadow: 0px 8px 10px 10px #3b0e74bf; */
   box-shadow: 0px 20px 50px 10px #4a1291;
 
   background-image: url(./images/paper.png);
@@ -57,6 +63,8 @@
   --ring-segment-b-length: 18;
   --ring-segment-b-start: 59;
 
+  /* animation: ringRotate 36s ease-in-out infinite; */
+
   .card-ring-svg {
     width: 100%;
     height: 100%;
@@ -66,6 +74,15 @@
     scale: 1.05;
 
     filter: drop-shadow(0 0 6px #511a67);
+  }
+}
+
+@keyframes ringRotate {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: 360deg;
   }
 }
 
@@ -97,7 +114,7 @@
 /* Emoji items on cards */
 .emoji-item {
   position: absolute;
-  font-size: 52px;
+  font-size: var(--emoji-size);
   cursor: pointer;
   transition: scale 0.15s;
   line-height: 1;
@@ -191,6 +208,28 @@
   to {
     transform: scale(1) rotate(0deg);
     opacity: 1;
+  }
+}
+
+/* ===== Game Area Card Sizing ===== */
+.game-area .card-container {
+  width: auto;
+  max-width: 100%;
+  height: min(100%, var(--card-size));
+  aspect-ratio: 1;
+  flex-shrink: 1;
+}
+
+/* ===== Responsive ===== */
+@media (max-height: 680px) {
+  .card-container {
+    --card-size: min(70vw, 260px);
+  }
+}
+
+@media (max-height: 580px) {
+  .card-container {
+    --card-size: min(60vw, 220px);
   }
 }
 
