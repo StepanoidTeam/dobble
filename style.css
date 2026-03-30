@@ -65,28 +65,6 @@ body {
   pointer-events: none;
   z-index: 1;
   opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.flash-overlay.flash-correct {
-  background: radial-gradient(circle, rgba(76, 175, 80, 0.3), transparent 70%);
-  opacity: 1;
-  animation: flashFade 0.4s ease-out forwards;
-}
-
-.flash-overlay.flash-wrong {
-  background: radial-gradient(circle, rgba(244, 67, 54, 0.3), transparent 70%);
-  opacity: 1;
-  animation: flashFade 0.4s ease-out forwards;
-}
-
-@keyframes flashFade {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
 }
 
 /* ===== Responsive ===== */

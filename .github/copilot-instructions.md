@@ -79,6 +79,11 @@
 - Flexbox for all flow layout; absolute positioning only for overlays and decorative elements
 - Prefer `min()` / `max()` / `clamp()` for fluid sizing
 
+### z-index
+
+- Use only small values: `1`, `2`, `3` — no magic numbers like `10`, `99`, `999`
+- Rely on stacking context and DOM order first; add `z-index` only when necessary
+
 ## HTML
 
 ### IDs

@@ -36,6 +36,7 @@ const FEEDBACK_CORRECT = 'correct';
 const FEEDBACK_WRONG = 'wrong';
 const CARD_TRANSITION_DURATION_MS = 350;
 const CARD_FLY_DURATION_MS = 500;
+const MP_WRONG_PENALTY_MS = 3000;
 
 // ===== Scoring Constants =====
 const SCORE_BASE = 100;
@@ -418,15 +419,15 @@ const Game = {
 
       if (remaining <= 0 && !this.isPreviewTransitioning) {
         this.isPreviewTransitioning = true;
-        this.playCardAnimation($cardPreview, 'card-exit');
+        const exitAnim = this.playCardAnimation($cardPreview, 'card-exit');
 
-        setTimeout(() => {
+        exitAnim?.finished.then(() => {
           this.renderPreviewCard();
           this.playCardAnimation($cardPreview, 'card-enter');
           this.previewCardStartTime = Date.now();
           updateRingProgress(this.$previewCardRing, 1);
           this.isPreviewTransitioning = false;
-        }, CARD_TRANSITION_DURATION_MS);
+        });
       }
 
       this.previewAnimationFrameId = requestAnimationFrame(tick);
@@ -511,9 +512,10 @@ const Game = {
   },
 
   hudBump($el) {
-    $el.classList.remove('hud-bump');
-    void $el.offsetWidth;
-    $el.classList.add('hud-bump');
+    $el.animate([{ scale: 1 }, { scale: 1.35, offset: 0.3 }, { scale: 1 }], {
+      duration: 350,
+      easing: 'ease-out',
+    });
   },
 
   showScorePopup(points) {
@@ -527,7 +529,16 @@ const Game = {
     const $gameArea = document.querySelector('.game-area');
     $gameArea.appendChild($popup);
 
-    $popup.addEventListener('animationend', () => $popup.remove());
+    $popup
+      .animate(
+        [
+          { opacity: 1, translate: '-50% -50%', scale: 0.6 },
+          { opacity: 1, scale: 1.15, offset: 0.2 },
+          { opacity: 0, translate: '-50% -180%', scale: 1 },
+        ],
+        { duration: 900, easing: 'ease-out', fill: 'forwards' },
+      )
+      .finished.then(() => $popup.remove());
   },
 
   updateElapsedTime() {
@@ -536,12 +547,16 @@ const Game = {
   },
 
   flash(feedbackType) {
-    this.$flashOverlay.className = 'flash-overlay';
-    // Force reflow
-    void this.$flashOverlay.offsetWidth;
-    this.$flashOverlay.classList.add(
-      feedbackType === FEEDBACK_CORRECT ? 'flash-correct' : 'flash-wrong',
-    );
+    const color =
+      feedbackType === FEEDBACK_CORRECT
+        ? 'rgba(76, 175, 80, 0.3)'
+        : 'rgba(244, 67, 54, 0.3)';
+    const bg = `radial-gradient(circle, ${color}, transparent 70%)`;
+    this.$flashOverlay.style.background = bg;
+    this.$flashOverlay.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: 400,
+      easing: 'ease-out',
+    });
   },
 
   showFeedbackIcon(feedbackType) {
@@ -555,13 +570,18 @@ const Game = {
     const $img = document.querySelector(`.${iconImgs[feedbackType]}`);
 
     $img.hidden = false;
-
     $icon.hidden = false;
-    // Re-trigger animation
-    $img.style.animation = 'none';
-    void $img.offsetWidth;
-    $img.style.animation = '';
+
     clearTimeout(this._feedbackTimer);
+    $img.animate(
+      [
+        { opacity: 0, scale: 0.3 },
+        { opacity: 1, scale: 1.2, offset: 0.4 },
+        { scale: 0.95, offset: 0.7 },
+        { opacity: 1, scale: 1 },
+      ],
+      { duration: 450, easing: 'ease-out' },
+    );
     this._feedbackTimer = setTimeout(() => {
       $icon.hidden = true;
       $img.hidden = true;
@@ -637,11 +657,17 @@ const Game = {
     this.playCardAnimation($cardBottom, 'card-enter');
   },
 
-  playCardAnimation($cardEl, className) {
-    if (!$cardEl) return;
-    $cardEl.classList.remove('card-enter', 'card-exit');
-    void $cardEl.offsetWidth;
-    $cardEl.classList.add(className);
+  playCardAnimation($cardEl, direction) {
+    if (!$cardEl) return null;
+    const keyframes = [
+      { transform: 'scale(0.8)', opacity: 0 },
+      { transform: 'scale(1.03) rotate(6deg)', opacity: 1, offset: 0.55 },
+      { transform: 'scale(1) rotate(0deg)', opacity: 1 },
+    ];
+    return $cardEl.animate(
+      direction === 'card-exit' ? [...keyframes].reverse() : keyframes,
+      { duration: CARD_TRANSITION_DURATION_MS, easing: 'ease-out' },
+    );
   },
 
   transitionToNextCards() {
@@ -657,14 +683,16 @@ const Game = {
       (bottomRect.top + bottomRect.height / 2);
 
     // Animate bottom card flying up to overlay the top card
-    $bottomContainer.style.setProperty('--fly-offset-y', `${offsetY}px`);
-    $bottomContainer.classList.add('card-fly-to-top');
+    const flyAnimation = $bottomContainer.animate(
+      [
+        { transform: 'translateY(0)', scale: 1, zIndex: 1 },
+        { scale: 1.2, zIndex: 1, offset: 0.5 },
+        { transform: `translateY(${offsetY}px)`, scale: 1, zIndex: 1 },
+      ],
+      { duration: CARD_FLY_DURATION_MS, easing: 'ease-in-out' },
+    );
 
-    setTimeout(() => {
-      // Clean up fly animation
-      $bottomContainer.classList.remove('card-fly-to-top');
-      $bottomContainer.style.removeProperty('--fly-offset-y');
-
+    flyAnimation.finished.then(() => {
       // Swap card data
       this.topCard = this.bottomCard;
       this.bottomCard = this.deck[this.currentCardIndex];
@@ -698,7 +726,7 @@ const Game = {
       this.updateCardsRemaining();
       this.startCardTimer();
       this.isInputLocked = false;
-    }, CARD_FLY_DURATION_MS);
+    });
   },
 
   handleSymbolClick(symbol, $el) {
@@ -1163,8 +1191,8 @@ const Game = {
     } else {
       // Exit animation → then render new cards
       this.playCardAnimation($cardTop, 'card-exit');
-      this.playCardAnimation($cardBottom, 'card-exit');
-      setTimeout(renderNewCards, CARD_TRANSITION_DURATION_MS);
+      const exitAnim = this.playCardAnimation($cardBottom, 'card-exit');
+      exitAnim?.finished.then(renderNewCards);
     }
   },
 
@@ -1242,15 +1270,21 @@ const Game = {
     if (claimed) {
       this.showFeedbackIcon(FEEDBACK_CORRECT);
       AudioManager.play('correct');
+      setTimeout(() => {
+        this.isInputLocked = false;
+      }, CARD_TRANSITION_DURATION_MS);
     } else {
       this.showFeedbackIcon(FEEDBACK_WRONG);
       AudioManager.play('wrong');
       Multiplayer.reportWrongTap();
-    }
 
-    setTimeout(() => {
-      this.isInputLocked = false;
-    }, CARD_TRANSITION_DURATION_MS);
+      // Penalty: lock input + grayscale on player's card
+      $cardBottom.classList.add('card-penalty');
+      setTimeout(() => {
+        $cardBottom.classList.remove('card-penalty');
+        this.isInputLocked = false;
+      }, MP_WRONG_PENALTY_MS);
+    }
   },
 
   mpGameOver(roomData) {
