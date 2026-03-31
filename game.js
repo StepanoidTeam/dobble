@@ -1197,15 +1197,55 @@ const Game = {
     if (isFirstRender) {
       renderNewCards();
     } else if (playerCardChanged) {
-      // Current player won — animate both cards
-      this.playCardAnimation($cardTop, 'card-exit');
-      const exitAnim = this.playCardAnimation($cardBottom, 'card-exit');
-      exitAnim?.finished.then(renderNewCards);
+      // Current player won — top card flies down onto bottom card
+      this.mpFlyTopCardDown().then(renderNewCards);
     } else {
-      // Another player won — only top card changes, bottom stays
-      const exitAnim = this.playCardAnimation($cardTop, 'card-exit');
-      exitAnim?.finished.then(renderNewCards);
+      // Another player won — top card flies up off screen
+      this.mpFlyTopCardOffScreen().then(renderNewCards);
     }
+  },
+
+  // Top card flies down to overlay the bottom card (current player won)
+  mpFlyTopCardDown() {
+    const $topContainer = $cardTop.closest('.card-container');
+    const $bottomContainer = $cardBottom.closest('.card-container');
+
+    const topRect = $topContainer.getBoundingClientRect();
+    const bottomRect = $bottomContainer.getBoundingClientRect();
+    const offsetY =
+      bottomRect.top +
+      bottomRect.height / 2 -
+      (topRect.top + topRect.height / 2);
+
+    const flyAnimation = $cardTop.animate(
+      [
+        { transform: 'translateY(0)', scale: 1, zIndex: 1 },
+        { scale: 1.2, zIndex: 1, offset: 0.5 },
+        { transform: `translateY(${offsetY}px)`, scale: 1, zIndex: 1 },
+      ],
+      { duration: CARD_FLY_DURATION_MS, easing: 'ease-in-out' },
+    );
+
+    return flyAnimation.finished;
+  },
+
+  // Top card flies up off screen (opponent won)
+  mpFlyTopCardOffScreen() {
+    const $topContainer = $cardTop.closest('.card-container');
+    const topRect = $topContainer.getBoundingClientRect();
+
+    // Fly up past the top of the viewport
+    const offsetY = -(topRect.top + topRect.height);
+
+    const flyAnimation = $cardTop.animate(
+      [
+        { transform: 'translateY(0)', scale: 1, opacity: 1 },
+        { transform: `translateY(${offsetY}px)`, scale: 0.8, opacity: 0 },
+      ],
+      { duration: CARD_FLY_DURATION_MS, easing: 'ease-in' },
+    );
+
+    return flyAnimation.finished;
   },
 
   renderCardSymbols($card, symbols, isClickable) {
