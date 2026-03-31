@@ -29,6 +29,12 @@ import { Profile } from './profile.js';
 import { Multiplayer } from './multiplayer.js';
 import { auth } from './firebase.js';
 import { launchConfetti, stopConfetti } from './confetti.js';
+import {
+  playLogoEffect,
+  playLogoPress,
+  startAutoPlay,
+  stopAutoPlay,
+} from './logo-animations.js';
 
 import './app-version.js';
 import './auth.js';
@@ -229,28 +235,12 @@ const Game = {
   bindEvents() {
     const $logoIcon = document.querySelector('.logo-icon');
     const $logoContainer = document.querySelector('.logo-container');
-    const logoMods = [
-      'sepia',
-      'blur',
-      'invert',
-      'opacity',
-      'saturate',
-      'bright',
-      'acid',
-      'bubble',
-    ];
-    let currentLogoMod = null;
     $logoIcon.addEventListener('click', () => {
-      if (currentLogoMod) $logoIcon.classList.remove(currentLogoMod);
-      currentLogoMod = Random.sample(
-        logoMods.filter((m) => m !== currentLogoMod),
-      );
-      $logoIcon.classList.add(currentLogoMod);
-
-      $logoContainer.classList.remove('logo-press');
-      void $logoContainer.offsetWidth;
-      $logoContainer.classList.add('logo-press');
+      playLogoEffect($logoIcon, { fromClick: true });
+      playLogoPress($logoContainer);
+      startAutoPlay($logoIcon, $logoContainer);
     });
+    startAutoPlay($logoIcon, $logoContainer);
 
     $btnPlay.addEventListener('click', () => this.showScreen($screenPlayType));
     $btnSolo.addEventListener('click', () =>
