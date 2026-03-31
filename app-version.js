@@ -7,8 +7,7 @@
     }
     const versionData = await res.json();
     if ($versionEl)
-      $versionEl.textContent = `
-    🪾${versionData.version}
+      $versionEl.textContent = `🪾${versionData.version}
     🕰️${new Date(versionData.timestamp).toLocaleString()}`;
   } catch (e) {
     console.warn('fetch version error', e);

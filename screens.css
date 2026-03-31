@@ -18,7 +18,6 @@
 
 /* ===== Start Screen ===== */
 #\$screenStart {
-  padding: 40px 20px;
   gap: 20px;
   overflow-y: auto;
 
@@ -27,11 +26,15 @@
   }
 }
 
+.logo-text-container {
+  container-type: normal;
+  white-space: nowrap;
+  max-width: 300px;
+}
+
 .game-title {
-  font-size: clamp(40px, 15vw, 75px);
+  font-size: min(10cqw, 80px);
   font-weight: 900;
-  letter-spacing: clamp(2px, 1.5vw, 8px);
-  /* text-shadow: 0 4px 20px rgba(245, 197, 24, 0.5); */
   color: var(--accent);
   text-shadow: 5px 5px 10px #5800b2;
 }
@@ -40,8 +43,12 @@
   text-shadow: 2px 2px 2px #320065;
   text-transform: uppercase;
   font-weight: bold;
-  font-size: clamp(18px, 5vw, 30px);
+  font-size: min(3.2cqw, 25px);
   opacity: 0.8;
+}
+
+.app-version {
+  font-size: min(1.8cqw, 14px);
 }
 
 .card-preview {
