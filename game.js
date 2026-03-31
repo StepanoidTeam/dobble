@@ -28,6 +28,7 @@ import { Leaderboard } from './leaderboard.js';
 import { Profile } from './profile.js';
 import { Multiplayer } from './multiplayer.js';
 import { auth } from './firebase.js';
+import { launchConfetti, stopConfetti } from './confetti.js';
 
 import './app-version.js';
 import './auth.js';
@@ -595,6 +596,10 @@ const Game = {
       .forEach(($screen) => ($screen.hidden = true));
     if ($screenEl) $screenEl.hidden = false;
 
+    if ($screenEl !== $screenGameOver) {
+      stopConfetti();
+    }
+
     if ($screenEl === $screenStart) {
       this.renderPreviewCard();
       this.startPreviewCycle();
@@ -927,6 +932,7 @@ const Game = {
 
     AudioManager.play('gameover');
     this.showScreen($screenGameOver);
+    if (won) launchConfetti();
   },
 
   resetProgress() {
@@ -1346,6 +1352,7 @@ const Game = {
     $finalStreak.textContent = '-';
 
     this.showScreen($screenGameOver);
+    if (isWinner) launchConfetti();
   },
 
   async mpCopyCode() {
