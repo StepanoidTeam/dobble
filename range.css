@@ -1,4 +1,4 @@
-.settings-range {
+input[type='range'] {
   --track-height: 8px;
   --thumb-size: 26px;
   --thumb-fill: #ffffff;
@@ -12,13 +12,6 @@
   -webkit-appearance: none;
   background: transparent;
   border-radius: 999px;
-  accent-color: var(--accent);
-  height: var(--thumb-size);
-}
-
-input[type='range'] {
-  appearance: none;
-  -webkit-appearance: none;
   accent-color: var(--accent);
   height: var(--thumb-size);
 

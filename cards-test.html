@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dobble - Cards Test</title>
+    <link rel="shortcut icon" href="./images/favicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="./style.css" />
+    <style>
+      html {
+        height: auto;
+      }
+
+      body {
+        height: auto;
+        overflow: auto;
+        display: block;
+        background: linear-gradient(
+          180deg,
+          var(--bg-primary),
+          var(--bg-secondary)
+        );
+        padding: 20px;
+        min-height: 100vh;
+      }
+
+      h1 {
+        color: var(--accent);
+        margin-bottom: 16px;
+        font-size: 24px;
+      }
+
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      .controls select {
+        min-width: auto;
+      }
+
+      .controls label {
+        font-size: 14px;
+        opacity: 0.7;
+      }
+
+      .controls input[type='range'] {
+        accent-color: var(--accent);
+        cursor: pointer;
+      }
+
+      .summary {
+        font-size: 14px;
+        opacity: 0.7;
+        margin-bottom: 16px;
+        color: var(--text-light);
+      }
+
+      .grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+      }
+
+      /* ===== Card wrapper for test page ===== */
+      .card-wrapper {
+        position: relative;
+      }
+
+      .card-wrapper .card-container {
+        --card-size: var(--test-card-size, 200px);
+        width: var(--card-size);
+        height: var(--card-size);
+      }
+
+      .card-number {
+        position: absolute;
+        bottom: -4px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 11px;
+        opacity: 0.5;
+        color: var(--text-light);
+        pointer-events: none;
+        z-index: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🃏 Dobble Cards Viewer</h1>
+
+    <div class="controls">
+      <label
+        >Набор:
+        <select id="$setSelect"></select>
+      </label>
+
+      <label
+        >Символов на карте:
+        <select id="$symbolsPerCardSelect"></select>
+      </label>
+
+      <label
+        >Размер:
+        <input
+          type="range"
+          id="$sizeRange"
+          min="120"
+          max="400"
+          value="200"
+          step="20"
+        />
+      </label>
+    </div>
+
+    <div class="summary" id="$summary"></div>
+
+    <div class="grid" id="$grid"></div>
+
+    <script type="module">
+      import { EMOJI_SETS } from './settings.js';
+      import { buildDeck } from './deck.js';
+      import { positionEmojis } from './ui-utils.js';
+
+      const $setSelect = document.getElementById('$setSelect');
+      const $symbolsPerCardSelect = document.getElementById(
+        '$symbolsPerCardSelect',
+      );
+      const $sizeRange = document.getElementById('$sizeRange');
+      const $summary = document.getElementById('$summary');
+      const $grid = document.getElementById('$grid');
+
+      const RING_SVG = `
+        <svg class="card-ring-svg" viewBox="0 0 100 100" focusable="false">
+          <circle class="card-ring-track" cx="50" cy="50" r="46" pathLength="100"></circle>
+          <circle class="card-ring-segment ring-segment-a" cx="50" cy="50" r="46" pathLength="100"></circle>
+          <circle class="card-ring-segment ring-segment-b" cx="50" cy="50" r="46" pathLength="100"></circle>
+        </svg>`;
+
+      // ===== Populate emoji set select =====
+      EMOJI_SETS.forEach((set) => {
+        const $opt = document.createElement('option');
+        $opt.value = set.key;
+        $opt.textContent = set.label;
+        $setSelect.appendChild($opt);
+      });
+
+      // ===== Get all valid n values for a symbol count =====
+      function getValidOrders(totalSymbols) {
+        const orders = [];
+        for (let n = 2; n <= 20; n++) {
+          const needed = n * n + n + 1;
+          if (needed <= totalSymbols) {
+            orders.push({
+              n,
+              symbolsPerCard: n + 1,
+              totalCards: needed,
+              totalSymbols: needed,
+            });
+          }
+        }
+        return orders;
+      }
+
+      // ===== Build a card DOM element matching game structure =====
+      function createCardElement(symbols, index, setKey) {
+        const $wrapper = document.createElement('div');
+        $wrapper.classList.add('card-wrapper');
+
+        const $container = document.createElement('div');
+        $container.classList.add('card-container');
+
+        // Ring
+        const $ring = document.createElement('div');
+        $ring.classList.add('card-ring');
+        $ring.setAttribute('aria-hidden', 'true');
+        $ring.innerHTML = RING_SVG;
+        $container.appendChild($ring);
+
+        // Circle (emoji container)
+        const $circle = document.createElement('div');
+        $circle.classList.add('card-circle');
+        $container.appendChild($circle);
+
+        // Use the real positionEmojis from the game
+        positionEmojis(symbols, $circle, false, null, {
+          rotationRangeDegrees: 40,
+          rotateByPosition: false,
+          useCustomEmojiImages: true,
+          emojiSetKey: setKey,
+        });
+
+        // Card number label
+        const $number = document.createElement('span');
+        $number.classList.add('card-number');
+        $number.textContent = `#${index + 1}`;
+
+        $wrapper.appendChild($container);
+        $wrapper.appendChild($number);
+        return $wrapper;
+      }
+
+      // ===== Populate symbols-per-card select =====
+      function updateSymbolsPerCardOptions(setKey) {
+        const set = EMOJI_SETS.find((s) => s.key === setKey) || EMOJI_SETS[0];
+        const orders = getValidOrders(set.symbols.length);
+
+        $symbolsPerCardSelect.innerHTML = '';
+        orders.forEach((o) => {
+          const $opt = document.createElement('option');
+          $opt.value = o.n;
+          $opt.textContent = `${o.symbolsPerCard} символов (${o.totalCards} карт)`;
+          $symbolsPerCardSelect.appendChild($opt);
+        });
+
+        // Select the maximum by default
+        if (orders.length > 0) {
+          $symbolsPerCardSelect.value = orders[orders.length - 1].n;
+        }
+      }
+
+      // ===== Main render =====
+      function render() {
+        const setKey = $setSelect.value;
+        const set = EMOJI_SETS.find((s) => s.key === setKey) || EMOJI_SETS[0];
+        const n = parseInt($symbolsPerCardSelect.value, 10);
+        const cardSize = parseInt($sizeRange.value, 10);
+
+        if (!n) {
+          $summary.textContent = 'Нет доступных конфигураций для этого набора';
+          $grid.innerHTML = '';
+          return;
+        }
+
+        document.documentElement.style.setProperty(
+          '--test-card-size',
+          cardSize + 'px',
+        );
+
+        const totalCards = n * n + n + 1;
+        const symbolsPerCard = n + 1;
+        const symbolsToUse = set.symbols.slice(0, totalCards);
+
+        const { deck } = buildDeck(symbolsToUse);
+
+        $summary.textContent =
+          `n=${n} · ${symbolsPerCard} символов на карте · ` +
+          `${totalCards} карт · ${totalCards} символов из ${set.symbols.length}`;
+
+        $grid.innerHTML = '';
+
+        deck.forEach((cardSymbols, i) => {
+          const $card = createCardElement(cardSymbols, i, setKey);
+          $grid.appendChild($card);
+        });
+      }
+
+      // ===== Events =====
+      $setSelect.addEventListener('change', () => {
+        updateSymbolsPerCardOptions($setSelect.value);
+        render();
+      });
+
+      $symbolsPerCardSelect.addEventListener('change', render);
+
+      $sizeRange.addEventListener('input', render);
+
+      // ===== Init =====
+      updateSymbolsPerCardOptions(EMOJI_SETS[0].key);
+      render();
+    </script>
+  </body>
+</html>

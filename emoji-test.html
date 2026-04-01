@@ -5,24 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dobble - Emoji Test</title>
     <link rel="shortcut icon" href="./images/favicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="./style.css" />
     <style>
-      :root {
-        --bg: #1a0a2e;
-        --accent: #f5c518;
-        --border: rgba(179, 117, 229, 0.35);
-        --card-bg: rgba(20, 8, 36, 0.5);
-      }
-
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+      html {
+        height: auto;
       }
 
       body {
-        font-family: system-ui, sans-serif;
-        background: var(--bg);
-        color: #fff;
+        height: auto;
+        overflow: auto;
+        display: block;
+        background: linear-gradient(
+          180deg,
+          var(--bg-primary),
+          var(--bg-secondary)
+        );
+        color: var(--text-light);
         padding: 20px;
         min-height: 100vh;
       }
@@ -41,14 +39,8 @@
         flex-wrap: wrap;
       }
 
-      select {
-        padding: 8px 12px;
-        border-radius: 8px;
-        border: 1px solid var(--border);
-        background: var(--card-bg);
-        color: #fff;
-        font-size: 16px;
-        cursor: pointer;
+      .controls select {
+        min-width: auto;
       }
 
       .summary {
@@ -69,8 +61,8 @@
         gap: 6px;
         padding: 12px 8px;
         border-radius: 12px;
-        background: var(--card-bg);
-        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(179, 117, 229, 0.35);
         text-align: center;
       }
 
