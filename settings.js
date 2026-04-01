@@ -1,6 +1,6 @@
-import { EMOJIS_CLAUDE } from './emojis-claude.js';
-import { EMOJIS_CLASSIC } from './emojis-classic.js';
-import { EMOJIS_INSECTS } from './emojis-insects.js';
+import { EMOJIS_CLAUDE } from './emojis/emojis-claude.js';
+import { EMOJIS_CLASSIC } from './emojis/emojis-classic.js';
+import { EMOJIS_INSECTS } from './emojis/emojis-insects.js';
 
 // ===== Storage Keys =====
 export const EMOJI_SET_STORAGE_KEY = 'dobble_emoji_set';

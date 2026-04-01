@@ -1,7 +1,7 @@
 // ===== Multiplayer Module =====
 // Manages room creation, joining, lobby, and real-time game sync via Firebase Realtime Database.
 
-import { auth } from './firebase.js';
+import { auth } from './firebase/firebase.js';
 import {
   rtdb,
   ref,
@@ -16,9 +16,9 @@ import {
   query,
   orderByChild,
   equalTo,
-} from './firebase-rtdb.js';
-import { buildDeck, findCommonSymbol } from './deck.js';
-import { Random } from './seeded-random.js';
+} from './firebase/firebase-rtdb.js';
+import { buildDeck, findCommonSymbol } from './helpers/deck.js';
+import { Random } from './helpers/seeded-random.js';
 import { Profile } from './profile.js';
 
 // ===== Constants =====

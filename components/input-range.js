@@ -3,7 +3,7 @@
 // Usage: <input-range id="$timer" min="5" max="100" step="5" value="10"></input-range>
 // Access .value / .min / .max / .step as on a native <input type="range">.
 
-import { roundUiNumber } from '../ui-utils.js';
+import { roundUiNumber } from '../helpers/ui-utils.js';
 
 class DobbleRange extends HTMLElement {
   connectedCallback() {

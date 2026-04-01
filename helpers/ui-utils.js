@@ -1,6 +1,6 @@
 import { SeededRandom, cardToSeed } from './seeded-random.js';
-import { DEFAULT_ICON_ROTATION_DEGREES } from './settings.js';
-import { getEmojiImageUrl } from './emoji-images.js';
+import { DEFAULT_ICON_ROTATION_DEGREES } from '../settings.js';
+import { getEmojiImageUrl } from '../emojis/emoji-images.js';
 
 export function roundUiNumber(value) {
   return Math.round((value + Number.EPSILON) * 100) / 100;

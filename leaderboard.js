@@ -12,7 +12,7 @@ import {
   setDoc,
   getDoc,
   serverTimestamp,
-} from './firebase.js';
+} from './firebase/firebase.js';
 import { Profile } from './profile.js';
 
 const LEADERBOARD_COLLECTION = 'leaderboard';

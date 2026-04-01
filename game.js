@@ -1,16 +1,16 @@
 // ===== Dobble Game Engine =====
 
-import { getDeckStatsBySymbolsCount } from './dobble-math.js';
+import { getDeckStatsBySymbolsCount } from './helpers/dobble-math.js';
 import { AudioManager } from './audio-manager.js';
-import { buildDeck, findCommonSymbol } from './deck.js';
-import { Random, stringToSeed, cardToSeed } from './seeded-random.js';
-import { initI18n, setLang, t, getSupportedLangs, getLang } from './i18n.js';
+import { buildDeck, findCommonSymbol } from './helpers/deck.js';
+import { Random, stringToSeed, cardToSeed } from './helpers/seeded-random.js';
+import { initI18n, setLang, t, getSupportedLangs, getLang } from './helpers/i18n.js';
 import {
   roundUiNumber,
   initCardRings,
   updateRingProgress,
   positionEmojis,
-} from './ui-utils.js';
+} from './helpers/ui-utils.js';
 import {
   EMOJI_SET_STORAGE_KEY,
   TIME_PER_CARD_STORAGE_KEY,
@@ -26,17 +26,17 @@ import { SettingsOptionsManager } from './settings-options/index.js';
 import { Leaderboard } from './leaderboard.js';
 import { Profile } from './profile.js';
 import { Multiplayer } from './multiplayer.js';
-import { auth } from './firebase.js';
-import { launchConfetti, stopConfetti } from './confetti.js';
+import { auth } from './firebase/firebase.js';
+import { launchConfetti, stopConfetti } from './helpers/confetti.js';
 import {
   playLogoEffect,
   playLogoPress,
   startAutoPlay,
   stopAutoPlay,
-} from './logo-animations.js';
+} from './helpers/logo-animations.js';
 
-import './app-version.js';
-import './auth.js';
+import './helpers/app-version.js';
+import './firebase/auth.js';
 
 import './components/input-range.js';
 

@@ -33,7 +33,7 @@
 }
 
 .game-title {
-  font-size: min(10cqw, 80px);
+  font-size: min(17cqw, 80px);
   font-weight: 900;
   color: var(--accent);
   text-shadow: 5px 5px 10px #5800b2;
@@ -43,12 +43,12 @@
   text-shadow: 2px 2px 2px #320065;
   text-transform: uppercase;
   font-weight: bold;
-  font-size: min(3.2cqw, 25px);
+  font-size: min(5.5cqw, 25px);
   opacity: 0.8;
 }
 
 .app-version {
-  font-size: min(1.8cqw, 14px);
+  font-size: min(3cqw, 14px);
 }
 
 .card-preview {

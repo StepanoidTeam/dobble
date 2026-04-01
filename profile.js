@@ -8,7 +8,7 @@ import {
   setDoc,
   getDoc,
   serverTimestamp,
-} from './firebase.js';
+} from './firebase/firebase.js';
 
 const PROFILES_COLLECTION = 'profiles';
 const MAX_NAME_LENGTH = 20;
