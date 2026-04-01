@@ -27,7 +27,7 @@ function createParticle() {
   const size = Math.random() * 28 + 28;
   // Angle: mostly upward, spread ~120deg (from -60deg to +60deg)
   const angle = (Math.random() - 0.5) * ((Math.PI * 2) / 1); // -60°..+60°
-  const speed = Math.random() * 0.0008 + 0.000004; // slower, less spread
+  const speed = Math.random() * 0.0008; // slower, less spread
   return {
     x: 0.5,
     y: 0.5,
