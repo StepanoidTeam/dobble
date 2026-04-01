@@ -105,6 +105,11 @@
 
 - Screens are named `screen{Name}` (e.g., `screenStart`, `screenGame`)
 
+### Labels
+
+- Always wrap the associated control inside the `<label>` element so the browser's default focus-on-click works without an explicit `for` attribute
+- Example: `<label>Name <input type="text"></label>` — not `<label for="name">Name</label><input id="name">`
+
 ### Accessibility
 
 - Decorative SVGs get `aria-hidden="true"`
