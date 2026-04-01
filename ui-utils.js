@@ -56,21 +56,6 @@ export function initCardRings() {
   });
 }
 
-export function updateRangeProgress(rangeEl) {
-  if (!rangeEl) return;
-
-  const min = parseFloat(rangeEl.min || '0');
-  const max = parseFloat(rangeEl.max || '100');
-  const value = parseFloat(rangeEl.value || '0');
-  const span = max - min;
-  const progress = span <= 0 ? 0 : ((value - min) / span) * 100;
-  const normalizedProgress = Math.max(0, Math.min(100, progress));
-  const progressValue = `${roundUiNumber(normalizedProgress)}%`;
-
-  rangeEl.dataset.width = `${roundUiNumber(normalizedProgress)}`;
-  rangeEl.style.setProperty('--range-progress', progressValue);
-}
-
 export function updateRingProgress(ringElements, remaining) {
   const clampedRemaining = Math.max(0, Math.min(1, remaining));
   const segmentLength = clampedRemaining * 50;
@@ -102,42 +87,19 @@ const MAX_SCALE = 1.5;
 const SCALE_PADDING = 1.5; // % gap between emoji circles
 
 function computeEmojiPositions(count) {
+  const hasCenter = count > 3;
+  const ringCount = hasCenter ? count - 1 : count;
+  const radius = hasCenter ? RING_RADIUS : RING_RADIUS * 0.7;
+
   return Array.from({ length: count }, (_, i) => {
-    if (i === 0) return { x: 50, y: 50, angleDeg: 0 };
-    const angle = ((i - 1) / (count - 1)) * Math.PI * 2 - Math.PI / 2;
+    if (hasCenter && i === count - 1) return { x: 50, y: 50, angleDeg: 0 };
+
+    const angle = (i / ringCount) * Math.PI * 2 - Math.PI / 2;
     return {
-      x: 50 + RING_RADIUS * Math.cos(angle),
-      y: 50 + RING_RADIUS * Math.sin(angle),
+      x: 50 + radius * Math.cos(angle),
+      y: 50 + radius * Math.sin(angle),
       angleDeg: (angle * 180) / Math.PI - 90,
     };
-  });
-}
-
-// todo(vmyshko): unused, prev approach
-function computeMaxScales(positions) {
-  return positions.map((pos, i) => {
-    // min distance to any other emoji
-    let minDist = Infinity;
-    for (let j = 0; j < positions.length; j++) {
-      if (i === j) continue;
-      const dx = pos.x - positions[j].x;
-      const dy = pos.y - positions[j].y;
-      minDist = Math.min(minDist, Math.sqrt(dx * dx + dy * dy));
-    }
-
-    // max scale so two emojis (both at this scale) don't overlap
-    const scaleFromNeighbors =
-      (minDist - SCALE_PADDING) / (2 * BASE_EMOJI_RADIUS);
-
-    // max scale so emoji stays within card circle
-    const distFromCenter = Math.sqrt((pos.x - 50) ** 2 + (pos.y - 50) ** 2);
-    const scaleFromBounds =
-      (CARD_CIRCLE_RADIUS - distFromCenter - SCALE_PADDING) / BASE_EMOJI_RADIUS;
-
-    return Math.max(
-      MIN_SCALE,
-      Math.min(MAX_SCALE, scaleFromNeighbors, scaleFromBounds),
-    );
   });
 }
 
