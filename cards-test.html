@@ -6,6 +6,7 @@
     <title>Dobble - Cards Test</title>
     <link rel="shortcut icon" href="./images/favicon.png" type="image/x-icon" />
     <link rel="stylesheet" href="./style.css" />
+    <script src="./components/input-range.js" type="module"></script>
     <style>
       html {
         height: auto;
@@ -106,14 +107,13 @@
 
       <label
         >Размер:
-        <input
-          type="range"
+        <input-range
           id="$sizeRange"
           min="120"
           max="400"
           value="200"
           step="20"
-        />
+        ></input-range>
       </label>
     </div>
 

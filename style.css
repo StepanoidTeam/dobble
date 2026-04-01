@@ -1,5 +1,5 @@
 @import './utils.css';
-@import './range.css';
+@import './components/input-range.css';
 @import './select.css';
 @import './screens.css';
 @import './logo.css';

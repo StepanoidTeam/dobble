@@ -5,7 +5,6 @@ import {
   ICON_ROTATION_STEP_DEGREES,
   snapIconRotationDegrees,
 } from '../settings.js';
-import { updateRangeProgress } from '../ui-utils.js';
 
 const $control = $rotationRange;
 
@@ -24,7 +23,6 @@ export const iconRotationOption = {
       $control.max = `${ICON_ROTATION_MAX_DEGREES}`;
       $control.step = `${ICON_ROTATION_STEP_DEGREES}`;
       $control.value = `${game.iconRotationDegrees}`;
-      updateRangeProgress($control);
     }
 
     game.updateRotationDisplay(game.iconRotationDegrees);
@@ -34,7 +32,6 @@ export const iconRotationOption = {
     if (!$control) return;
 
     $control.addEventListener('input', (e) => {
-      updateRangeProgress(e.target);
       const nextValue = parseInt(e.target.value, 10);
       if (Number.isNaN(nextValue)) return;
       game.applyIconRotationDegrees(nextValue);

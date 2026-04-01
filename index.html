@@ -171,7 +171,7 @@
         <div class="mp-options">
           <div class="setting-row">
             <span data-i18n="mp.maxPlayers">Макс. игроков</span>
-            <select id="$selectMaxPlayers" class="settings-select">
+            <select id="$selectMaxPlayers">
               <option value="2">2</option>
               <option value="3">3</option>
               <option value="4">4</option>
@@ -470,19 +470,39 @@
           <span data-i18n="settings.title">Настройки</span>
         </h2>
 
-        <div class="settings-content flex-col gap-1">
-          <div class="setting-row">
-            <span class="text-nowrap" data-i18n="settings.playerName"
-              >Имя игрока</span
-            >
-            <input
-              type="text"
-              id="$playerNameInput"
-              class="settings-input"
-              maxlength="20"
-              placeholder="Anonymous"
-            />
-          </div>
+        <!-- Tab Bar -->
+        <div class="settings-tabs" role="tablist">
+          <button
+            class="settings-tab active"
+            role="tab"
+            aria-selected="true"
+            data-tab="game"
+          >
+            <span aria-hidden="true">🎮</span>
+            <span data-i18n="settings.tab.game">Игра</span>
+          </button>
+          <button
+            class="settings-tab"
+            role="tab"
+            aria-selected="false"
+            data-tab="dev"
+          >
+            <span aria-hidden="true">🔧</span>
+            <span data-i18n="settings.tab.dev">Дев</span>
+          </button>
+          <button
+            class="settings-tab"
+            role="tab"
+            aria-selected="false"
+            data-tab="profile"
+          >
+            <span aria-hidden="true">👤</span>
+            <span data-i18n="settings.tab.profile">Профиль</span>
+          </button>
+        </div>
+
+        <!-- Tab: Game -->
+        <div class="settings-content flex-col gap-1" data-tab-content="game">
           <div class="setting-row">
             <span data-i18n="settings.sound">Звук</span>
             <label class="toggle">
@@ -490,32 +510,41 @@
               <span class="toggle-slider"></span>
             </label>
           </div>
+
+          <div class="setting-row">
+            <span class="text-nowrap" data-i18n="settings.language">Язык</span>
+            <select id="$langSelect"></select>
+          </div>
+        </div>
+
+        <!-- Tab: Dev -->
+        <div
+          class="settings-content flex-col gap-1"
+          data-tab-content="dev"
+          hidden
+        >
           <div class="setting-row setting-row-timer">
             <span data-i18n="settings.timer">Таймер на карточку</span>
             <span class="setting-value" id="$timerValue">10 с</span>
           </div>
-          <input
-            type="range"
+          <input-range
             id="$timerRange"
-            class="settings-range"
             min="5"
             max="20"
             step="5"
             value="10"
-          />
+          ></input-range>
           <div class="setting-row setting-row-rotation">
             <span data-i18n="settings.rotation">Поворот иконок</span>
             <span class="setting-value" id="$rotationValue">40°</span>
           </div>
-          <input
-            type="range"
+          <input-range
             id="$rotationRange"
-            class="settings-range"
             min="0"
             max="360"
             step="5"
             value="40"
-          />
+          ></input-range>
           <div class="setting-row">
             <span data-i18n="settings.rotateByPosition"
               >Разворот от центра</span
@@ -538,12 +567,27 @@
             <span class="text-nowrap" data-i18n="settings.emojiSet"
               >Набор эмодзи</span
             >
-            <select id="$emojiSetSelect" class="settings-select"></select>
+            <select id="$emojiSetSelect"></select>
           </div>
+        </div>
 
+        <!-- Tab: Profile -->
+        <div
+          class="settings-content flex-col gap-1"
+          data-tab-content="profile"
+          hidden
+        >
           <div class="setting-row">
-            <span class="text-nowrap" data-i18n="settings.language">Язык</span>
-            <select id="$langSelect" class="settings-select"></select>
+            <span class="text-nowrap" data-i18n="settings.playerName"
+              >Имя игрока</span
+            >
+            <input
+              type="text"
+              id="$playerNameInput"
+              class="settings-input"
+              maxlength="20"
+              placeholder="Anonymous"
+            />
           </div>
 
           <div class="setting-row">

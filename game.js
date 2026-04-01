@@ -8,7 +8,6 @@ import { initI18n, setLang, t, getSupportedLangs, getLang } from './i18n.js';
 import {
   roundUiNumber,
   initCardRings,
-  updateRangeProgress,
   updateRingProgress,
   positionEmojis,
 } from './ui-utils.js';
@@ -38,6 +37,8 @@ import {
 
 import './app-version.js';
 import './auth.js';
+
+import './components/input-range.js';
 
 const FEEDBACK_CORRECT = 'correct';
 const FEEDBACK_WRONG = 'wrong';
@@ -179,7 +180,6 @@ const Game = {
     this.updateTimerDisplay(snappedSeconds);
     if ($timerRange) {
       $timerRange.value = `${snappedSeconds}`;
-      updateRangeProgress($timerRange);
     }
     if (!$screenStart.hidden) {
       this.startPreviewCycle();
@@ -212,7 +212,6 @@ const Game = {
       $timerRange.max = `${TIME_PER_CARD_MAX_SECONDS}`;
       $timerRange.step = `${TIME_PER_CARD_STEP_SECONDS}`;
       $timerRange.value = `${this.getTimePerCardSeconds()}`;
-      updateRangeProgress($timerRange);
     }
 
     this.updateTimerDisplay(this.getTimePerCardSeconds());
@@ -275,6 +274,22 @@ const Game = {
     $btnCloseSettings.addEventListener('click', () =>
       this.showScreen($screenStart),
     );
+    // Settings tab switching
+    $screenSettings
+      .querySelector('.settings-tabs')
+      .addEventListener('click', (e) => {
+        const $tab = e.target.closest('.settings-tab');
+        if (!$tab) return;
+        const tabKey = $tab.dataset.tab;
+        $screenSettings.querySelectorAll('.settings-tab').forEach(($t) => {
+          const isActive = $t.dataset.tab === tabKey;
+          $t.classList.toggle('active', isActive);
+          $t.setAttribute('aria-selected', isActive);
+        });
+        $screenSettings.querySelectorAll('[data-tab-content]').forEach(($c) => {
+          $c.hidden = $c.dataset.tabContent !== tabKey;
+        });
+      });
     $btnResetProgress.addEventListener('click', () => {
       $screenResetConfirm.hidden = false;
     });
@@ -327,7 +342,6 @@ const Game = {
 
     if ($timerRange) {
       $timerRange.addEventListener('input', (e) => {
-        updateRangeProgress(e.target);
         const nextValue = parseInt(e.target.value, 10);
         if (Number.isNaN(nextValue)) return;
         this.applyTimePerCardSeconds(nextValue);
