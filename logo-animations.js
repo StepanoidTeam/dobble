@@ -33,7 +33,11 @@ const EFFECTS = {
     options: { duration: 5000, easing: 'ease-in-out' },
   },
   opacity: {
-    keyframes: [{ filter: 'opacity(1)' }, { filter: 'opacity(0.1)' }],
+    keyframes: [
+      { filter: 'opacity(1)' },
+      { filter: 'opacity(0.1)' },
+      { filter: 'opacity(1)' },
+    ],
     options: { duration: 5000, easing: 'ease-in-out' },
   },
   saturate: {
@@ -155,6 +159,7 @@ export function playLogoEffect($logoIcon, { fromClick = false } = {}) {
     currentAnimation.cancel();
     currentAnimation = null;
   }
+  cancelPreviewAnimations();
 
   // Remove bubble styling if it was active
   if (currentEffect === 'bubble') {
@@ -177,7 +182,31 @@ export function playLogoEffect($logoIcon, { fromClick = false } = {}) {
     fill: 'forwards',
   });
 
+  // Apply the same effect to preview card emoji items
+  if (fromClick) animatePreviewEmojis(effect);
+
   console.log('🖐️ logo effect:', currentEffect);
+}
+
+// ===== Preview Card Emoji Animations =====
+let previewEmojiAnimations = [];
+
+function cancelPreviewAnimations() {
+  for (const anim of previewEmojiAnimations) anim.cancel();
+  previewEmojiAnimations = [];
+}
+
+function animatePreviewEmojis(effect) {
+  const $$items = document.querySelectorAll('#\\$cardPreview .emoji-item');
+  for (const $item of $$items) {
+    const delay = Math.random() * 600;
+    const anim = $item.animate(effect.keyframes, {
+      ...effect.options,
+      delay,
+      fill: 'forwards',
+    });
+    previewEmojiAnimations.push(anim);
+  }
 }
 
 export function playLogoPress($logoContainer) {
