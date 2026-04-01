@@ -45,7 +45,6 @@
 
       .controls label {
         font-size: 14px;
-        opacity: 0.7;
       }
 
       .controls input[type='range'] {
@@ -94,19 +93,19 @@
   <body>
     <h1>🃏 Dobble Cards Viewer</h1>
 
-    <div class="controls">
-      <label
-        >Набор:
+    <div class="controls flex-row">
+      <label class="flex-row items-center gap-2">
+        <span>Набор:</span>
         <select id="$setSelect"></select>
       </label>
 
-      <label
-        >Символов на карте:
+      <label class="flex-row items-center gap-2">
+        <span>Символов на карте:</span>
         <select id="$symbolsPerCardSelect"></select>
       </label>
 
-      <label
-        >Размер:
+      <label class="flex-row items-center gap-2">
+        <span> Размер: </span>
         <input-range
           id="$sizeRange"
           min="120"
