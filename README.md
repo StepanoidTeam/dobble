@@ -50,3 +50,30 @@ to add readable tag use:
 ### rules
 
 https://planeta-igr.com/image/data/instrukcii/58122.pdf?srsltid=AfmBOooUbhL48KPJffYwcgcJfAo9KVlRmBgC-PkY700NIMK-pofpCxln
+
+## rules briefly
+
+### helltower
+
+one shared pile
+each takes card to his hand from it
+who got most cards win
+
+### well
+
+one shared
+each has own pile
+each puts his cards to shared pile
+first zero cards wins
+
+### hot potato
+
+--- minigame
+
+### poisoned gift
+
+each has 1 start card
+shared pile
+find match between pile and other players
+put cards to your opponents from shared pile
+less card owner wins
