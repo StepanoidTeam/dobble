@@ -31,7 +31,7 @@
   box-shadow: 0px 8px 10px 10px #3b0e74bf;
   /* box-shadow: 0px 20px 50px 10px #4a1291; */
 
-  background-image: url(./images/paper.png);
+  background-image: url(../images/paper.png);
   background-size: cover;
 
   transition:
