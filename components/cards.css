@@ -137,11 +137,11 @@
   }
 
   &.correct {
-    animation: correctPop 0.4s ease;
+    animation: correctPop 400ms ease;
   }
 
   &.wrong {
-    animation: wrongShake 0.4s ease;
+    animation: wrongShake 400ms ease;
   }
 
   &.hint {
@@ -167,7 +167,10 @@
     scale: 1;
   }
   50% {
-    scale: 1.5;
+    scale: 2;
+    rotate: 0deg;
+    filter: drop-shadow(0 0 3px lime) drop-shadow(0 0 3px lime)
+      drop-shadow(0 0 3px lime);
   }
   100% {
     scale: 1;
@@ -178,6 +181,8 @@
   0%,
   100% {
     margin-left: 0;
+    filter: drop-shadow(0 0 3px red) drop-shadow(0 0 3px red)
+      drop-shadow(0 0 3px red);
   }
   25% {
     margin-left: -8px;
