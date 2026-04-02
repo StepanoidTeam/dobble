@@ -4,7 +4,7 @@ import { getDatabase } from 'firebase-admin/database';
 
 initializeApp();
 
-const INACTIVE_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
+const INACTIVE_THRESHOLD_MS = 30 * 60_000; // 30 minutes
 const ROOM_COUNT_THRESHOLD = 20;
 
 // Triggers every time a new room is created.
