@@ -178,10 +178,8 @@ export const Multiplayer = {
     const rooms = snapshot.val();
     const now = Date.now();
     for (const [code, data] of Object.entries(rooms)) {
-      // delete old rooms at first
+      // Skip inactive rooms;
       if (!data.lastActive || now - data.lastActive > INACTIVE_THRESHOLD_MS) {
-        // Inactive room — clean up silently
-        remove(ref(rtdb, `rooms/${code}`));
         continue;
       }
 
@@ -488,20 +486,16 @@ export const Multiplayer = {
     if (!uid || !this.roomCode) return;
 
     try {
-      const playerRef = ref(rtdb, `rooms/${this.roomCode}/players/${uid}`);
-      await remove(playerRef);
-
-      // If host leaves and room is waiting, delete the room
+      // Delete the whole room only when host explicitly leaves
       if (this.isHost) {
-        const snapshot = await get(this.roomRef);
-        const data = snapshot.val();
-        if (data && data.status === 'waiting') {
-          await remove(this.roomRef);
-        }
-      }
+        await remove(this.roomRef);
+      } else {
+        const playerRef = ref(rtdb, `rooms/${this.roomCode}/players/${uid}`);
+        await remove(playerRef);
 
-      // Auto-finish if only one player remains during an active game
-      await this.autoFinishIfAlone();
+        // Auto-finish if only one player remains during an active game
+        await this.autoFinishIfAlone();
+      }
     } catch (err) {
       console.log('🎮 Error leaving room:', err);
     }
