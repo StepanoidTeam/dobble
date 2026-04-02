@@ -84,6 +84,10 @@
 - Use only small values: `1`, `2`, `3` — no magic numbers like `10`, `99`, `999`
 - Rely on stacking context and DOM order first; add `z-index` only when necessary
 
+### Time values
+
+- For CSS time values (e.g., `transition-duration`, `animation-duration`), use milliseconds (`ms`) if the value is below 1000ms, and seconds (`s`) if 1000ms or above
+
 ## HTML
 
 ### IDs
