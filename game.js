@@ -27,6 +27,7 @@ import { Leaderboard } from './leaderboard.js';
 import { Profile } from './profile.js';
 import { Multiplayer } from './multiplayer.js';
 import { auth } from './firebase/firebase.js';
+import { rtdb, ref, remove } from './firebase/firebase-rtdb.js';
 import { launchConfetti, stopConfetti } from './helpers/confetti.js';
 import {
   playLogoEffect,
@@ -1189,7 +1190,7 @@ const Game = {
         return;
       }
 
-      const onSymbolClick = (symbol, $el) => this.mpTapSymbol(symbol);
+      const onSymbolClick = (symbol, $el) => this.mpTapSymbol(symbol, $el);
 
       // Central card (top) — not clickable, seed shared across all players
       positionEmojis(cards.centralCard, $cardTop, false, null, {
@@ -1342,24 +1343,34 @@ const Game = {
           { duration: 900, easing: 'ease-out', fill: 'forwards' },
         )
         .finished.then(() => $popup.remove());
+
+      // Clear the wrong tap after showing
+      setTimeout(() => {
+        const wrongRef = ref(rtdb, `rooms/${Multiplayer.roomCode}/wrongTaps/${uid}`);
+        remove(wrongRef);
+      }, 1000);
     }
   },
 
-  async mpTapSymbol(symbol) {
+  async mpTapSymbol(symbol, $el) {
     if (this.isInputLocked) return;
     this.isInputLocked = true;
 
     const claimed = await Multiplayer.claimRound(symbol);
 
     if (claimed) {
+      $el.classList.add(FEEDBACK_CORRECT);
+      this.flash(FEEDBACK_CORRECT);
       this.showFeedbackIcon(FEEDBACK_CORRECT);
-      AudioManager.play('correct');
+      AudioManager.play(FEEDBACK_CORRECT);
       setTimeout(() => {
         this.isInputLocked = false;
       }, CARD_TRANSITION_DURATION_MS);
     } else {
+      $el.classList.add(FEEDBACK_WRONG);
+      this.flash(FEEDBACK_WRONG);
       this.showFeedbackIcon(FEEDBACK_WRONG);
-      AudioManager.play('wrong');
+      AudioManager.play(FEEDBACK_WRONG);
       Multiplayer.reportWrongTap();
 
       // Penalty: lock input + grayscale on player's card
