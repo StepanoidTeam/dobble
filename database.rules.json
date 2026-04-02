@@ -21,7 +21,29 @@
         },
 
         "game": {
-          ".write": "auth != null && root.child('rooms/' + $roomCode + '/hostUid').val() === auth.uid"
+          ".write": "auth != null && root.child('rooms/' + $roomCode + '/hostUid').val() === auth.uid",
+
+          "playerCards": {
+            "$uid": {
+              ".write": "auth != null && $uid === auth.uid"
+            }
+          },
+
+          "currentRound": {
+            ".write": "auth != null"
+          },
+
+          "centralCard": {
+            ".write": "auth != null"
+          },
+
+          "nextDrawIndex": {
+            ".write": "auth != null"
+          }
+        },
+
+        "lastActive": {
+          ".write": "auth != null"
         },
 
         "status": {
