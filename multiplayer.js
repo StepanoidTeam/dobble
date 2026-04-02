@@ -28,7 +28,7 @@ const DISCONNECT_TIMEOUT_MS = 30_000;
 const MAX_PLAYERS_DEFAULT = 2;
 const CARDS_PER_PLAYER = 10;
 const HEARTBEAT_INTERVAL_MS = 30_000;
-const STALE_THRESHOLD_MS = 90_000;
+const INACTIVE_THRESHOLD_MS = 90_000;
 
 // ===== Multiplayer Manager =====
 export const Multiplayer = {
@@ -179,8 +179,8 @@ export const Multiplayer = {
     const now = Date.now();
     for (const [code, data] of Object.entries(rooms)) {
       // delete old rooms at first
-      if (!data.lastActive || now - data.lastActive > STALE_THRESHOLD_MS) {
-        // Stale room — clean up silently
+      if (!data.lastActive || now - data.lastActive > INACTIVE_THRESHOLD_MS) {
+        // Inactive room — clean up silently
         remove(ref(rtdb, `rooms/${code}`));
         continue;
       }
@@ -215,7 +215,7 @@ export const Multiplayer = {
     const now = Date.now();
 
     for (const data of Object.values(rooms)) {
-      if (data.lastActive && now - data.lastActive > STALE_THRESHOLD_MS)
+      if (data.lastActive && now - data.lastActive > INACTIVE_THRESHOLD_MS)
         continue;
       total++;
       if (!data.autoMatchmaking) continue;

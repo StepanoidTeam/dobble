@@ -28,6 +28,10 @@ for realtime database:
 
 `% firebase deploy --only database`
 
+for cloud functions:
+
+`% firebase deploy --only functions`
+
 ## deployment versioning
 
 A predeploy hook writes version.json with git metadata and timestamp.

@@ -1,0 +1,13 @@
+{
+  "name": "dobble-functions",
+  "description": "Firebase Cloud Functions for Dobble",
+  "engines": {
+    "node": "22"
+  },
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "firebase-admin": "^13.0.0",
+    "firebase-functions": "^6.3.0"
+  }
+}

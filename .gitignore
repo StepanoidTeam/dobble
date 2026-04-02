@@ -4,3 +4,4 @@
 version.json
 images/_temp-drafts
 firebase-debug.log
+functions/node_modules
