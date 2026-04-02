@@ -4,7 +4,7 @@
       ".read": "auth != null",
       ".indexOn": ["status"],
       "$roomCode": {
-        ".write": "auth != null && !data.exists()",
+        ".write": "auth != null && (!data.exists() || root.child('rooms/' + $roomCode + '/hostUid').val() === auth.uid)",
 
         "players": {
           "$uid": {
