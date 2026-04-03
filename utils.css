@@ -59,3 +59,33 @@
 .text-center {
   text-align: center;
 }
+
+.text-outline {
+  --color: #ffffff;
+  --stroke: var(--accent);
+  --stroke-secondary: var(--bg-primary);
+  /* --shadow:  */
+
+  position: relative;
+
+  color: var(--color);
+
+  /* todo: set text attr for parent first */
+  &:before,
+  &:after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+  }
+
+  &:before {
+    -webkit-text-stroke: 0.3em var(--stroke);
+    filter: drop-shadow(0 0.05em 0.05em var(--stroke-secondary))
+      drop-shadow(0 0.05em 0.05em var(--stroke-secondary));
+  }
+  &:after {
+    -webkit-text-stroke: 0.15em var(--stroke-secondary);
+  }
+}

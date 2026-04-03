@@ -24,6 +24,10 @@
       .message-404 {
         /* // */
       }
+
+      .message-bubble {
+        z-index: -1;
+      }
     </style>
   </head>
   <body>
@@ -39,7 +43,10 @@
           <img class="logo-404" src="./images/404.png" alt="404" />
         </div>
         <div>
-          <h1 class="message-bubble text-center">
+          <h1
+            class="message-bubble text-center text-outline"
+            data-text="Ты не туда ткнул, человечек."
+          >
             Ты не туда ткнул, человечек.
           </h1>
           <!-- <h1 class="message-bubble">Глаз всё видел. Страницы — нет.</h1> -->
