@@ -415,6 +415,12 @@ export const Multiplayer = {
         return;
       }
 
+      // Update host status when hostUid changes
+      const uid = auth.currentUser?.uid;
+      if (uid) {
+        this.isHost = data.hostUid === uid;
+      }
+
       // Check for disconnected players
       this.checkDisconnectedPlayers(data);
 
@@ -435,6 +441,18 @@ export const Multiplayer = {
     const onDisc = rtdbOnDisconnect(connectedRef);
     onDisc.set(false);
     this.disconnectRefs.push(onDisc);
+
+    // Listen to Firebase connection state — re-set connected:true on reconnect
+    const infoConnectedRef = ref(rtdb, '.info/connected');
+    const unsub = rtdbOnValue(infoConnectedRef, (snapshot) => {
+      if (snapshot.val() === true && this.roomCode) {
+        // Re-establish onDisconnect handler and mark as connected
+        const freshOnDisc = rtdbOnDisconnect(connectedRef);
+        freshOnDisc.set(false);
+        set(connectedRef, true);
+      }
+    });
+    this.listeners.push(unsub);
   },
 
   checkDisconnectedPlayers(roomData) {
@@ -467,9 +485,33 @@ export const Multiplayer = {
     if (!uid || !this.roomCode) return;
 
     try {
-      // Delete the whole room only when host explicitly leaves
       if (this.isHost) {
-        await remove(this.roomRef);
+        // Transfer host to next player or delete room if alone
+        const snapshot = await get(this.roomRef);
+        const data = snapshot.val();
+        const remainingUids = Object.keys(data?.players || {}).filter(
+          (id) => id !== uid,
+        );
+
+        if (remainingUids.length > 0) {
+          // Pick next player by joinedAt
+          const sorted = remainingUids.sort(
+            (a, b) =>
+              (data.players[a].joinedAt || 0) - (data.players[b].joinedAt || 0),
+          );
+          const newHostUid = sorted[0];
+          console.log('🎮 Transferring host to:', newHostUid);
+
+          const playerRef = ref(rtdb, `rooms/${this.roomCode}/players/${uid}`);
+          await update(this.roomRef, { hostUid: newHostUid });
+          await remove(playerRef);
+
+          // Auto-finish if only one player remains during an active game
+          await this.autoFinishIfAlone();
+        } else {
+          // No one left — delete the room
+          await remove(this.roomRef);
+        }
       } else {
         const playerRef = ref(rtdb, `rooms/${this.roomCode}/players/${uid}`);
         await remove(playerRef);

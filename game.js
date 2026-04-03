@@ -1029,6 +1029,7 @@ const Game = {
 
   mpEnterLobby(roomCode) {
     this._mpLetsPlayShowing = false;
+    this._mpLetsPlayTimer = null;
     this._mpLobbyPrevUids = new Set();
     $lobbyLetsPlay.hidden = true;
     this.showScreen($screenLobby);
@@ -1078,7 +1079,7 @@ const Game = {
         if (removedUids.has($row.dataset.uid)) {
           const anim = $row.animate(
             [
-              { opacity: 1, transform: 'translateX(0)' },
+              { opacity: 1, transform: 'translateX(0px)' },
               { opacity: 0, transform: 'translateX(-40px)' },
             ],
             { duration: 250, easing: 'ease-in', fill: 'forwards' },
@@ -1662,6 +1663,10 @@ const Game = {
   },
 
   async mpLeaveRoom() {
+    if (this._mpLetsPlayTimer) {
+      clearTimeout(this._mpLetsPlayTimer);
+      this._mpLetsPlayTimer = null;
+    }
     await Multiplayer.leaveRoom();
     this.showScreen($screenMultiplayer);
   },
