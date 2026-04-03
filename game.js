@@ -49,9 +49,9 @@ import './components/input-range.js';
 
 const FEEDBACK_CORRECT = 'correct';
 const FEEDBACK_WRONG = 'wrong';
-const CARD_TRANSITION_DURATION_MS = 350;
-const CARD_FLY_DURATION_MS = 500;
-const MP_WRONG_PENALTY_MS = 3000;
+const CARD_TRANSITION_DURATION_MS = 250;
+const CARD_FLY_DURATION_MS = 300;
+const MP_WRONG_PENALTY_MS = 2000;
 
 // ===== Scoring Constants =====
 const SCORE_BASE = 100;

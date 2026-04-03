@@ -204,6 +204,7 @@
   width: auto;
   max-width: 100%;
   height: min(100%, var(--card-size));
+  height: 100%;
   aspect-ratio: 1;
   flex-shrink: 1;
 }
