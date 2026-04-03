@@ -324,6 +324,7 @@ const Game = {
     $btnFindGame.addEventListener('click', () => this.mpFindGame());
     $btnCopyCode.addEventListener('click', () => this.mpCopyCode());
     $btnLeaveLobby.addEventListener('click', () => this.mpLeaveRoom());
+    $btnMpResultsMenu.addEventListener('click', () => this.quitGame());
     $inputRoomCode.addEventListener('input', () => {
       $inputRoomCode.value = $inputRoomCode.value
         .toUpperCase()
@@ -615,7 +616,7 @@ const Game = {
       .forEach(($screen) => ($screen.hidden = true));
     if ($screenEl) $screenEl.hidden = false;
 
-    if ($screenEl !== $screenGameOver) {
+    if ($screenEl !== $screenGameOver && $screenEl !== $screenMpResults) {
       stopConfetti();
     }
 
@@ -1027,6 +1028,9 @@ const Game = {
   },
 
   mpEnterLobby(roomCode) {
+    this._mpLetsPlayShowing = false;
+    this._mpLobbyPrevUids = new Set();
+    $lobbyLetsPlay.hidden = true;
     this.showScreen($screenLobby);
     $lobbyRoomCode.textContent = roomCode;
     $inputRoomCode.value = '';
@@ -1039,16 +1043,95 @@ const Game = {
 
   mpRenderLobby(roomData) {
     if (!roomData) return;
+    // Don't update lobby once Let's Play is showing
+    if (this._mpLetsPlayShowing) return;
 
     const currentUid = auth?.currentUser?.uid;
     const players = roomData.players || {};
-    const playerEntries = Object.entries(players);
+    const maxPlayers = roomData.maxPlayers || 2;
 
-    // Render player list
+    // Sort: host first, then by joinedAt
+    const playerEntries = Object.entries(players).sort(([uidA], [uidB]) => {
+      if (uidA === roomData.hostUid) return -1;
+      if (uidB === roomData.hostUid) return 1;
+      return (players[uidA].joinedAt || 0) - (players[uidB].joinedAt || 0);
+    });
+
+    // Detect new and removed players
+    const currentUids = new Set(playerEntries.map(([uid]) => uid));
+    const prevUids = this._mpLobbyPrevUids || new Set();
+    const newUids = new Set(
+      [...currentUids].filter((uid) => !prevUids.has(uid)),
+    );
+    const removedUids = new Set(
+      [...prevUids].filter((uid) => !currentUids.has(uid)),
+    );
+    this._mpLobbyPrevUids = currentUids;
+
+    // Animate out removed players before rebuilding
+    if (removedUids.size > 0) {
+      const $$existing = $lobbyPlayersList.querySelectorAll(
+        '.lobby-player[data-uid]',
+      );
+      const animations = [];
+      $$existing.forEach(($row) => {
+        if (removedUids.has($row.dataset.uid)) {
+          const anim = $row.animate(
+            [
+              { opacity: 1, transform: 'translateX(0)' },
+              { opacity: 0, transform: 'translateX(-40px)' },
+            ],
+            { duration: 250, easing: 'ease-in', fill: 'forwards' },
+          );
+          animations.push(anim.finished);
+        }
+      });
+      Promise.all(animations).then(() =>
+        this._mpBuildLobbyList(
+          roomData,
+          playerEntries,
+          maxPlayers,
+          currentUid,
+          newUids,
+        ),
+      );
+    } else {
+      this._mpBuildLobbyList(
+        roomData,
+        playerEntries,
+        maxPlayers,
+        currentUid,
+        newUids,
+      );
+    }
+
+    // Update status text
+    const connectedCount = playerEntries.filter(([, p]) => p.connected).length;
+    $lobbyStatus.textContent =
+      t('mp.waitingPlayers') + ` (${connectedCount}/${maxPlayers})`;
+
+    // Auto-start when room is full — show "Let's Play!" first
+    if (
+      Multiplayer.isHost &&
+      connectedCount >= maxPlayers &&
+      roomData.status === 'waiting'
+    ) {
+      this.mpShowLetsPlay(() => this.mpStartGame());
+    }
+
+    // If game started by host, transition to game screen
+    if (roomData.status === 'playing') {
+      this.mpStartPlaying(roomData);
+    }
+  },
+
+  _mpBuildLobbyList(roomData, playerEntries, maxPlayers, currentUid, newUids) {
     $lobbyPlayersList.innerHTML = '';
+
     playerEntries.forEach(([playerUid, playerData]) => {
       const $row = document.createElement('div');
       $row.className = 'lobby-player';
+      $row.dataset.uid = playerUid;
       if (playerUid === currentUid) $row.classList.add('lobby-player--me');
       if (!playerData.connected)
         $row.classList.add('lobby-player--disconnected');
@@ -1069,26 +1152,54 @@ const Game = {
       `;
 
       $lobbyPlayersList.appendChild($row);
+
+      // Animate new players in
+      if (newUids.has(playerUid)) {
+        $row.animate(
+          [
+            { opacity: 0, transform: 'translateX(40px)' },
+            { opacity: 1, transform: 'translateX(0)' },
+          ],
+          { duration: 300, easing: 'ease-out' },
+        );
+      }
     });
 
-    // Update status text
-    const connectedCount = playerEntries.filter(([, p]) => p.connected).length;
-    $lobbyStatus.textContent =
-      t('mp.waitingPlayers') + ` (${connectedCount}/${roomData.maxPlayers})`;
-
-    // Auto-start when room is full
-    if (
-      Multiplayer.isHost &&
-      connectedCount >= roomData.maxPlayers &&
-      roomData.status === 'waiting'
-    ) {
-      this.mpStartGame();
+    // Empty slots
+    const emptySlots = maxPlayers - playerEntries.length;
+    for (let i = 0; i < emptySlots; i++) {
+      const $row = document.createElement('div');
+      $row.className = 'lobby-player lobby-player--empty';
+      $row.innerHTML = `
+        <span class="lobby-player-icon">👤</span>
+        <span class="lobby-player-name">${t('mp.emptySlot')}</span>
+      `;
+      $lobbyPlayersList.appendChild($row);
     }
+  },
 
-    // If game started by host, transition to game screen
-    if (roomData.status === 'playing') {
-      this.mpStartPlaying(roomData);
-    }
+  mpShowLetsPlay(onComplete) {
+    this._mpLetsPlayShowing = true;
+    const $overlay = $lobbyLetsPlay;
+    const $text = $overlay.querySelector('.lobby-letsplay-text');
+    $overlay.hidden = false;
+
+    $text
+      .animate(
+        [
+          { transform: 'scale(0.3)', opacity: 0 },
+          { transform: 'scale(1.1)', opacity: 1, offset: 0.3 },
+          { transform: 'scale(1)', opacity: 1 },
+        ],
+        { duration: 600, easing: 'ease-out', fill: 'forwards' },
+      )
+      .finished.then(() => {
+        setTimeout(() => {
+          $overlay.hidden = true;
+          this._mpLetsPlayShowing = false;
+          onComplete();
+        }, 1200);
+      });
   },
 
   async mpStartGame() {
@@ -1467,27 +1578,72 @@ const Game = {
     $mpPlayersPanel.hidden = true;
     Multiplayer.cleanup();
 
-    // Find winner (most cardsWon)
+    // Sort players by cardsWon
     const players = roomData.players || {};
     const sorted = Object.entries(players).sort(
       ([, a], [, b]) => (b.cardsWon || 0) - (a.cardsWon || 0),
     );
 
     const uid = auth?.currentUser?.uid;
+    const winnerName = sorted[0]?.[1]?.displayName || '???';
     const isWinner = sorted[0]?.[0] === uid;
 
-    $gameOverTitle.textContent = isWinner
-      ? t('gameover.win')
-      : t('gameover.lose');
-    $finalScore.textContent = roomData.players?.[uid]?.cardsWon || 0;
-    $finalTime.textContent = this.formatElapsedTime(
-      Date.now() - this.startTime,
-    );
-    $finalBest.textContent = '-';
-    $finalStreak.textContent = '-';
+    // Show winner announcement with countdown overlay
+    const $overlay = $countdownOverlay;
+    const $number = $countdownNumber;
+    $overlay.hidden = false;
 
-    this.showScreen($screenGameOver);
+    const winnerText = isWinner
+      ? t('gameover.win')
+      : `${winnerName} ${t('mp.wins')}`;
+    $number.textContent = winnerText;
+
     if (isWinner) launchConfetti();
+
+    $number
+      .animate(
+        [
+          { transform: 'scale(0.3)', opacity: 0 },
+          { transform: 'scale(1.1)', opacity: 1, offset: 0.3 },
+          { transform: 'scale(1)', opacity: 1 },
+        ],
+        { duration: 600, easing: 'ease-out', fill: 'forwards' },
+      )
+      .finished.then(() => {
+        setTimeout(() => {
+          $overlay.hidden = true;
+          stopConfetti();
+          this.mpShowResults(sorted, uid);
+        }, 2000);
+      });
+  },
+
+  mpShowResults(sorted, currentUid) {
+    const placeEmojis = ['🥇', '🥈', '🥉'];
+
+    $mpResultsTitle.textContent = `🏆 ${t('mp.results')}`;
+    $mpResultsList.innerHTML = '';
+
+    sorted.forEach(([uid, data], index) => {
+      const $row = document.createElement('div');
+      $row.className = 'mp-result-row';
+      if (index === 0) $row.classList.add('mp-result-row--winner');
+      if (uid === currentUid) $row.classList.add('mp-result-row--me');
+
+      const placeIcon = placeEmojis[index] || `${index + 1}`;
+
+      $row.innerHTML = `
+        <span class="mp-result-place">${placeIcon}</span>
+        <span class="mp-result-name">${data.displayName || 'Anonymous'}</span>
+        <span class="mp-result-cards">
+          <span class="mp-result-cards-icon">🃏</span>
+          ${data.cardsWon || 0}
+        </span>
+      `;
+      $mpResultsList.appendChild($row);
+    });
+
+    this.showScreen($screenMpResults);
   },
 
   async mpCopyCode() {

@@ -269,6 +269,11 @@
         <span data-i18n="mp.waitingPlayers">Ожидание игроков...</span>
       </div>
 
+      <!-- Let's Play overlay -->
+      <div class="lobby-letsplay-overlay" id="$lobbyLetsPlay" hidden>
+        <span class="lobby-letsplay-text">LET'S PLAY!</span>
+      </div>
+
       <button id="$btnLeaveLobby" class="btn-secondary" data-i18n="mp.leave">
         Покинуть
       </button>
@@ -693,7 +698,7 @@
       </button>
     </div>
 
-    <!-- Game Over Screen -->
+    <!-- Game Over Screen (solo) -->
     <div id="$screenGameOver" class="screen" hidden>
       <h2 id="$gameOverTitle">Отлично!</h2>
       <div class="stats">
@@ -727,6 +732,23 @@
           Играть снова
         </button>
         <button id="$btnMenu" class="btn-secondary" data-i18n="btn.menu">
+          В меню
+        </button>
+      </div>
+    </div>
+
+    <!-- Multiplayer Results Screen -->
+    <div id="$screenMpResults" class="screen" hidden>
+      <h2 class="mp-results-title" id="$mpResultsTitle">🏆</h2>
+      <div class="mp-results-list" id="$mpResultsList">
+        <!-- Rendered by JS -->
+      </div>
+      <div class="flex-col gap-4">
+        <button
+          id="$btnMpResultsMenu"
+          class="btn-secondary"
+          data-i18n="btn.menu"
+        >
           В меню
         </button>
       </div>

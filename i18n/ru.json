@@ -42,7 +42,7 @@
   "confirm.exitMessage": "Текущий прогресс раунда будет потерян.",
   "confirm.resetTitle": "Сброс прогресса?",
   "confirm.resetMessage": "Лучший результат будет удалён. Это нельзя отменить.",
-  "gameover.win": "Отлично!",
+  "gameover.win": "Победа!",
   "gameover.lose": "Время вышло!",
   "stat.score": "Очки",
   "stat.time": "Время",
@@ -92,5 +92,8 @@
   "mp.gameStarted": "Игра уже началась",
   "mp.noRooms": "Нет доступных комнат",
   "mp.players": "Игроки",
-  "mp.playerLeft": "Игрок покинул игру"
+  "mp.playerLeft": "Игрок покинул игру",
+  "mp.emptySlot": "Свободно...",
+  "mp.wins": "победил!",
+  "mp.results": "Результаты"
 }
