@@ -91,6 +91,6 @@
   "mp.roomFull": "Room is full",
   "mp.gameStarted": "Game already started",
   "mp.noRooms": "No available rooms",
-  "mp.notAllReady": "Not all players are ready",
+  "mp.players": "Players",
   "mp.playerLeft": "Player left the game"
 }

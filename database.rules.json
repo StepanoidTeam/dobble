@@ -9,7 +9,7 @@
         "players": {
           "$uid": {
             ".write": "auth != null && ($uid === auth.uid || root.child('rooms/' + $roomCode + '/hostUid').val() === auth.uid)",
-            ".validate": "newData.hasChildren(['displayName', 'ready', 'score', 'cardsWon', 'connected', 'joinedAt'])"
+            ".validate": "newData.hasChildren(['displayName', 'score', 'cardsWon', 'connected', 'joinedAt'])"
           }
         },
 

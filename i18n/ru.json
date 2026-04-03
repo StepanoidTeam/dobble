@@ -91,6 +91,6 @@
   "mp.roomFull": "Комната заполнена",
   "mp.gameStarted": "Игра уже началась",
   "mp.noRooms": "Нет доступных комнат",
-  "mp.notAllReady": "Не все игроки готовы",
+  "mp.players": "Игроки",
   "mp.playerLeft": "Игрок покинул игру"
 }

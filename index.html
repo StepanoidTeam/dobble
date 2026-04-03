@@ -171,13 +171,16 @@
         <div class="mp-options">
           <div class="setting-row">
             <span data-i18n="mp.maxPlayers">Макс. игроков</span>
-            <select id="$selectMaxPlayers">
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-            </select>
+            <div class="mp-max-players-control">
+              <input-range
+                id="$selectMaxPlayers"
+                min="2"
+                max="6"
+                step="1"
+                value="2"
+              ></input-range>
+              <span id="$maxPlayersValue" class="setting-value">2</span>
+            </div>
           </div>
           <div class="setting-row">
             <span data-i18n="mp.autoMatchmaking">Открытая комната</span>
@@ -266,15 +269,6 @@
         <span data-i18n="mp.waitingPlayers">Ожидание игроков...</span>
       </div>
 
-      <button
-        id="$btnStartMultiplayer"
-        class="btn-primary btn-hero"
-        data-i18n="mp.startGame"
-        hidden
-      >
-        Начать игру
-      </button>
-
       <button id="$btnLeaveLobby" class="btn-secondary" data-i18n="mp.leave">
         Покинуть
       </button>
@@ -329,33 +323,6 @@
             />
           </svg>
         </button>
-        <div class="hud-panel" aria-label="Игровая статистика">
-          <div class="hud-item flex-col items-center">
-            <span class="hud-icon" aria-hidden="true">⭐</span>
-            <span class="hud-label" data-i18n="hud.score">Счёт</span>
-            <span class="hud-value" id="$currentScore">0</span>
-          </div>
-          <div class="hud-item flex-col items-center">
-            <span class="hud-icon" aria-hidden="true">🃏</span>
-            <span class="hud-label" data-i18n="hud.level">Уровень</span>
-            <span class="hud-value" id="$cardsRemaining">0 / 0</span>
-          </div>
-          <div class="hud-item flex-col items-center">
-            <span class="hud-icon" aria-hidden="true">⏱️</span>
-            <span class="hud-label" data-i18n="hud.time">Время</span>
-            <span class="hud-value" id="$elapsedTime">0:00</span>
-          </div>
-          <div class="hud-item flex-col items-center">
-            <span class="hud-icon" aria-hidden="true">🔥</span>
-            <span class="hud-label" data-i18n="hud.streak">Стрик</span>
-            <span class="hud-value" id="$currentStreak">0</span>
-          </div>
-          <div class="hud-item flex-col items-center">
-            <span class="hud-icon" aria-hidden="true">✖️</span>
-            <span class="hud-label" data-i18n="hud.multiplier">Множитель</span>
-            <span class="hud-value" id="$currentMultiplier">×1.0</span>
-          </div>
-        </div>
         <button id="$btnSound" class="icon-btn" aria-label="Звук">
           <svg
             id="$soundOnIcon"
@@ -381,6 +348,46 @@
             />
           </svg>
         </button>
+      </div>
+
+      <!-- HUD Panel — left side -->
+      <div class="hud-panel" aria-label="Игровая статистика">
+        <div class="hud-item flex-col items-center">
+          <span class="hud-icon" aria-hidden="true">⭐</span>
+          <span class="hud-label" data-i18n="hud.score">Счёт</span>
+          <span class="hud-value" id="$currentScore">0</span>
+        </div>
+        <div class="hud-item flex-col items-center">
+          <span class="hud-icon" aria-hidden="true">🃏</span>
+          <span class="hud-label" data-i18n="hud.level">Уровень</span>
+          <span class="hud-value" id="$cardsRemaining">0 / 0</span>
+        </div>
+        <div class="hud-item flex-col items-center">
+          <span class="hud-icon" aria-hidden="true">⏱️</span>
+          <span class="hud-label" data-i18n="hud.time">Время</span>
+          <span class="hud-value" id="$elapsedTime">0:00</span>
+        </div>
+        <div class="hud-item flex-col items-center">
+          <span class="hud-icon" aria-hidden="true">🔥</span>
+          <span class="hud-label" data-i18n="hud.streak">Стрик</span>
+          <span class="hud-value" id="$currentStreak">0</span>
+        </div>
+        <div class="hud-item flex-col items-center">
+          <span class="hud-icon" aria-hidden="true">✖️</span>
+          <span class="hud-label" data-i18n="hud.multiplier">Множитель</span>
+          <span class="hud-value" id="$currentMultiplier">×1.0</span>
+        </div>
+      </div>
+
+      <!-- Multiplayer Players Panel — right side -->
+      <div class="mp-players-panel" id="$mpPlayersPanel" hidden>
+        <div class="mp-players-title" data-i18n="mp.players">Игроки</div>
+        <div class="mp-players-list" id="$mpPlayersList"></div>
+      </div>
+
+      <!-- Countdown Overlay -->
+      <div class="countdown-overlay" id="$countdownOverlay" hidden>
+        <span class="countdown-number" id="$countdownNumber"></span>
       </div>
 
       <div class="game-area">

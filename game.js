@@ -4,7 +4,13 @@ import { getDeckStatsBySymbolsCount } from './helpers/dobble-math.js';
 import { AudioManager } from './audio-manager.js';
 import { buildDeck, findCommonSymbol } from './helpers/deck.js';
 import { Random, stringToSeed, cardToSeed } from './helpers/seeded-random.js';
-import { initI18n, setLang, t, getSupportedLangs, getLang } from './helpers/i18n.js';
+import {
+  initI18n,
+  setLang,
+  t,
+  getSupportedLangs,
+  getLang,
+} from './helpers/i18n.js';
 import {
   roundUiNumber,
   initCardRings,
@@ -317,7 +323,6 @@ const Game = {
     $btnJoinRoom.addEventListener('click', () => this.mpJoinRoom());
     $btnFindGame.addEventListener('click', () => this.mpFindGame());
     $btnCopyCode.addEventListener('click', () => this.mpCopyCode());
-    $btnStartMultiplayer.addEventListener('click', () => this.mpStartGame());
     $btnLeaveLobby.addEventListener('click', () => this.mpLeaveRoom());
     $inputRoomCode.addEventListener('input', () => {
       $inputRoomCode.value = $inputRoomCode.value
@@ -347,6 +352,15 @@ const Game = {
         if (Number.isNaN(nextValue)) return;
         this.applyTimePerCardSeconds(nextValue);
       });
+    }
+
+    if ($selectMaxPlayers && $maxPlayersValue) {
+      const updateMaxPlayersValue = () => {
+        $maxPlayersValue.textContent = `${$selectMaxPlayers.value}`;
+      };
+
+      $selectMaxPlayers.addEventListener('input', updateMaxPlayersValue);
+      updateMaxPlayersValue();
     }
 
     SettingsOptionsManager.bindEvents(this);
@@ -895,6 +909,7 @@ const Game = {
     this.stopCardTimer();
     this.pausedCardElapsed = 0;
     this.mpToggleHud(false);
+    $mpPlayersPanel.hidden = true;
     $screenExitConfirm.hidden = true;
 
     // Leave multiplayer room if in one
@@ -1039,33 +1054,19 @@ const Game = {
         $row.classList.add('lobby-player--disconnected');
 
       const isHost = playerUid === roomData.hostUid;
-      const statusEmoji = !playerData.connected
-        ? '🔌'
-        : playerData.ready
-          ? '✅'
-          : '⏳';
+      const statusEmoji = !playerData.connected ? '🔌' : '✅';
       const statusClass = !playerData.connected
         ? 'status-disconnected'
-        : playerData.ready
-          ? 'status-ready'
-          : 'status-waiting';
+        : 'status-ready';
       const statusText = !playerData.connected
         ? t('mp.disconnected')
-        : playerData.ready
-          ? t('mp.ready')
-          : t('mp.notReady');
+        : t('mp.ready');
 
       $row.innerHTML = `
         <span class="lobby-player-icon">${isHost ? '👑' : '🎮'}</span>
         <span class="lobby-player-name">${playerData.displayName || 'Anonymous'}</span>
         <span class="lobby-player-status ${statusClass}">${statusEmoji} ${statusText}</span>
       `;
-
-      $row.addEventListener('click', () => {
-        if (playerUid === auth?.currentUser?.uid) {
-          Multiplayer.toggleReady();
-        }
-      });
 
       $lobbyPlayersList.appendChild($row);
     });
@@ -1075,13 +1076,14 @@ const Game = {
     $lobbyStatus.textContent =
       t('mp.waitingPlayers') + ` (${connectedCount}/${roomData.maxPlayers})`;
 
-    // Show start button only for host when 2+ players connected
-    const allReady = playerEntries.every(([, p]) => p.ready);
-    $btnStartMultiplayer.hidden = !(
+    // Auto-start when room is full
+    if (
       Multiplayer.isHost &&
-      connectedCount >= 2 &&
-      allReady
-    );
+      connectedCount >= roomData.maxPlayers &&
+      roomData.status === 'waiting'
+    ) {
+      this.mpStartGame();
+    }
 
     // If game started by host, transition to game screen
     if (roomData.status === 'playing') {
@@ -1096,9 +1098,6 @@ const Game = {
       await Multiplayer.startGame(symbols);
     } catch (err) {
       console.log('🎮 Start game error:', err.message);
-      if (err.message === 'NOT_ALL_READY') {
-        $lobbyStatus.textContent = t('mp.notAllReady');
-      }
     }
   },
 
@@ -1115,8 +1114,10 @@ const Game = {
   },
 
   mpStartPlaying(roomData) {
-    // Switch to game screen in multiplayer mode
-    this.isPlaying = true;
+    // Prevent re-entry if already started
+    if (this._mpStartingGame) return;
+    this._mpStartingGame = true;
+
     this.mpLastRenderedRound = -1;
     this.mpLastPopupRound = -1;
     this.mpLastPlayerCard = null;
@@ -1125,25 +1126,100 @@ const Game = {
     this.streak = 0;
     this.bestStreak = 0;
     this.startTime = Date.now();
-    this.isInputLocked = false;
+    this.isInputLocked = true;
 
     this.showScreen($screenGame);
     this.mpToggleHud(true);
 
-    // Render initial cards
-    this.mpRenderCards(roomData);
+    // Show player list panel
+    $mpPlayersPanel.hidden = false;
+    this.mpRenderPlayersList(roomData);
 
-    // Listen for further updates
-    Multiplayer.onRoomUpdate = (data) => {
-      if (!data) return;
-      if (data.status === 'finished') {
-        this.mpGameOver(data);
+    // Show countdown then start
+    this.mpShowCountdown(() => {
+      this.isPlaying = true;
+      this.isInputLocked = false;
+      this._mpStartingGame = false;
+
+      // Render initial cards
+      this.mpRenderCards(roomData);
+
+      // Listen for further updates
+      Multiplayer.onRoomUpdate = (data) => {
+        if (!data) return;
+        if (data.status === 'finished') {
+          this.mpGameOver(data);
+          return;
+        }
+        this.mpRenderPlayersList(data);
+        this.mpShowRoundPopup(data);
+        this.mpShowWrongTapPopup(data);
+        this.mpRenderCards(data);
+      };
+    });
+  },
+
+  mpShowCountdown(onComplete) {
+    const $overlay = $countdownOverlay;
+    const $number = $countdownNumber;
+    $overlay.hidden = false;
+
+    const steps = ['3', '2', '1', 'GO!'];
+    let index = 0;
+
+    const showNext = () => {
+      if (index >= steps.length) {
+        $overlay.hidden = true;
+        onComplete();
         return;
       }
-      this.mpShowRoundPopup(data);
-      this.mpShowWrongTapPopup(data);
-      this.mpRenderCards(data);
+
+      $number.textContent = steps[index];
+      $number
+        .animate(
+          [
+            { transform: 'scale(0.3)', opacity: 0 },
+            { transform: 'scale(1.1)', opacity: 1, offset: 0.4 },
+            { transform: 'scale(1)', opacity: 1, offset: 0.6 },
+            { transform: 'scale(1)', opacity: 0 },
+          ],
+          { duration: 800, easing: 'ease-out', fill: 'forwards' },
+        )
+        .finished.then(() => {
+          index++;
+          showNext();
+        });
     };
+
+    showNext();
+  },
+
+  mpRenderPlayersList(roomData) {
+    if (!roomData?.players) return;
+
+    const currentUid = auth?.currentUser?.uid;
+    const players = roomData.players;
+    const $list = $mpPlayersList;
+    $list.innerHTML = '';
+
+    const sorted = Object.entries(players).sort(
+      ([, a], [, b]) => (b.cardsWon || 0) - (a.cardsWon || 0),
+    );
+
+    sorted.forEach(([uid, data]) => {
+      const $row = document.createElement('div');
+      $row.className = 'mp-player-row';
+      if (uid === currentUid) $row.classList.add('mp-player-row--me');
+      if (!data.connected) $row.classList.add('mp-player-row--disconnected');
+
+      const isHost = uid === roomData.hostUid;
+      $row.innerHTML = `
+        <span class="mp-player-icon">${isHost ? '👑' : '🎮'}</span>
+        <span class="mp-player-name">${data.displayName || 'Anonymous'}</span>
+        <span class="mp-player-score">${data.cardsWon || 0}</span>
+      `;
+      $list.appendChild($row);
+    });
   },
 
   mpRenderCards(roomData) {
@@ -1346,7 +1422,10 @@ const Game = {
 
       // Clear the wrong tap after showing
       setTimeout(() => {
-        const wrongRef = ref(rtdb, `rooms/${Multiplayer.roomCode}/wrongTaps/${uid}`);
+        const wrongRef = ref(
+          rtdb,
+          `rooms/${Multiplayer.roomCode}/wrongTaps/${uid}`,
+        );
         remove(wrongRef);
       }, 1000);
     }
@@ -1385,6 +1464,7 @@ const Game = {
   mpGameOver(roomData) {
     this.isPlaying = false;
     this.mpToggleHud(false);
+    $mpPlayersPanel.hidden = true;
     Multiplayer.cleanup();
 
     // Find winner (most cardsWon)

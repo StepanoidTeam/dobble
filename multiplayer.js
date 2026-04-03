@@ -84,7 +84,6 @@ export const Multiplayer = {
       players: {
         [uid]: {
           displayName,
-          ready: true,
           score: 0,
           cardsWon: 0,
           connected: true,
@@ -148,7 +147,6 @@ export const Multiplayer = {
     const playerRef = ref(rtdb, `rooms/${roomCode}/players/${uid}`);
     await set(playerRef, {
       displayName,
-      ready: false,
       score: 0,
       cardsWon: 0,
       connected: true,
@@ -243,17 +241,6 @@ export const Multiplayer = {
     }
   },
 
-  // ===== Toggle Ready =====
-  async toggleReady() {
-    const uid = auth.currentUser?.uid;
-    if (!uid || !this.roomCode) return;
-
-    const readyRef = ref(rtdb, `rooms/${this.roomCode}/players/${uid}/ready`);
-    const snapshot = await get(readyRef);
-    const currentReady = snapshot.val();
-    await set(readyRef, !currentReady);
-  },
-
   // ===== Start Game (Host Only) =====
   async startGame(symbols) {
     if (!this.isHost || !this.roomCode) return;
@@ -261,12 +248,6 @@ export const Multiplayer = {
     const roomSnapshot = await get(this.roomRef);
     const roomData = roomSnapshot.val();
     const playerUids = Object.keys(roomData.players || {});
-
-    // Check all players ready
-    const allReady = playerUids.every((uid) => roomData.players[uid].ready);
-    if (!allReady) {
-      throw new Error('NOT_ALL_READY');
-    }
 
     // Generate and shuffle deck
     const { deck } = buildDeck(symbols);

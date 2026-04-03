@@ -2,6 +2,6 @@
 .firebase/hosting..cache
 .gitignore
 version.json
-images/_temp-drafts
+images/_temp
 firebase-debug.log
 functions/node_modules

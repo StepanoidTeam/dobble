@@ -63,6 +63,22 @@
   gap: 8px;
 }
 
+.mp-max-players-control {
+  width: min(180px, 55vw);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  input-range {
+    flex: 1;
+  }
+}
+
+#\$maxPlayersValue {
+  min-width: 20px;
+  text-align: right;
+}
+
 .mp-room-stats {
   display: flex;
   align-items: center;
