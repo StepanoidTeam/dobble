@@ -2,6 +2,15 @@ import { SeededRandom, cardToSeed } from './seeded-random.js';
 import { DEFAULT_ICON_ROTATION_DEGREES } from '../settings.js';
 import { getEmojiImageUrl } from '../emojis/emoji-images.js';
 
+// ===== Avatar Rendering =====
+export function renderAvatarHtml(emoji, useCustomImages = false) {
+  if (useCustomImages && emoji) {
+    const url = getEmojiImageUrl(emoji, 'classic');
+    if (url) return `<img class="avatar-img" src="${url}" alt="${emoji}">`;
+  }
+  return `<span class="avatar-emoji">${emoji || '👤'}</span>`;
+}
+
 export function roundUiNumber(value) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }

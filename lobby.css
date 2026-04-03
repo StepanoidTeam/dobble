@@ -168,8 +168,23 @@
   }
 }
 
-.lobby-player-icon {
-  font-size: 24px;
+.lobby-player-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.lobby-player-crown {
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-left: -6px;
 }
 
 .lobby-player-name {
@@ -288,6 +303,19 @@
   min-width: 36px;
   text-align: center;
   color: var(--accent);
+}
+
+.mp-result-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  overflow: hidden;
 }
 
 .mp-result-name {

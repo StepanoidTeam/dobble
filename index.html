@@ -26,8 +26,13 @@
     <!-- Start Screen -->
     <div id="$screenStart" class="screen">
       <div class="flex-row items-center justify-center gap-1">
-        <div class="logo-container">
-          <img class="logo-icon" src="./images/favicon.png" alt="dobble" />
+        <div class="logo-container" id="$logoContainer">
+          <img
+            id="$logoIcon"
+            class="logo-icon"
+            src="./images/favicon.png"
+            alt="dobble"
+          />
         </div>
 
         <div class="logo-text-container flex-col">
@@ -466,7 +471,7 @@
           </div>
         </div>
       </div>
-      <div class="timer-bar">
+      <div class="timer-bar" id="$timerBar">
         <div class="timer-fill" id="$timerFill"></div>
       </div>
     </div>
@@ -597,6 +602,14 @@
               maxlength="20"
               placeholder="Anonymous"
             />
+          </div>
+
+          <div class="setting-row setting-row-avatar">
+            <span class="text-nowrap" data-i18n="settings.avatar">Аватар</span>
+            <div id="$avatarCurrent" class="avatar-current"></div>
+          </div>
+          <div class="avatar-picker-grid" id="$avatarGrid">
+            <!-- Rendered by JS -->
           </div>
 
           <div class="setting-row">

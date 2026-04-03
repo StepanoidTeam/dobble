@@ -16,6 +16,7 @@ import {
   initCardRings,
   updateRingProgress,
   positionEmojis,
+  renderAvatarHtml,
 } from './helpers/ui-utils.js';
 import {
   EMOJI_SET_STORAGE_KEY,
@@ -41,6 +42,7 @@ import {
   startAutoPlay,
   stopAutoPlay,
 } from './helpers/logo-animations.js';
+import { EMOJIS_CLASSIC } from './emojis/emojis-classic.js';
 
 import './helpers/app-version.js';
 import './firebase/auth.js';
@@ -111,9 +113,14 @@ const Game = {
     this.startPreviewCycle();
     this.updateCardsRemaining();
     this.updateElapsedTime();
-    Profile.init((displayName) => {
+    Profile.init((displayName, avatar) => {
       if ($playerNameInput) $playerNameInput.value = displayName;
+      this.renderAvatarPicker(avatar);
     });
+    // Start logo auto-play if on start screen
+    if (!$screenStart.hidden) {
+      startAutoPlay($logoIcon, $logoContainer);
+    }
   },
 
   cacheGameCardRings() {
@@ -239,14 +246,11 @@ const Game = {
   },
 
   bindEvents() {
-    const $logoIcon = document.querySelector('.logo-icon');
-    const $logoContainer = document.querySelector('.logo-container');
     $logoIcon.addEventListener('click', () => {
       playLogoEffect($logoIcon, { fromClick: true });
       playLogoPress($logoContainer);
       startAutoPlay($logoIcon, $logoContainer);
     });
-    startAutoPlay($logoIcon, $logoContainer);
 
     $btnPlay.addEventListener('click', () => this.showScreen($screenPlayType));
     $btnSolo.addEventListener('click', () =>
@@ -346,6 +350,8 @@ const Game = {
         }
       });
     }
+
+    this.bindAvatarPicker();
 
     if ($timerRange) {
       $timerRange.addEventListener('input', (e) => {
@@ -623,8 +629,10 @@ const Game = {
     if ($screenEl === $screenStart) {
       this.renderPreviewCard();
       this.startPreviewCycle();
+      startAutoPlay($logoIcon, $logoContainer);
     } else {
       this.stopPreviewCycle();
+      stopAutoPlay();
     }
   },
 
@@ -966,6 +974,61 @@ const Game = {
     Leaderboard.render();
   },
 
+  // ===== Avatar Picker =====
+  renderAvatarPicker(selectedAvatar) {
+    const $grid = document.getElementById('$avatarGrid');
+    if (!$grid) return;
+
+    $grid.innerHTML = '';
+    EMOJIS_CLASSIC.forEach((emoji) => {
+      const $btn = document.createElement('button');
+      $btn.className = 'avatar-picker-item';
+      $btn.dataset.emoji = emoji;
+      if (emoji === selectedAvatar)
+        $btn.classList.add('avatar-picker-item--selected');
+
+      const html = renderAvatarHtml(emoji, this.useCustomEmojiRender);
+      $btn.innerHTML = html;
+      $grid.appendChild($btn);
+    });
+
+    // Update current avatar display
+    const $current = document.getElementById('$avatarCurrent');
+    if ($current) {
+      $current.innerHTML = renderAvatarHtml(
+        selectedAvatar,
+        this.useCustomEmojiRender,
+      );
+    }
+  },
+
+  bindAvatarPicker() {
+    const $grid = document.getElementById('$avatarGrid');
+    if (!$grid) return;
+
+    $grid.addEventListener('click', (e) => {
+      const $btn = e.target.closest('.avatar-picker-item');
+      if (!$btn) return;
+
+      const emoji = $btn.dataset.emoji;
+      if (!emoji) return;
+
+      // Update selection
+      $grid
+        .querySelectorAll('.avatar-picker-item--selected')
+        .forEach(($el) => $el.classList.remove('avatar-picker-item--selected'));
+      $btn.classList.add('avatar-picker-item--selected');
+
+      // Update current display
+      const $current = document.getElementById('$avatarCurrent');
+      if ($current) {
+        $current.innerHTML = renderAvatarHtml(emoji, this.useCustomEmojiRender);
+      }
+
+      Profile.updateAvatar(emoji);
+    });
+  },
+
   // ===== Multiplayer Methods =====
   async mpCreateRoom() {
     try {
@@ -1150,6 +1213,10 @@ const Game = {
         $row.classList.add('lobby-player--disconnected');
 
       const isHost = playerUid === roomData.hostUid;
+      const avatarHtml = renderAvatarHtml(
+        playerData.avatar,
+        this.useCustomEmojiRender,
+      );
       const statusEmoji = !playerData.connected ? '🔌' : '✅';
       const statusClass = !playerData.connected
         ? 'status-disconnected'
@@ -1159,7 +1226,8 @@ const Game = {
         : t('mp.ready');
 
       $row.innerHTML = `
-        <span class="lobby-player-icon">${isHost ? '👑' : '🎮'}</span>
+        <span class="lobby-player-avatar">${avatarHtml}</span>
+        ${isHost ? '<span class="lobby-player-crown">👑</span>' : ''}
         <span class="lobby-player-name">${playerData.displayName || 'Anonymous'}</span>
         <span class="lobby-player-status ${statusClass}">${statusEmoji} ${statusText}</span>
       `;
@@ -1184,7 +1252,7 @@ const Game = {
       const $row = document.createElement('div');
       $row.className = 'lobby-player lobby-player--empty';
       $row.innerHTML = `
-        <span class="lobby-player-icon">👤</span>
+        <span class="lobby-player-avatar"><span class="avatar-emoji">👤</span></span>
         <span class="lobby-player-name">${t('mp.emptySlot')}</span>
       `;
       $lobbyPlayersList.appendChild($row);
@@ -1229,12 +1297,11 @@ const Game = {
     const $hudTime = $elapsedTime.closest('.hud-item');
     const $hudStreak = $currentStreak.closest('.hud-item');
     const $hudMultiplier = $currentMultiplier.closest('.hud-item');
-    const $footer = document.querySelector('.game-footer');
 
     if ($hudTime) $hudTime.hidden = isMultiplayer;
     if ($hudStreak) $hudStreak.hidden = isMultiplayer;
     if ($hudMultiplier) $hudMultiplier.hidden = isMultiplayer;
-    if ($footer) $footer.hidden = isMultiplayer;
+    $timerBar.hidden = isMultiplayer;
   },
 
   mpStartPlaying(roomData) {
@@ -1336,9 +1403,12 @@ const Game = {
       if (uid === currentUid) $row.classList.add('mp-player-row--me');
       if (!data.connected) $row.classList.add('mp-player-row--disconnected');
 
-      const isHost = uid === roomData.hostUid;
+      const avatarHtml = renderAvatarHtml(
+        data.avatar,
+        this.useCustomEmojiRender,
+      );
       $row.innerHTML = `
-        <span class="mp-player-icon">${isHost ? '👑' : '🎮'}</span>
+        <span class="mp-player-avatar">${avatarHtml}</span>
         <span class="mp-player-name">${data.displayName || 'Anonymous'}</span>
         <span class="mp-player-score">${data.cardsWon || 0}</span>
       `;
@@ -1644,9 +1714,14 @@ const Game = {
       if (uid === currentUid) $row.classList.add('mp-result-row--me');
 
       const placeIcon = placeEmojis[index] || `${index + 1}`;
+      const avatarHtml = renderAvatarHtml(
+        data.avatar,
+        this.useCustomEmojiRender,
+      );
 
       $row.innerHTML = `
         <span class="mp-result-place">${placeIcon}</span>
+        <span class="mp-result-avatar">${avatarHtml}</span>
         <span class="mp-result-name">${data.displayName || 'Anonymous'}</span>
         <span class="mp-result-cards">
           <span class="mp-result-cards-icon">🃏</span>
@@ -1690,13 +1765,8 @@ const Game = {
   },
 
   updateSoundIcon() {
-    if (AudioManager.enabled) {
-      $soundOnIcon.style.display = '';
-      $soundOffIcon.style.display = 'none';
-    } else {
-      $soundOnIcon.style.display = 'none';
-      $soundOffIcon.style.display = '';
-    }
+    $soundOnIcon.classList.toggle('hidden', !AudioManager.enabled);
+    $soundOffIcon.classList.toggle('hidden', AudioManager.enabled);
   },
 };
 

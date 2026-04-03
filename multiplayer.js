@@ -70,6 +70,7 @@ export const Multiplayer = {
     }
 
     const displayName = Profile.displayName;
+    const avatar = Profile.avatar;
 
     const roomData = {
       hostUid: uid,
@@ -84,6 +85,7 @@ export const Multiplayer = {
       players: {
         [uid]: {
           displayName,
+          avatar: avatar || null,
           score: 0,
           cardsWon: 0,
           connected: true,
@@ -143,10 +145,12 @@ export const Multiplayer = {
     }
 
     const displayName = Profile.displayName;
+    const avatar = Profile.avatar;
 
     const playerRef = ref(rtdb, `rooms/${roomCode}/players/${uid}`);
     await set(playerRef, {
       displayName,
+      avatar: avatar || null,
       score: 0,
       cardsWon: 0,
       connected: true,
