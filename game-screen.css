@@ -44,13 +44,6 @@
     line-height: 1;
   }
 
-  .hud-label {
-    font-size: 9px;
-    letter-spacing: 0.4px;
-    text-transform: uppercase;
-    opacity: 0.75;
-  }
-
   .hud-value {
     font-size: 14px;
     font-weight: 700;
