@@ -3,12 +3,14 @@
   padding: 40px 20px;
   gap: 24px;
 
+  .game-over-title,
   h2 {
     font-size: 36px;
     color: var(--accent);
 
     text-shadow: 2px 2px 2px #4b00b9;
     text-transform: uppercase;
+    text-align: center;
   }
 }
 
