@@ -1111,13 +1111,25 @@ const Game = {
     $lobbyStatus.textContent =
       t('mp.waitingPlayers') + ` (${connectedCount}/${maxPlayers})`;
 
-    // Auto-start when room is full — show "Let's Play!" first
+    // Auto-start when room is full — show "Let's Play!" for everyone
     if (
-      Multiplayer.isHost &&
       connectedCount >= maxPlayers &&
-      roomData.status === 'waiting'
+      roomData.status === 'waiting' &&
+      !this._mpLetsPlayTimer &&
+      !this._mpLetsPlayShowing
     ) {
-      this.mpShowLetsPlay(() => this.mpStartGame());
+      this._mpLetsPlayTimer = setTimeout(() => {
+        this._mpLetsPlayTimer = null;
+        this.mpShowLetsPlay(() => {
+          if (Multiplayer.isHost) this.mpStartGame();
+        });
+      }, 2000);
+    }
+
+    // Cancel timer if room is no longer full
+    if (connectedCount < maxPlayers && this._mpLetsPlayTimer) {
+      clearTimeout(this._mpLetsPlayTimer);
+      this._mpLetsPlayTimer = null;
     }
 
     // If game started by host, transition to game screen
