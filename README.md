@@ -6,6 +6,8 @@ https://stepanoidteam.github.io/dobble/
 
 ## hosted demo
 
+https://dobble.top/
+
 https://dobble-78869.web.app/
 
 ## to run locally (and disable cache):
