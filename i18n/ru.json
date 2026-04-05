@@ -92,5 +92,8 @@
   "mp.playerLeft": "Игрок покинул игру",
   "mp.emptySlot": "Свободно...",
   "mp.wins": "победил!",
-  "mp.results": "Результаты"
+  "mp.results": "Результаты",
+  "spinWheel.pageTitle": "Рулетка — Доббл",
+  "spinWheel.title": "БОНУС ДНЯ!",
+  "spinWheel.spin": "КРУТИТЬ!"
 }

@@ -92,5 +92,8 @@
   "mp.playerLeft": "Player left the game",
   "mp.emptySlot": "Open slot...",
   "mp.wins": "wins!",
-  "mp.results": "Results"
+  "mp.results": "Results",
+  "spinWheel.pageTitle": "Spin Wheel — Dobble",
+  "spinWheel.title": "DAILY SPIN BONUS!",
+  "spinWheel.spin": "SPIN!"
 }

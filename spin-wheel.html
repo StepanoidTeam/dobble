@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <title data-i18n="spinWheel.pageTitle">Spin Wheel — Dobble</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="spin-wheel.css" />
+    <link rel="shortcut icon" href="./images/favicon.png" type="image/x-icon" />
+    <script src="./spin-wheel.js" type="module" defer></script>
+  </head>
+  <body>
+    <!-- ===== background layer ===== -->
+    <div class="bg-layer" aria-hidden="true">
+      <div class="bg-gradient"></div>
+      <div class="bg-pattern"></div>
+    </div>
+
+    <!-- Spin Wheel Screen -->
+    <div id="$screenSpinWheel" class="screen">
+      <h1
+        class="spin-wheel-title"
+        data-i18n="spinWheel.title"
+        data-text="DAILY SPIN BONUS!"
+      >
+        DAILY SPIN BONUS!
+      </h1>
+
+      <div class="spin-wheel-stage">
+        <!-- Arrow pointer at top -->
+        <div id="$wheelArrow" class="spin-wheel-arrow" aria-hidden="true"></div>
+
+        <!-- Outer decorative ring -->
+        <div class="spin-wheel-ring">
+          <!-- Rotor: sector slices, rotates as a whole -->
+          <div id="$wheelRotor" class="spin-wheel-rotor"></div>
+
+          <!-- Center hub (stays fixed) -->
+          <div class="spin-wheel-hub">
+            <div class="spin-wheel-hub-swirl"></div>
+          </div>
+        </div>
+      </div>
+
+      <button
+        id="$btnSpin"
+        class="btn-primary btn-hero spin-wheel-btn"
+        data-i18n="spinWheel.spin"
+      >
+        КРУТИТЬ!
+      </button>
+
+      <!-- Result popup -->
+      <div id="$spinResult" class="spin-result" hidden>
+        <span id="$spinResultEmoji" class="spin-result-emoji"></span>
+        <span id="$spinResultText" class="spin-result-text"></span>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,221 @@
+/* ===== Spin Wheel Page ===== */
+
+.spin-wheel-title {
+  font-size: clamp(24px, 6vw, 40px);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(255, 220, 32, 0.3);
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+/* ===== Wheel Stage (arrow + ring + rotor) ===== */
+.spin-wheel-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(80vw, 400px);
+  aspect-ratio: 1;
+}
+
+/* ===== Arrow Pointer ===== */
+.spin-wheel-arrow {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 2;
+  width: 0;
+  height: 0;
+  border-left: 18px solid transparent;
+  border-right: 18px solid transparent;
+  border-top: 36px solid var(--accent);
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
+  transition: transform 60ms ease;
+
+  &.tick {
+    transform: scaleY(0.85);
+  }
+}
+
+/* ===== Outer Ring ===== */
+.spin-wheel-ring {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  padding: 10px;
+  background: linear-gradient(145deg, #ffd700, #b8860b, #ffd700);
+  box-shadow:
+    0 0 30px 8px rgba(255, 215, 0, 0.25),
+    inset 0 0 15px rgba(0, 0, 0, 0.3),
+    0 8px 32px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== Rotor (all sectors, rotates as a whole) ===== */
+.spin-wheel-rotor {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  transition: transform 5s cubic-bezier(0.06, 0.7, 0.5, 1);
+}
+
+/* ===== Individual sector slice ===== */
+.spin-wheel-sector {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 50%;
+  height: 50%;
+  translate: 50%;
+  transform-origin: center bottom;
+  /* each sector gets rotate(i * sectorDeg) via inline style */
+}
+
+.spin-wheel-sector-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== Sector label (emoji + value) ===== */
+.spin-wheel-sector-label {
+  position: absolute;
+  margin-top: 15%;
+  /* padding-top: 20px; */
+  justify-self: center;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+}
+
+.spin-wheel-label-emoji {
+  font-size: clamp(24px, 5vw, 38px);
+  line-height: 1;
+  filter: drop-shadow(1px 2px 2px rgba(0, 0, 0, 0.4));
+}
+
+.spin-wheel-label-value {
+  font-size: clamp(14px, 3vw, 22px);
+  font-weight: bold;
+  color: #fff;
+  text-shadow:
+    1px 1px 0 rgba(0, 0, 0, 0.5),
+    -1px -1px 0 rgba(0, 0, 0, 0.3);
+  line-height: 1;
+}
+
+/* ===== Center Hub ===== */
+.spin-wheel-hub {
+  position: absolute;
+  width: 15%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6b2fa0, #3d1560);
+  border: 4px solid #ffd700;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spin-wheel-hub-swirl {
+  width: 55%;
+  aspect-ratio: 1;
+  border: 3px solid rgba(255, 215, 0, 0.5);
+  border-top-color: transparent;
+  border-radius: 50%;
+}
+
+/* ===== Spin Button ===== */
+.spin-wheel-btn {
+  margin-top: 24px;
+  min-width: 200px;
+  transition:
+    transform 150ms ease,
+    opacity 150ms ease;
+
+  &:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+/* ===== Result Popup ===== */
+.spin-result {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  border: 3px solid var(--accent);
+  border-radius: 24px;
+  padding: 32px 48px;
+  animation: resultPopIn 400ms ease both;
+}
+
+.spin-result-emoji {
+  font-size: 64px;
+  line-height: 1;
+}
+
+.spin-result-text {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--accent);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes resultPopIn {
+  0% {
+    scale: 0.3;
+    opacity: 0;
+  }
+  60% {
+    scale: 1.1;
+  }
+  100% {
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+/* ===== Decorative glow around the ring ===== */
+.spin-wheel-ring::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(255, 255, 255, 0.15) 10deg,
+    transparent 20deg
+  );
+  animation: ringGlow 8s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes ringGlow {
+  to {
+    rotate: 360deg;
+  }
+}
