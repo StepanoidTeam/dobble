@@ -51,6 +51,7 @@
 - Console logs use emoji prefixes that match the domain (e.g., `🃏` for cards, `🔥` for Firebase)
 - Don't add comments for self-evident code
 - do not delete existing console logs
+- Do not delete code comments, only if whole related code block is deleted
 
 ## CSS
 
