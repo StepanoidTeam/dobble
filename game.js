@@ -107,6 +107,7 @@ const Game = {
   abilitySelected: null,
   abilityClockCooldown: false,
   _abilityListener: null,
+  $abilityClockProgress: null,
 
   init() {
     this.loadEmojiSetPreference();
@@ -120,6 +121,7 @@ const Game = {
     this.createFlashOverlay();
     this.cacheGameCardRings();
     this.cachePreviewCardRing();
+    this.cacheAbilityProgress();
     initI18n(() => this.onLangApplied());
     this.renderPreviewCard();
     this.startPreviewCycle();
@@ -145,6 +147,15 @@ const Game = {
 
   cachePreviewCardRing() {
     this.$previewCardRing = document.querySelector('.card-preview .card-ring');
+  },
+
+  cacheAbilityProgress() {
+    this.$abilityClockProgress = $abilityClock.querySelector(
+      '.ability-progress circle',
+    );
+    if (this.$abilityClockProgress) {
+      this.$abilityClockProgress.style.strokeDashoffset = '150.8';
+    }
   },
 
   populateEmojiSetOptions() {
@@ -1967,6 +1978,7 @@ const Game = {
     if (ability === 'clock') {
       this.abilityClockCooldown = true;
       $abilityClock.classList.add('ability-btn--cooldown');
+      this.startAbilityCooldownProgress(ABILITY_CLOCK_DURATION_MS);
 
       // Send ability via Firebase
       const abilityRef = ref(
@@ -1990,7 +2002,10 @@ const Game = {
       setTimeout(() => {
         this.abilityClockCooldown = false;
         $abilityClock.classList.remove('ability-btn--cooldown');
-      }, 1000);
+        if (this.$abilityClockProgress) {
+          this.$abilityClockProgress.style.strokeDashoffset = '150.8';
+        }
+      }, ABILITY_CLOCK_DURATION_MS);
     }
   },
 
@@ -2032,6 +2047,27 @@ const Game = {
       $card.classList.remove('ability-clock-spin');
     };
     $card.addEventListener('animationend', onSpinEnd, { once: true });
+  },
+
+  startAbilityCooldownProgress(durationMs) {
+    if (!this.$abilityClockProgress) return;
+
+    const startTime = Date.now();
+    const totalDash = 150.8; // full circle
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / durationMs, 1);
+      const dashOffset = totalDash * (1 - progress); // from 150.8 to 0
+
+      this.$abilityClockProgress.style.strokeDashoffset = dashOffset;
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
   },
 };
 
