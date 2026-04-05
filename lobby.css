@@ -248,6 +248,7 @@
 .lobby-letsplay-text {
   font-size: 64px;
   font-weight: 900;
+  width: min-content;
   color: var(--accent);
   text-transform: uppercase;
   text-shadow:
