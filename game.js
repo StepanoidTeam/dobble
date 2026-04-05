@@ -292,11 +292,8 @@ const Game = {
     $btnBackHowTo.addEventListener('click', () =>
       this.showScreen($screenStart),
     );
-    $btnExitGame.addEventListener('click', () => this.openExitConfirm());
-    $btnSound.addEventListener('click', () => this.toggleSound());
-    $btnCloseSettings.addEventListener('click', () =>
-      this.showScreen($screenStart),
-    );
+    $btnGameMenu.addEventListener('click', () => this.openGameMenu());
+    $btnCloseSettings.addEventListener('click', () => this.closeSettings());
     // Settings tab switching
     $screenSettings
       .querySelector('.settings-tabs')
@@ -320,10 +317,12 @@ const Game = {
     $btnCancelReset.addEventListener('click', () => {
       $screenResetConfirm.hidden = true;
     });
-    $btnContinueGame.addEventListener('click', () =>
-      this.continueAfterConfirm(),
-    );
-    $btnConfirmExit.addEventListener('click', () => this.quitGame());
+    $btnMenuContinue.addEventListener('click', () => this.closeGameMenu());
+    $btnMenuSettings.addEventListener('click', () => {
+      $screenGameMenu.hidden = true;
+      this.openSettings('game');
+    });
+    $btnMenuExit.addEventListener('click', () => this.quitGame());
     $btnPlayAgain.addEventListener('click', () => this.startGame());
     $btnMenu.addEventListener('click', () => this.quitGame());
     $btnLeaderboard.addEventListener('click', () => this.showLeaderboard());
@@ -358,7 +357,6 @@ const Game = {
 
     $toggleSound.addEventListener('change', (e) => {
       AudioManager.enabled = e.target.checked;
-      this.updateSoundIcon();
     });
 
     if ($playerNameInput) {
@@ -423,26 +421,45 @@ const Game = {
     if ($radio) $radio.checked = true;
   },
 
-  openSettings() {
+  openSettings(returnTo) {
+    this._settingsReturnTo = returnTo || null;
     this.syncSettingsControls();
     this.showScreen($screenSettings);
   },
 
-  openExitConfirm() {
-    if (!this.isPlaying) return;
-
-    this.pausedCardElapsed = Date.now() - this.cardStartTime;
-    this.isPlaying = false;
-    this.stopCardTimer();
-    this.showScreen($screenGame);
-    $screenExitConfirm.hidden = false;
+  closeSettings() {
+    if (this._settingsReturnTo === 'game') {
+      this._settingsReturnTo = null;
+      this.showScreen($screenGame);
+      // Resume solo game if was playing
+      if (this.pausedCardElapsed > 0) {
+        this.isPlaying = true;
+        this.startCardTimer(this.pausedCardElapsed);
+        this.pausedCardElapsed = 0;
+      }
+    } else {
+      this.showScreen($screenStart);
+    }
   },
 
-  continueAfterConfirm() {
-    $screenExitConfirm.hidden = true;
-    this.isPlaying = true;
-    this.startCardTimer(this.pausedCardElapsed);
-    this.pausedCardElapsed = 0;
+  openGameMenu() {
+    if (this.isPlaying && !Multiplayer.roomCode) {
+      // Solo game — pause timer
+      this.pausedCardElapsed = Date.now() - this.cardStartTime;
+      this.isPlaying = false;
+      this.stopCardTimer();
+    }
+    $screenGameMenu.hidden = false;
+  },
+
+  closeGameMenu() {
+    $screenGameMenu.hidden = true;
+    // Resume solo game if was paused
+    if (this.pausedCardElapsed > 0 && !Multiplayer.roomCode) {
+      this.isPlaying = true;
+      this.startCardTimer(this.pausedCardElapsed);
+      this.pausedCardElapsed = 0;
+    }
   },
 
   startPreviewCycle() {
@@ -943,7 +960,7 @@ const Game = {
     $mpPlayersPanel.hidden = true;
     $abilitiesPanel.hidden = true;
     this.mpStopAbilitiesListener();
-    $screenExitConfirm.hidden = true;
+    $screenGameMenu.hidden = true;
 
     // Leave multiplayer room if in one
     if (Multiplayer.roomCode) {
@@ -958,7 +975,7 @@ const Game = {
     this.isPlaying = false;
     this.isInputLocked = false;
     this.stopCardTimer();
-    $screenExitConfirm.hidden = true;
+    $screenGameMenu.hidden = true;
 
     const elapsedMs = Date.now() - this.startTime;
 
@@ -1346,13 +1363,16 @@ const Game = {
 
       if (roomData.status === 'playing') {
         this.mpRejoinGame(roomData);
+        return true;
       } else if (roomData.status === 'waiting') {
         this.mpEnterLobby(savedRoom);
+        return true;
       }
     } catch (err) {
       console.log('🎮 Rejoin failed:', err.message);
       localStorage.removeItem(MP_ROOM_CODE_KEY);
     }
+    return false;
   },
 
   async mpCheckActiveGame() {
@@ -1531,8 +1551,8 @@ const Game = {
         data.avatar,
         this.useCustomEmojiRender,
       );
+
       if (uid === currentUid) {
-        // Current player in bottom left
         $mpCurrentPlayer.innerHTML = `
           <span class="mp-player-avatar">${avatarHtml}</span>
           <span class="mp-player-name">${data.displayName || 'Anonymous'}</span>
@@ -1540,7 +1560,6 @@ const Game = {
         `;
         $mpCurrentPlayer.hidden = false;
       } else {
-        // Opponents in top list
         const $row = document.createElement('div');
         $row.className = 'mp-player-row';
         $row.dataset.uid = uid;
@@ -1904,13 +1923,7 @@ const Game = {
 
   toggleSound() {
     const enabled = AudioManager.toggle();
-    this.updateSoundIcon();
     $toggleSound.checked = enabled;
-  },
-
-  updateSoundIcon() {
-    $soundOnIcon.classList.toggle('hidden', !AudioManager.enabled);
-    $soundOffIcon.classList.toggle('hidden', AudioManager.enabled);
   },
 
   // ===== Abilities =====
@@ -2027,9 +2040,14 @@ document.addEventListener('DOMContentLoaded', () => {
   initCardRings();
   Game.init();
 
-  // Attempt to rejoin a multiplayer game after page reload
-  onAuthStateChanged(auth, (user) => {
+  // Wait for auth, then rejoin or show start screen
+  onAuthStateChanged(auth, async (user) => {
     if (!user) return;
-    Game.mpTryRejoin();
+
+    const rejoined = await Game.mpTryRejoin();
+    if (!rejoined) {
+      $screenLoading.hidden = true;
+      Game.showScreen($screenStart);
+    }
   });
 });
