@@ -1,6 +1,6 @@
 /* ===== Cards ===== */
 .card-container {
-  --card-size: min(80vw, 420px);
+  --card-size: min(50cqh, 420px);
   --emoji-size: calc(var(--card-size) * 0.1625);
 
   display: flex;
@@ -205,19 +205,6 @@
   width: auto;
   aspect-ratio: 1;
   flex-shrink: 1;
-}
-
-/* ===== Responsive ===== */
-@media (max-height: 680px) {
-  .card-container {
-    --card-size: min(70vw, 260px);
-  }
-}
-
-@media (max-height: 580px) {
-  .card-container {
-    --card-size: min(60vw, 220px);
-  }
 }
 
 /* todo(vmyshko): for debug, hide ring, increase circle */
