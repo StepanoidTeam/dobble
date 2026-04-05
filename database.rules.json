@@ -52,6 +52,12 @@
           }
         },
 
+        "abilities": {
+          "$targetUid": {
+            ".write": "auth != null"
+          }
+        },
+
         "status": {
           ".write": "auth != null && (root.child('rooms/' + $roomCode + '/hostUid').val() === auth.uid || newData.val() === 'finished')"
         }

@@ -1,0 +1,97 @@
+/* ===== Abilities Panel ===== */
+.abilities-panel {
+  position: absolute;
+  right: 12px;
+  bottom: max(env(safe-area-inset-bottom), 16px);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ability-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid rgba(179, 117, 229, 0.5);
+  background: rgba(20, 8, 36, 0.6);
+  backdrop-filter: blur(3px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+
+  &:active {
+    transform: scale(0.9);
+  }
+
+  &.ability-btn--selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(245, 197, 24, 0.5);
+    animation: ability-pulse 800ms ease-in-out infinite;
+  }
+
+  &.ability-btn--cooldown {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+}
+
+.ability-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+@keyframes ability-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 12px rgba(245, 197, 24, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(245, 197, 24, 0.8);
+  }
+}
+
+/* ===== Targeting State ===== */
+.mp-player-row.ability-targetable {
+  cursor: pointer;
+  animation: target-glow 600ms ease-in-out infinite alternate;
+}
+
+.mp-player-row.ability-targetable:hover {
+  background: rgba(245, 197, 24, 0.15);
+}
+
+@keyframes target-glow {
+  from {
+    box-shadow: 0 0 4px rgba(245, 197, 24, 0.3);
+  }
+  to {
+    box-shadow: 0 0 10px rgba(245, 197, 24, 0.6);
+  }
+}
+
+/* ===== Clock Ability Effect on Card ===== */
+.card-circle.ability-clock-spin {
+  animation: clock-spin 1s linear;
+  animation-iteration-count: 1;
+
+  /* Emojis spin independently after card stops */
+  .emoji-item {
+    animation: clock-spin 2s linear;
+    animation-iteration-count: 3;
+  }
+}
+
+@keyframes clock-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

@@ -34,7 +34,13 @@ import { Leaderboard } from './leaderboard.js';
 import { Profile } from './profile.js';
 import { Multiplayer } from './multiplayer.js';
 import { auth } from './firebase/firebase.js';
-import { rtdb, ref, remove } from './firebase/firebase-rtdb.js';
+import {
+  rtdb,
+  ref,
+  remove,
+  set,
+  rtdbOnValue,
+} from './firebase/firebase-rtdb.js';
 import { launchConfetti, stopConfetti } from './helpers/confetti.js';
 import {
   playLogoEffect,
@@ -54,6 +60,8 @@ const FEEDBACK_WRONG = 'wrong';
 const CARD_TRANSITION_DURATION_MS = 250;
 const CARD_FLY_DURATION_MS = 300;
 const MP_WRONG_PENALTY_MS = 2000;
+const ABILITY_CLOCK_DURATION_MS = 5000;
+const DEBUG_ABILITIES = true;
 
 // ===== Scoring Constants =====
 const SCORE_BASE = 100;
@@ -95,6 +103,9 @@ const Game = {
   totalCardsInGame: 20, // number of card pairs to play
   selectedMode: 'classic',
   mpLastRenderedRound: -1,
+  abilitySelected: null,
+  abilityClockCooldown: false,
+  _abilityListener: null,
 
   init() {
     this.loadEmojiSetPreference();
@@ -333,6 +344,15 @@ const Game = {
       $inputRoomCode.value = $inputRoomCode.value
         .toUpperCase()
         .replace(/[^A-Z0-9]/g, '');
+    });
+
+    // ===== Ability Events =====
+    $abilityClock.addEventListener('click', () => this.abilitySelectClock());
+    $mpPlayersList.addEventListener('click', (e) => {
+      if (!this.abilitySelected) return;
+      const $row = e.target.closest('.mp-player-row');
+      if (!$row || !$row.classList.contains('ability-targetable')) return;
+      this.abilityUseOnPlayer($row.dataset.uid);
     });
 
     $toggleSound.addEventListener('change', (e) => {
@@ -919,6 +939,8 @@ const Game = {
     this.pausedCardElapsed = 0;
     this.mpToggleHud(false);
     $mpPlayersPanel.hidden = true;
+    $abilitiesPanel.hidden = true;
+    this.mpStopAbilitiesListener();
     $screenExitConfirm.hidden = true;
 
     // Leave multiplayer room if in one
@@ -1326,6 +1348,15 @@ const Game = {
     $mpPlayersPanel.hidden = false;
     this.mpRenderPlayersList(roomData);
 
+    // Show abilities panel
+    $abilitiesPanel.hidden = false;
+    this.abilitySelected = null;
+    this.abilityClockCooldown = false;
+    $abilityClock.classList.remove(
+      'ability-btn--selected',
+      'ability-btn--cooldown',
+    );
+
     // Show countdown then start
     this.mpShowCountdown(() => {
       this.isPlaying = true;
@@ -1334,6 +1365,9 @@ const Game = {
 
       // Render initial cards
       this.mpRenderCards(roomData);
+
+      // Listen for incoming abilities
+      this.mpListenAbilities();
 
       // Listen for further updates
       Multiplayer.onRoomUpdate = (data) => {
@@ -1400,6 +1434,7 @@ const Game = {
     sorted.forEach(([uid, data]) => {
       const $row = document.createElement('div');
       $row.className = 'mp-player-row';
+      $row.dataset.uid = uid;
       if (uid === currentUid) $row.classList.add('mp-player-row--me');
       if (!data.connected) $row.classList.add('mp-player-row--disconnected');
 
@@ -1659,6 +1694,8 @@ const Game = {
     this.isPlaying = false;
     this.mpToggleHud(false);
     $mpPlayersPanel.hidden = true;
+    $abilitiesPanel.hidden = true;
+    this.mpStopAbilitiesListener();
     Multiplayer.cleanup();
 
     // Sort players by cardsWon
@@ -1767,6 +1804,114 @@ const Game = {
   updateSoundIcon() {
     $soundOnIcon.classList.toggle('hidden', !AudioManager.enabled);
     $soundOffIcon.classList.toggle('hidden', AudioManager.enabled);
+  },
+
+  // ===== Abilities =====
+  abilitySelectClock() {
+    if (this.abilityClockCooldown) return;
+
+    if (this.abilitySelected === 'clock') {
+      // Deselect
+      this.abilityCancelSelection();
+      return;
+    }
+
+    this.abilitySelected = 'clock';
+    $abilityClock.classList.add('ability-btn--selected');
+
+    // Mark other players as targetable
+    const currentUid = auth?.currentUser?.uid;
+    $mpPlayersList.querySelectorAll('.mp-player-row').forEach(($row) => {
+      if (DEBUG_ABILITIES || $row.dataset.uid !== currentUid) {
+        $row.classList.add('ability-targetable');
+      }
+    });
+  },
+
+  abilityCancelSelection() {
+    this.abilitySelected = null;
+    $abilityClock.classList.remove('ability-btn--selected');
+    $mpPlayersList.querySelectorAll('.mp-player-row').forEach(($row) => {
+      $row.classList.remove('ability-targetable');
+    });
+  },
+
+  async abilityUseOnPlayer(targetUid) {
+    if (!this.abilitySelected || !targetUid) return;
+    const currentUid = auth?.currentUser?.uid;
+    if (!DEBUG_ABILITIES && targetUid === currentUid) return;
+
+    const ability = this.abilitySelected;
+    this.abilityCancelSelection();
+
+    if (ability === 'clock') {
+      this.abilityClockCooldown = true;
+      $abilityClock.classList.add('ability-btn--cooldown');
+
+      // Send ability via Firebase
+      const abilityRef = ref(
+        rtdb,
+        `rooms/${Multiplayer.roomCode}/abilities/${targetUid}`,
+      );
+      await set(abilityRef, {
+        type: 'clock',
+        from: currentUid,
+        timestamp: Date.now(),
+      });
+
+      console.log('⏰ Clock ability sent to', targetUid);
+
+      // Remove after a short delay so the listener picks it up
+      setTimeout(() => {
+        remove(abilityRef);
+      }, 2000);
+
+      // Cooldown timer
+      setTimeout(() => {
+        this.abilityClockCooldown = false;
+        $abilityClock.classList.remove('ability-btn--cooldown');
+      }, ABILITY_CLOCK_DURATION_MS + 3000);
+    }
+  },
+
+  mpListenAbilities() {
+    const uid = auth?.currentUser?.uid;
+    if (!uid || !Multiplayer.roomCode) return;
+
+    const abilityRef = ref(
+      rtdb,
+      `rooms/${Multiplayer.roomCode}/abilities/${uid}`,
+    );
+
+    this._abilityListener = rtdbOnValue(abilityRef, (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return;
+
+      if (data.type === 'clock') {
+        this.abilityApplyClock();
+      }
+    });
+  },
+
+  mpStopAbilitiesListener() {
+    if (this._abilityListener) {
+      this._abilityListener();
+      this._abilityListener = null;
+    }
+  },
+
+  abilityApplyClock() {
+    console.log('⏰ Clock ability received! Spinning card...');
+    const $card = $cardBottom;
+
+    // Phase 1: spin the whole card
+    $card.classList.add('ability-clock-spin');
+
+    // Phase 2: after card spin, spin individual emojis
+    const onSpinEnd = () => {
+      $card.classList.remove('ability-clock-spin');
+    };
+    $card.addEventListener('animationend', onSpinEnd, { once: true });
   },
 };
 
