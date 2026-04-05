@@ -53,18 +53,6 @@ export function setCardRingSegments(cardRingEl, config = {}) {
   }
 }
 
-export function initCardRings() {
-  const $$cardRings = document.querySelectorAll('.card-ring');
-  $$cardRings.forEach(($cardRingEl, index) => {
-    setCardRingSegments($cardRingEl, {
-      firstLength: index === 0 ? 20 : 18,
-      firstStart: 8,
-      secondLength: index === 0 ? 16 : 18,
-      secondStart: 58,
-    });
-  });
-}
-
 export function updateRingProgress(ringElements, remaining) {
   const clampedRemaining = Math.max(0, Math.min(1, remaining));
   const segmentLength = clampedRemaining * 50;

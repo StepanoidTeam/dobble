@@ -11,13 +11,7 @@ import {
   getSupportedLangs,
   getLang,
 } from './helpers/i18n.js';
-import {
-  roundUiNumber,
-  initCardRings,
-  updateRingProgress,
-  positionEmojis,
-  renderAvatarHtml,
-} from './helpers/ui-utils.js';
+import { roundUiNumber, renderAvatarHtml } from './helpers/ui-utils.js';
 import {
   EMOJI_SET_STORAGE_KEY,
   TIME_PER_CARD_STORAGE_KEY,
@@ -54,10 +48,10 @@ import './helpers/app-version.js';
 import './firebase/auth.js';
 
 import './components/input-range.js';
+import './components/card.js';
 
 const FEEDBACK_CORRECT = 'correct';
 const FEEDBACK_WRONG = 'wrong';
-const CARD_TRANSITION_DURATION_MS = 250;
 const CARD_FLY_DURATION_MS = 300;
 const MP_WRONG_PENALTY_MS = 2000;
 const ABILITY_CLOCK_DURATION_MS = 5000;
@@ -95,8 +89,6 @@ const Game = {
   streak: 0,
   bestStreak: 0,
   hintedCurrentCard: false,
-  $$gameCardRings: [],
-  $previewCardRing: null,
   $flashOverlay: null,
   isPlaying: false,
   isInputLocked: false,
@@ -119,8 +111,6 @@ const Game = {
     this.bindEvents();
     AudioManager.init();
     this.createFlashOverlay();
-    this.cacheGameCardRings();
-    this.cachePreviewCardRing();
     this.cacheAbilityProgress();
     initI18n(() => this.onLangApplied());
     this.renderPreviewCard();
@@ -135,18 +125,6 @@ const Game = {
     if (!$screenStart.hidden) {
       startAutoPlay($logoIcon, $logoContainer);
     }
-  },
-
-  cacheGameCardRings() {
-    this.$$gameCardRings = Array.from(
-      document.querySelectorAll(
-        '.card-top .card-ring, .card-bottom .card-ring',
-      ),
-    );
-  },
-
-  cachePreviewCardRing() {
-    this.$previewCardRing = document.querySelector('.card-preview .card-ring');
   },
 
   cacheAbilityProgress() {
@@ -474,13 +452,13 @@ const Game = {
   },
 
   startPreviewCycle() {
-    if (!this.$previewCardRing || $screenStart.hidden) {
+    if (!$cardPreview || $screenStart.hidden) {
       return;
     }
 
     this.stopPreviewCycle();
     this.previewCardStartTime = Date.now();
-    updateRingProgress(this.$previewCardRing, 1);
+    $cardPreview.updateRingProgress(1);
 
     const tick = () => {
       if ($screenStart.hidden) {
@@ -491,17 +469,17 @@ const Game = {
       const elapsed = Date.now() - this.previewCardStartTime;
       const remaining = Math.max(0, 1 - elapsed / this.timePerCard);
 
-      updateRingProgress(this.$previewCardRing, remaining);
+      $cardPreview.updateRingProgress(remaining);
 
       if (remaining <= 0 && !this.isPreviewTransitioning) {
         this.isPreviewTransitioning = true;
-        const exitAnim = this.playCardAnimation($cardPreview, 'card-exit');
+        const exitAnim = $cardPreview.playAnimation('card-exit');
 
         exitAnim?.finished.then(() => {
           this.renderPreviewCard();
-          this.playCardAnimation($cardPreview, 'card-enter');
+          $cardPreview.playAnimation('card-enter');
           this.previewCardStartTime = Date.now();
-          updateRingProgress(this.$previewCardRing, 1);
+          $cardPreview.updateRingProgress(1);
           this.isPreviewTransitioning = false;
         });
       }
@@ -526,7 +504,7 @@ const Game = {
       0,
       symbolsPerCard,
     );
-    positionEmojis(previewSymbols, $cardPreview, false, null, {
+    $cardPreview.setEmojis(previewSymbols, false, null, {
       rotationRangeDegrees: this.iconRotationDegrees,
       rotateByPosition: this.rotateByPosition,
       useCustomEmojiImages: this.useCustomEmojiRender,
@@ -729,46 +707,24 @@ const Game = {
       useCustomEmojiImages: this.useCustomEmojiRender,
       emojiSetKey: this.selectedEmojiSetKey,
     };
-    positionEmojis(this.topCard, $cardTop, true, onSymbolClick, layoutOptions);
-    positionEmojis(
-      this.bottomCard,
-      $cardBottom,
-      true,
-      onSymbolClick,
-      layoutOptions,
-    );
+    $cardTop.setEmojis(this.topCard, true, onSymbolClick, layoutOptions);
+    $cardBottom.setEmojis(this.bottomCard, true, onSymbolClick, layoutOptions);
 
-    this.playCardAnimation($cardTop, 'card-enter');
-    this.playCardAnimation($cardBottom, 'card-enter');
-  },
-
-  playCardAnimation($cardEl, direction) {
-    if (!$cardEl) return null;
-    const keyframes = [
-      { transform: 'scale(0.8)', opacity: 0 },
-      { transform: 'scale(1.03) rotate(6deg)', opacity: 1, offset: 0.55 },
-      { transform: 'scale(1) rotate(0deg)', opacity: 1 },
-    ];
-    return $cardEl.animate(
-      direction === 'card-exit' ? [...keyframes].reverse() : keyframes,
-      { duration: CARD_TRANSITION_DURATION_MS, easing: 'ease-out' },
-    );
+    $cardTop.playAnimation('card-enter');
+    $cardBottom.playAnimation('card-enter');
   },
 
   transitionToNextCards() {
-    const $bottomContainer = $cardBottom.closest('.card-container');
-    const $topContainer = $cardTop.closest('.card-container');
-
     // Calculate fly distance between card centers
-    const topRect = $topContainer.getBoundingClientRect();
-    const bottomRect = $bottomContainer.getBoundingClientRect();
+    const topRect = $cardTop.getBoundingClientRect();
+    const bottomRect = $cardBottom.getBoundingClientRect();
     const offsetY =
       topRect.top +
       topRect.height / 2 -
       (bottomRect.top + bottomRect.height / 2);
 
     // Animate bottom card flying up to overlay the top card
-    const flyAnimation = $cardBottom.animate(
+    const flyAnimation = $cardBottom.animateCircle(
       [
         { transform: 'translateY(0)', scale: 1, zIndex: 1 },
         { scale: 1.2, zIndex: 1, offset: 0.5 },
@@ -791,23 +747,16 @@ const Game = {
         useCustomEmojiImages: this.useCustomEmojiRender,
         emojiSetKey: this.selectedEmojiSetKey,
       };
-      positionEmojis(
-        this.topCard,
-        $cardTop,
-        true,
-        onSymbolClick,
-        layoutOptions,
-      );
+      $cardTop.setEmojis(this.topCard, true, onSymbolClick, layoutOptions);
 
       // Render new bottom card with enter animation
-      positionEmojis(
+      $cardBottom.setEmojis(
         this.bottomCard,
-        $cardBottom,
         true,
         onSymbolClick,
         layoutOptions,
       );
-      this.playCardAnimation($cardBottom, 'card-enter');
+      $cardBottom.playAnimation('card-enter');
 
       this.updateCardsRemaining();
       this.startCardTimer();
@@ -916,7 +865,8 @@ const Game = {
       $timerFill.classList.add('warning');
     }
 
-    updateRingProgress(this.$$gameCardRings, initialRemaining);
+    $cardTop.updateRingProgress(initialRemaining);
+    $cardBottom.updateRingProgress(initialRemaining);
 
     const tick = () => {
       if (!this.isPlaying) {
@@ -929,7 +879,8 @@ const Game = {
       this.updateElapsedTime();
 
       $timerFill.style.width = `${roundUiNumber(remaining * 100)}%`;
-      updateRingProgress(this.$$gameCardRings, remaining);
+      $cardTop.updateRingProgress(remaining);
+      $cardBottom.updateRingProgress(remaining);
 
       if (remaining < 0.3) {
         $timerFill.classList.add('warning');
@@ -1620,32 +1571,33 @@ const Game = {
 
     const renderNewCards = () => {
       if (cards.isPlayerDone) {
-        positionEmojis(cards.centralCard, $cardTop, false, null, {
+        $cardTop.setEmojis(cards.centralCard, false, null, {
           ...layoutOptions,
           seed: cardToSeed(cards.centralCard) ^ roomSeed,
         });
-        $cardBottom.innerHTML =
-          '<span style="font-size:2rem;opacity:0.5">⏳</span>';
-        this.playCardAnimation($cardTop, 'card-enter');
+        $cardBottom.setContent(
+          '<span style="font-size:2rem;opacity:0.5">⏳</span>',
+        );
+        $cardTop.playAnimation('card-enter');
         return;
       }
 
       const onSymbolClick = (symbol, $el) => this.mpTapSymbol(symbol, $el);
 
       // Central card (top) — not clickable, seed shared across all players
-      positionEmojis(cards.centralCard, $cardTop, false, null, {
+      $cardTop.setEmojis(cards.centralCard, false, null, {
         ...layoutOptions,
         seed: cardToSeed(cards.centralCard) ^ roomSeed,
       });
       // Player card (bottom) — clickable, seed shared across all players
-      positionEmojis(cards.playerCard, $cardBottom, true, onSymbolClick, {
+      $cardBottom.setEmojis(cards.playerCard, true, onSymbolClick, {
         ...layoutOptions,
         seed: cardToSeed(cards.playerCard) ^ roomSeed,
       });
 
-      this.playCardAnimation($cardTop, 'card-enter');
+      $cardTop.playAnimation('card-enter');
       if (playerCardChanged) {
-        this.playCardAnimation($cardBottom, 'card-enter');
+        $cardBottom.playAnimation('card-enter');
       }
     };
 
@@ -1662,17 +1614,14 @@ const Game = {
 
   // Top card flies down to overlay the bottom card (current player won)
   mpFlyTopCardDown() {
-    const $topContainer = $cardTop.closest('.card-container');
-    const $bottomContainer = $cardBottom.closest('.card-container');
-
-    const topRect = $topContainer.getBoundingClientRect();
-    const bottomRect = $bottomContainer.getBoundingClientRect();
+    const topRect = $cardTop.getBoundingClientRect();
+    const bottomRect = $cardBottom.getBoundingClientRect();
     const offsetY =
       bottomRect.top +
       bottomRect.height / 2 -
       (topRect.top + topRect.height / 2);
 
-    const flyAnimation = $cardTop.animate(
+    const flyAnimation = $cardTop.animateCircle(
       [
         { transform: 'translateY(0)', scale: 1, zIndex: 1 },
         { scale: 1.2, zIndex: 1, offset: 0.5 },
@@ -1686,13 +1635,12 @@ const Game = {
 
   // Top card flies up off screen (opponent won)
   mpFlyTopCardOffScreen() {
-    const $topContainer = $cardTop.closest('.card-container');
-    const topRect = $topContainer.getBoundingClientRect();
+    const topRect = $cardTop.getBoundingClientRect();
 
     // Fly up past the top of the viewport
     const offsetY = -(topRect.top + topRect.height);
 
-    const flyAnimation = $cardTop.animate(
+    const flyAnimation = $cardTop.animateCircle(
       [
         { transform: 'translateY(0)', scale: 1, opacity: 1 },
         { transform: `translateY(${offsetY}px)`, scale: 0.8, opacity: 0 },
@@ -1817,9 +1765,9 @@ const Game = {
       Multiplayer.reportWrongTap();
 
       // Penalty: lock input + grayscale on player's card
-      $cardBottom.classList.add('card-penalty');
+      $cardBottom.$circle.classList.add('card-penalty');
       setTimeout(() => {
-        $cardBottom.classList.remove('card-penalty');
+        $cardBottom.$circle.classList.remove('card-penalty');
         this.isInputLocked = false;
       }, MP_WRONG_PENALTY_MS);
     }
@@ -2073,7 +2021,6 @@ const Game = {
 
 // ===== Start =====
 document.addEventListener('DOMContentLoaded', () => {
-  initCardRings();
   Game.init();
 
   // Wait for auth, then rejoin or show start screen

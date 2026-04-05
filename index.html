@@ -50,36 +50,7 @@
         </div>
       </div>
 
-      <div class="card-container card-preview">
-        <div class="card-ring" aria-hidden="true">
-          <svg class="card-ring-svg" viewBox="0 0 100 100" focusable="false">
-            <circle
-              class="card-ring-track"
-              cx="50"
-              cy="50"
-              r="46"
-              pathLength="100"
-            ></circle>
-            <circle
-              class="card-ring-segment ring-segment-a"
-              cx="50"
-              cy="50"
-              r="46"
-              pathLength="100"
-            ></circle>
-            <circle
-              class="card-ring-segment ring-segment-b"
-              cx="50"
-              cy="50"
-              r="46"
-              pathLength="100"
-            ></circle>
-          </svg>
-        </div>
-        <div class="card-circle" id="$cardPreview">
-          <!-- Emojis placed by JS -->
-        </div>
-      </div>
+      <dobble-card id="$cardPreview" class="card-preview"></dobble-card>
       <div
         class="flex-col gap-4"
         style="z-index: 1; margin-top: -70px; width: 200px"
@@ -375,36 +346,7 @@
 
       <div class="game-area">
         <!-- Top card (from deck) -->
-        <div class="card-container card-top">
-          <div class="card-ring" aria-hidden="true">
-            <svg class="card-ring-svg" viewBox="0 0 100 100" focusable="false">
-              <circle
-                class="card-ring-track"
-                cx="50"
-                cy="50"
-                r="46"
-                pathLength="100"
-              ></circle>
-              <circle
-                class="card-ring-segment ring-segment-a"
-                cx="50"
-                cy="50"
-                r="46"
-                pathLength="100"
-              ></circle>
-              <circle
-                class="card-ring-segment ring-segment-b"
-                cx="50"
-                cy="50"
-                r="46"
-                pathLength="100"
-              ></circle>
-            </svg>
-          </div>
-          <div class="card-circle" id="$cardTop">
-            <!-- Emojis will be placed here by JS -->
-          </div>
-        </div>
+        <dobble-card id="$cardTop" class="card-top"></dobble-card>
 
         <!-- Feedback icon (check/cross) shown between cards -->
         <div id="$feedbackIcon" class="feedback-icon" hidden>
@@ -413,36 +355,7 @@
         </div>
 
         <!-- Bottom card (player's card) -->
-        <div class="card-container card-bottom">
-          <div class="card-ring" aria-hidden="true">
-            <svg class="card-ring-svg" viewBox="0 0 100 100" focusable="false">
-              <circle
-                class="card-ring-track"
-                cx="50"
-                cy="50"
-                r="46"
-                pathLength="100"
-              ></circle>
-              <circle
-                class="card-ring-segment ring-segment-a"
-                cx="50"
-                cy="50"
-                r="46"
-                pathLength="100"
-              ></circle>
-              <circle
-                class="card-ring-segment ring-segment-b"
-                cx="50"
-                cy="50"
-                r="46"
-                pathLength="100"
-              ></circle>
-            </svg>
-          </div>
-          <div class="card-circle" id="$cardBottom">
-            <!-- Emojis will be placed here by JS -->
-          </div>
-        </div>
+        <dobble-card id="$cardBottom" class="card-bottom"></dobble-card>
       </div>
       <div class="timer-bar" id="$timerBar">
         <div class="timer-fill" id="$timerFill"></div>
