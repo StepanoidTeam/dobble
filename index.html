@@ -23,8 +23,14 @@
       <div class="bg-pattern"></div>
     </div>
 
+    <!-- Loading Screen -->
+    <div id="$screenLoading" class="screen">
+      <img class="loading-logo" src="./images/favicon.png" alt="Dobble" />
+      <div class="loading-spinner"></div>
+    </div>
+
     <!-- Start Screen -->
-    <div id="$screenStart" class="screen">
+    <div id="$screenStart" class="screen" hidden>
       <div class="flex-row items-center justify-center gap-1">
         <div class="logo-container" id="$logoContainer">
           <img
@@ -389,6 +395,9 @@
         <div class="mp-players-title" data-i18n="mp.players">Игроки</div>
         <div class="mp-players-list" id="$mpPlayersList"></div>
       </div>
+
+      <!-- Current Player Panel — bottom left -->
+      <div class="mp-current-player" id="$mpCurrentPlayer" hidden></div>
 
       <!-- Countdown Overlay -->
       <div class="countdown-overlay" id="$countdownOverlay" hidden>

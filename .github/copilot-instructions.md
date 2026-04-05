@@ -78,6 +78,7 @@
 ### Layout
 
 - Flexbox for all flow layout; absolute positioning only for overlays and decorative elements
+- Do not use `left: 50%; transform: translateX(-50%)` for centering; use flex container alignments/justify instead
 - Prefer `min()` / `max()` / `clamp()` for fluid sizing
 
 ### z-index

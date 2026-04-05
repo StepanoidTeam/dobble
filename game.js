@@ -33,7 +33,7 @@ import { SettingsOptionsManager } from './settings-options/index.js';
 import { Leaderboard } from './leaderboard.js';
 import { Profile } from './profile.js';
 import { Multiplayer } from './multiplayer.js';
-import { auth } from './firebase/firebase.js';
+import { auth, onAuthStateChanged } from './firebase/firebase.js';
 import {
   rtdb,
   ref,
@@ -62,6 +62,7 @@ const CARD_FLY_DURATION_MS = 300;
 const MP_WRONG_PENALTY_MS = 2000;
 const ABILITY_CLOCK_DURATION_MS = 5000;
 const DEBUG_ABILITIES = true;
+const MP_ROOM_CODE_KEY = 'dobble_mp_room';
 
 // ===== Scoring Constants =====
 const SCORE_BASE = 100;
@@ -689,6 +690,7 @@ const Game = {
     this.updateCardsRemaining();
     this.startCardTimer();
     this.showScreen($screenGame);
+    this.mpToggleHud(false);
   },
 
   renderCards() {
@@ -947,6 +949,7 @@ const Game = {
     if (Multiplayer.roomCode) {
       Multiplayer.leaveRoom();
     }
+    localStorage.removeItem(MP_ROOM_CODE_KEY);
 
     this.showScreen($screenStart);
   },
@@ -1053,6 +1056,9 @@ const Game = {
 
   // ===== Multiplayer Methods =====
   async mpCreateRoom() {
+    // If already in a game, rejoin instead
+    if (await this.mpCheckActiveGame()) return;
+
     try {
       const maxPlayers = parseInt($selectMaxPlayers.value, 10) || 2;
       const autoMatchmaking = $toggleAutoMatch.checked;
@@ -1070,6 +1076,9 @@ const Game = {
   },
 
   async mpJoinRoom() {
+    // If already in a game, rejoin instead
+    if (await this.mpCheckActiveGame()) return;
+
     const code = $inputRoomCode.value.trim();
     if (!code || code.length < 5) return;
 
@@ -1088,6 +1097,9 @@ const Game = {
   },
 
   async mpFindGame() {
+    // If already in a game, rejoin instead
+    if (await this.mpCheckActiveGame()) return;
+
     try {
       $lobbyStatus.textContent = t('leaderboard.loading');
       const roomCode = await Multiplayer.findRoom();
@@ -1120,6 +1132,7 @@ const Game = {
     this.showScreen($screenLobby);
     $lobbyRoomCode.textContent = roomCode;
     $inputRoomCode.value = '';
+    localStorage.setItem(MP_ROOM_CODE_KEY, roomCode);
 
     Multiplayer.onRoomUpdate = (data) => this.mpRenderLobby(data);
     Multiplayer.onPlayerLeft = (uid) => {
@@ -1316,14 +1329,95 @@ const Game = {
   },
 
   mpToggleHud(isMultiplayer) {
-    const $hudTime = $elapsedTime.closest('.hud-item');
-    const $hudStreak = $currentStreak.closest('.hud-item');
-    const $hudMultiplier = $currentMultiplier.closest('.hud-item');
+    const $hudPanel = document.querySelector('.hud-panel');
+    if ($hudPanel) $hudPanel.hidden = isMultiplayer;
 
-    if ($hudTime) $hudTime.hidden = isMultiplayer;
-    if ($hudStreak) $hudStreak.hidden = isMultiplayer;
-    if ($hudMultiplier) $hudMultiplier.hidden = isMultiplayer;
-    $timerBar.hidden = isMultiplayer;
+    $mpPlayersPanel.hidden = !isMultiplayer;
+    $mpCurrentPlayer.hidden = !isMultiplayer;
+  },
+
+  async mpTryRejoin() {
+    const savedRoom = localStorage.getItem(MP_ROOM_CODE_KEY);
+    if (!savedRoom) return;
+
+    try {
+      const roomData = await Multiplayer.rejoinRoom(savedRoom);
+      console.log('🎮 Rejoin successful, status:', roomData.status);
+
+      if (roomData.status === 'playing') {
+        this.mpRejoinGame(roomData);
+      } else if (roomData.status === 'waiting') {
+        this.mpEnterLobby(savedRoom);
+      }
+    } catch (err) {
+      console.log('🎮 Rejoin failed:', err.message);
+      localStorage.removeItem(MP_ROOM_CODE_KEY);
+    }
+  },
+
+  async mpCheckActiveGame() {
+    const savedRoom = localStorage.getItem(MP_ROOM_CODE_KEY);
+    if (!savedRoom) return false;
+
+    try {
+      const roomData = await Multiplayer.rejoinRoom(savedRoom);
+      if (roomData.status === 'playing') {
+        this.mpRejoinGame(roomData);
+      } else if (roomData.status === 'waiting') {
+        this.mpEnterLobby(savedRoom);
+      }
+      return true;
+    } catch {
+      localStorage.removeItem(MP_ROOM_CODE_KEY);
+      return false;
+    }
+  },
+
+  mpRejoinGame(roomData) {
+    this.mpLastRenderedRound = -1;
+    this.mpLastPopupRound = -1;
+    this.mpLastPlayerCard = null;
+    this.mpLastWrongTaps = {};
+    this.score = 0;
+    this.streak = 0;
+    this.bestStreak = 0;
+    this.startTime = Date.now();
+
+    this.showScreen($screenGame);
+    this.mpToggleHud(true);
+
+    $mpPlayersPanel.hidden = false;
+    this.mpRenderPlayersList(roomData);
+
+    $abilitiesPanel.hidden = false;
+    this.abilitySelected = null;
+    this.abilityClockCooldown = false;
+    $abilityClock.classList.remove(
+      'ability-btn--selected',
+      'ability-btn--cooldown',
+    );
+
+    // Jump straight into the game — no countdown
+    this.isPlaying = true;
+    this.isInputLocked = false;
+    this._mpStartingGame = false;
+
+    this.mpRenderCards(roomData);
+    this.mpListenAbilities();
+
+    Multiplayer.onRoomUpdate = (data) => {
+      if (!data) return;
+      if (data.status === 'finished') {
+        this.mpGameOver(data);
+        return;
+      }
+      this.mpRenderPlayersList(data);
+      this.mpShowRoundPopup(data);
+      this.mpShowWrongTapPopup(data);
+      this.mpRenderCards(data);
+    };
+
+    console.log('🎮 Rejoined active game');
   },
 
   mpStartPlaying(roomData) {
@@ -1426,28 +1520,39 @@ const Game = {
     const players = roomData.players;
     const $list = $mpPlayersList;
     $list.innerHTML = '';
+    $mpCurrentPlayer.innerHTML = '';
 
     const sorted = Object.entries(players).sort(
       ([, a], [, b]) => (b.cardsWon || 0) - (a.cardsWon || 0),
     );
 
     sorted.forEach(([uid, data]) => {
-      const $row = document.createElement('div');
-      $row.className = 'mp-player-row';
-      $row.dataset.uid = uid;
-      if (uid === currentUid) $row.classList.add('mp-player-row--me');
-      if (!data.connected) $row.classList.add('mp-player-row--disconnected');
-
       const avatarHtml = renderAvatarHtml(
         data.avatar,
         this.useCustomEmojiRender,
       );
-      $row.innerHTML = `
-        <span class="mp-player-avatar">${avatarHtml}</span>
-        <span class="mp-player-name">${data.displayName || 'Anonymous'}</span>
-        <span class="mp-player-score">${data.cardsWon || 0}</span>
-      `;
-      $list.appendChild($row);
+      if (uid === currentUid) {
+        // Current player in bottom left
+        $mpCurrentPlayer.innerHTML = `
+          <span class="mp-player-avatar">${avatarHtml}</span>
+          <span class="mp-player-name">${data.displayName || 'Anonymous'}</span>
+          <span class="mp-player-score">${data.cardsWon || 0}</span>
+        `;
+        $mpCurrentPlayer.hidden = false;
+      } else {
+        // Opponents in top list
+        const $row = document.createElement('div');
+        $row.className = 'mp-player-row';
+        $row.dataset.uid = uid;
+        if (!data.connected) $row.classList.add('mp-player-row--disconnected');
+
+        $row.innerHTML = `
+          <span class="mp-player-avatar">${avatarHtml}</span>
+          <span class="mp-player-name">${data.displayName || 'Anonymous'}</span>
+          <span class="mp-player-score">${data.cardsWon || 0}</span>
+        `;
+        $list.appendChild($row);
+      }
     });
   },
 
@@ -1696,6 +1801,7 @@ const Game = {
     $mpPlayersPanel.hidden = true;
     $abilitiesPanel.hidden = true;
     this.mpStopAbilitiesListener();
+    localStorage.removeItem(MP_ROOM_CODE_KEY);
     Multiplayer.cleanup();
 
     // Sort players by cardsWon
@@ -1791,6 +1897,7 @@ const Game = {
       clearTimeout(this._mpLetsPlayTimer);
       this._mpLetsPlayTimer = null;
     }
+    localStorage.removeItem(MP_ROOM_CODE_KEY);
     await Multiplayer.leaveRoom();
     this.showScreen($screenMultiplayer);
   },
@@ -1870,7 +1977,7 @@ const Game = {
       setTimeout(() => {
         this.abilityClockCooldown = false;
         $abilityClock.classList.remove('ability-btn--cooldown');
-      }, ABILITY_CLOCK_DURATION_MS + 3000);
+      }, 1000);
     }
   },
 
@@ -1919,4 +2026,10 @@ const Game = {
 document.addEventListener('DOMContentLoaded', () => {
   initCardRings();
   Game.init();
+
+  // Attempt to rejoin a multiplayer game after page reload
+  onAuthStateChanged(auth, (user) => {
+    if (!user) return;
+    Game.mpTryRejoin();
+  });
 });

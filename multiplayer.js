@@ -489,10 +489,12 @@ export const Multiplayer = {
     if (!uid || !this.roomCode) return;
 
     try {
+      const snapshot = await get(this.roomRef);
+      const data = snapshot.val();
+      const isPlaying = data?.status === 'playing';
+
       if (this.isHost) {
         // Transfer host to next player or delete room if alone
-        const snapshot = await get(this.roomRef);
-        const data = snapshot.val();
         const remainingUids = Object.keys(data?.players || {}).filter(
           (id) => id !== uid,
         );
@@ -506,9 +508,22 @@ export const Multiplayer = {
           const newHostUid = sorted[0];
           console.log('🎮 Transferring host to:', newHostUid);
 
-          const playerRef = ref(rtdb, `rooms/${this.roomCode}/players/${uid}`);
           await update(this.roomRef, { hostUid: newHostUid });
-          await remove(playerRef);
+
+          if (isPlaying) {
+            // During game — keep player data but mark disconnected
+            const connectedRef = ref(
+              rtdb,
+              `rooms/${this.roomCode}/players/${uid}/connected`,
+            );
+            await set(connectedRef, false);
+          } else {
+            const playerRef = ref(
+              rtdb,
+              `rooms/${this.roomCode}/players/${uid}`,
+            );
+            await remove(playerRef);
+          }
 
           // Auto-finish if only one player remains during an active game
           await this.autoFinishIfAlone();
@@ -517,8 +532,17 @@ export const Multiplayer = {
           await remove(this.roomRef);
         }
       } else {
-        const playerRef = ref(rtdb, `rooms/${this.roomCode}/players/${uid}`);
-        await remove(playerRef);
+        if (isPlaying) {
+          // During game — keep player data but mark disconnected
+          const connectedRef = ref(
+            rtdb,
+            `rooms/${this.roomCode}/players/${uid}/connected`,
+          );
+          await set(connectedRef, false);
+        } else {
+          const playerRef = ref(rtdb, `rooms/${this.roomCode}/players/${uid}`);
+          await remove(playerRef);
+        }
 
         // Auto-finish if only one player remains during an active game
         await this.autoFinishIfAlone();
@@ -538,9 +562,11 @@ export const Multiplayer = {
       const data = snapshot.val();
       if (!data || data.status !== 'playing') return;
 
-      const remainingPlayers = Object.keys(data.players || {});
-      if (remainingPlayers.length <= 1) {
-        console.log('🎮 Only one player left — auto-finishing game');
+      const connectedPlayers = Object.entries(data.players || {}).filter(
+        ([, p]) => p.connected,
+      );
+      if (connectedPlayers.length <= 1) {
+        console.log('🎮 Only one connected player left — auto-finishing game');
         await update(this.roomRef, { status: 'finished' });
       }
     } catch {
@@ -581,5 +607,43 @@ export const Multiplayer = {
     if (!this.roomRef) return null;
     const snapshot = await get(this.roomRef);
     return snapshot.val();
+  },
+
+  // ===== Rejoin Room After Page Reload =====
+  async rejoinRoom(roomCode) {
+    const uid = auth.currentUser?.uid;
+    if (!uid) throw new Error('Not authenticated');
+
+    roomCode = roomCode.toUpperCase().trim();
+    const roomRef = ref(rtdb, `rooms/${roomCode}`);
+    const snapshot = await get(roomRef);
+
+    if (!snapshot.exists()) throw new Error('ROOM_NOT_FOUND');
+
+    const roomData = snapshot.val();
+
+    // Only rejoin if game is still active and player is in the room
+    if (!roomData.players?.[uid]) throw new Error('NOT_IN_ROOM');
+    if (roomData.status !== 'playing' && roomData.status !== 'waiting') {
+      throw new Error('GAME_NOT_ACTIVE');
+    }
+
+    this.roomCode = roomCode;
+    this.roomRef = roomRef;
+    this.isHost = roomData.hostUid === uid;
+
+    // Re-mark as connected
+    const connectedRef = ref(
+      rtdb,
+      `rooms/${roomCode}/players/${uid}/connected`,
+    );
+    await set(connectedRef, true);
+
+    this.setupDisconnectHandlers(uid);
+    this.listenToRoom();
+    this.startHeartbeat();
+
+    console.log('🎮 Rejoined room:', roomCode, 'status:', roomData.status);
+    return roomData;
   },
 };
