@@ -49,10 +49,12 @@ import './firebase/auth.js';
 
 import './components/input-range.js';
 import './components/card.js';
+import './components/player.js';
 
 const FEEDBACK_CORRECT = 'correct';
 const FEEDBACK_WRONG = 'wrong';
 const CARD_FLY_DURATION_MS = 300;
+const CARD_TRANSITION_DURATION_MS = 250;
 const MP_WRONG_PENALTY_MS = 2000;
 const ABILITY_CLOCK_DURATION_MS = 5000;
 const DEBUG_ABILITIES = true;
@@ -1311,6 +1313,7 @@ const Game = {
     const $hudPanel = document.querySelector('.hud-panel');
     if ($hudPanel) $hudPanel.hidden = isMultiplayer;
 
+    $timerBar.hidden = isMultiplayer;
     $mpPlayersPanel.hidden = !isMultiplayer;
     $mpCurrentPlayer.hidden = !isMultiplayer;
   },
@@ -1502,36 +1505,29 @@ const Game = {
     const players = roomData.players;
     const $list = $mpPlayersList;
     $list.innerHTML = '';
-    $mpCurrentPlayer.innerHTML = '';
+    $mpCurrentPlayer.hidden = true;
 
     const sorted = Object.entries(players).sort(
       ([, a], [, b]) => (b.cardsWon || 0) - (a.cardsWon || 0),
     );
 
     sorted.forEach(([uid, data]) => {
-      const avatarHtml = renderAvatarHtml(
-        data.avatar,
-        this.useCustomEmojiRender,
-      );
+      const playerData = {
+        avatar: data.avatar,
+        name: data.displayName,
+        score: data.cardsWon || 0,
+        useCustomImages: this.useCustomEmojiRender,
+      };
 
       if (uid === currentUid) {
-        $mpCurrentPlayer.innerHTML = `
-          <span class="mp-player-avatar">${avatarHtml}</span>
-          <span class="mp-player-name">${data.displayName || 'Anonymous'}</span>
-          <span class="mp-player-score">${data.cardsWon || 0}</span>
-        `;
+        $mpCurrentPlayer.update(playerData);
         $mpCurrentPlayer.hidden = false;
       } else {
-        const $row = document.createElement('div');
-        $row.className = 'mp-player-row';
+        const $row = document.createElement('dobble-player');
+        $row.classList.add('mp-player-row');
         $row.dataset.uid = uid;
         if (!data.connected) $row.classList.add('mp-player-row--disconnected');
-
-        $row.innerHTML = `
-          <span class="mp-player-avatar">${avatarHtml}</span>
-          <span class="mp-player-name">${data.displayName || 'Anonymous'}</span>
-          <span class="mp-player-score">${data.cardsWon || 0}</span>
-        `;
+        $row.update(playerData);
         $list.appendChild($row);
       }
     });
