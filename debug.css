@@ -4,4 +4,22 @@
     border-radius: 50%;
     border: 2px solid rgba(255, 0, 0, 0.676);
   }
+
+  dobble-card#\$cardA {
+    .card-circle {
+      background: bisque;
+    }
+  }
+
+  dobble-card#\$cardB {
+    .card-circle {
+      background: aquamarine;
+    }
+  }
+
+  dobble-card#\$cardC {
+    .card-circle {
+      background: cornflowerblue;
+    }
+  }
 }
