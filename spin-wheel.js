@@ -15,14 +15,80 @@ const SECTORS = [
 // ===== State =====
 let currentRotationDeg = 0;
 let spinning = false;
+let rafId = null;
 
-// ===== DOM Refs =====
-const $rotor = $wheelRotor;
-const $btn = $btnSpin;
-const $arrow = $wheelArrow;
-const $result = $spinResult;
-const $resultEmoji = $spinResultEmoji;
-const $resultText = $spinResultText;
+// ===== Animation Config =====
+const SPIN_DURATION = 5000; // ms
+
+// easeOutQuart: fast start, long gentle deceleration
+function easeOut(t) {
+  return 1 - (1 - t) ** 4;
+}
+
+// ===== Arrow Tick =====
+let lastSectorIndex = -1;
+let arrowAngle = 0; // current deflection in degrees
+let arrowVelocity = 0; // degrees per ms
+
+const ARROW_KICK = -35; // deflection on each sector crossing (degrees)
+const ARROW_STIFFNESS = 0.3; // spring pull-back strength (per ms²)
+const ARROW_DAMPING = 0.92; // velocity damping per frame
+
+function tickArrow(deg, dt) {
+  const count = SECTORS.length;
+  const sectorDeg = 360 / count;
+  const index = Math.floor((((deg % 360) + 360) % 360) / sectorDeg);
+
+  // kick on sector crossing
+  if (lastSectorIndex !== -1 && index !== lastSectorIndex) {
+    arrowVelocity += ARROW_KICK;
+  }
+  lastSectorIndex = index;
+
+  // spring physics: pull back toward 0
+  const dtClamped = Math.min(dt, 40); // cap for tab-switch
+  arrowVelocity -= arrowAngle * ARROW_STIFFNESS;
+  arrowVelocity *= ARROW_DAMPING;
+  arrowAngle += arrowVelocity * (dtClamped / 16);
+
+  $wheelArrow.style.rotate = `${Math.min(0, arrowAngle)}deg`;
+}
+
+function resetArrow() {
+  arrowAngle = 0;
+  arrowVelocity = 0;
+  lastSectorIndex = -1;
+  $wheelArrow.style.rotate = '';
+}
+
+// ===== Spin Animation (rAF) =====
+function animateSpin(startDeg, totalDelta, onComplete) {
+  const startTime = performance.now();
+  let lastTime = startTime;
+
+  function frame(now) {
+    const elapsed = now - startTime;
+    const dt = now - lastTime;
+    lastTime = now;
+    const progress = Math.min(elapsed / SPIN_DURATION, 1);
+    const eased = easeOut(progress);
+
+    const deg = startDeg + totalDelta * eased;
+    $wheelRotor.style.transform = `rotate(${deg}deg)`;
+    tickArrow(deg, dt);
+
+    if (progress < 1) {
+      rafId = requestAnimationFrame(frame);
+    } else {
+      rafId = null;
+      currentRotationDeg = deg;
+      resetArrow();
+      onComplete();
+    }
+  }
+
+  rafId = requestAnimationFrame(frame);
+}
 
 // ===== Build Wheel =====
 function buildWheel(sectors) {
@@ -30,7 +96,7 @@ function buildWheel(sectors) {
   const sectorDeg = 360 / count;
   const sectorRad = (sectorDeg * Math.PI) / 180;
 
-  $rotor.innerHTML = '';
+  $wheelRotor.innerHTML = '';
 
   // SVG wedge path: a sector from center-bottom of the slice element
   // The slice element is 50% width of the rotor, 50% height, anchored at bottom-center.
@@ -72,7 +138,7 @@ function buildWheel(sectors) {
       </div>
     `;
 
-    $rotor.appendChild($slice);
+    $wheelRotor.appendChild($slice);
   });
 
   console.log(`🎰 wheel built: ${count} sectors`);
@@ -82,8 +148,8 @@ function buildWheel(sectors) {
 function spin() {
   if (spinning) return;
   spinning = true;
-  $btn.disabled = true;
-  $result.hidden = true;
+  $btnSpin.disabled = true;
+  $spinResult.hidden = true;
 
   const count = SECTORS.length;
   const sectorDeg = 360 / count;
@@ -93,9 +159,20 @@ function spin() {
   const sector = SECTORS[winnerIndex];
 
   // CSS rotate(D) spins clockwise. Arrow is at top (0°).
-  // Sector i starts at i*sectorDeg. We need D%360 = 360 - (i*sectorDeg + offset).
-  const padding = sectorDeg * 0.1;
-  const offset = padding + Math.random() * (sectorDeg - 2 * padding);
+  // Sector i is centered at i*sectorDeg (wedge is symmetric ±halfAngle).
+  // To land on sector i: D%360 = 360 - (i*sectorDeg + offset).
+  // offset ∈ [-sectorDeg/2 + padding, sectorDeg/2 - padding] to stay within the sector.
+  const padding = sectorDeg * 0.15;
+  const halfSector = sectorDeg / 2;
+  const safeRange = halfSector - padding; // max offset from center
+  // offset distribution: controls where the arrow lands within a sector
+  // ** 0.5 — soft bias toward edges (current)
+  // ** 0.3 — stronger bias toward edges
+  // ** 1   — uniform (no bias)
+  // alt: 1 - Math.abs(Math.random() - Math.random()) — U-shape via triangle diff
+  const t = Math.random() ** 0.5;
+  const sign = Math.random() < 0.5 ? -1 : 1;
+  const offset = sign * t * safeRange;
   const targetMod = (360 - (winnerIndex * sectorDeg + offset) + 360) % 360;
 
   // add 3-5 full spins
@@ -104,31 +181,23 @@ function spin() {
   const delta = fullSpins + ((targetMod - currentMod + 360) % 360);
 
   currentRotationDeg += delta;
-  $rotor.style.transform = `rotate(${currentRotationDeg}deg)`;
 
-  console.log(
-    `🎰 spinning → sector ${winnerIndex}: ${sector.emoji} ${sector.label}`,
-  );
-
-  // wait for CSS transition to end
-  const onEnd = () => {
-    $rotor.removeEventListener('transitionend', onEnd);
+  animateSpin(currentRotationDeg - delta, delta, () => {
     spinning = false;
-    $btn.disabled = false;
+    $btnSpin.disabled = false;
     showResult(sector);
     console.log(`🎰 result: ${sector.emoji} ${sector.label}`);
-  };
-  $rotor.addEventListener('transitionend', onEnd);
+  });
 }
 
 // ===== Show Result =====
 function showResult(sector) {
-  $resultEmoji.textContent = sector.emoji;
-  $resultText.textContent = sector.label;
-  $result.hidden = false;
+  $spinResultEmoji.textContent = sector.emoji;
+  $spinResultText.textContent = sector.label;
+  $spinResult.hidden = false;
 
   setTimeout(() => {
-    $result.hidden = true;
+    $spinResult.hidden = true;
   }, 2500);
 }
 
@@ -140,9 +209,9 @@ function init() {
 }
 
 function bindEvents() {
-  $btn.addEventListener('click', spin);
-  $result.addEventListener('click', () => {
-    $result.hidden = true;
+  $btnSpin.addEventListener('click', spin);
+  $spinResult.addEventListener('click', () => {
+    $spinResult.hidden = true;
   });
 }
 
