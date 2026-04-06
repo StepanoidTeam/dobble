@@ -121,3 +121,7 @@
 
 - Decorative SVGs get `aria-hidden="true"`
 - Interactive elements use semantic tags (`<button>`, not `<div onclick>`)
+
+## Development
+
+- Do not start a dev server to check pages in the browser — suppose that it is already running at `http://localhost:8080/`

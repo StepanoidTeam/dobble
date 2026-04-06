@@ -2,8 +2,7 @@
 
 ## feat
 
-[] add tutorial with samples and hints  
-[x] show same symbols on fail
+[] add tutorial with samples and hints
 
 [] impl modes  
 -- helltower:  
@@ -21,50 +20,29 @@
 +20 for player who got min total cards  
 +10 for top-2 player (with min)
 
-[x] add language selector RU/EN.  
-[x] add reset progress option in settings.  
-[] add profile settings:  
--- select name.  
--- register? firebase.  
--- select avatar.
+[] profile settings:  
+-- register? firebase.
 
-[ ] split settings into: profile/custom-extras/main
-
-[~] add select mode screen
 [] restyle win/lose page
 [] add achievements (show in player profile)
 [] share score result with friends
 [] search opponent screen
-[x] search other players/host screen
 [] shop / buy boosters
 [] profile stats: win rate/ best scores / achievements
-[x] emoji collection gallery
-[] restyle in-game score for VS mode
 [] win/loose screen emoji + bonuses?
 [] bonuses:  
 -- +5 sec (time bonus?)  
--- hint  
--- auto-answer  
+-- hint
+-- auto-answer x
 -- rotate all icons randomly/upside-down for opponents  
 -- rotate all icons normaly for self  
 -- shuffle symbols for opponents.
-[x] leaderboards
-
-## fix
-
-[x] rotate images corresponding to their positions on card
 
 ## ui
 
 [] update score / level / time ui
-[x] remove segment animations?
-[~] replace emojis with real images
-[]
 
 ## style
-
-[x] adjust bg to better fit mockups
-[x] adjust buttons appearance
 
 [~] improve bg more
 
