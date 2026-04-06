@@ -49,6 +49,7 @@ import {
   revealBufferOverDeck,
   CARD_FLY_DURATION_MS,
 } from './helpers/card-animations.js';
+import { Tornado, Acid } from './abilities/index.js';
 import { EMOJIS_CLASSIC } from './emojis/emojis-classic.js';
 
 import './helpers/app-version.js';
@@ -62,9 +63,6 @@ const FEEDBACK_CORRECT = 'correct';
 const FEEDBACK_WRONG = 'wrong';
 const CARD_TRANSITION_DURATION_MS = 250;
 const MP_WRONG_PENALTY_MS = 2000;
-const ABILITY_TORNADO_DURATION_MS = 5000;
-const ABILITY_ACID_DURATION_MS = 6000;
-const ABILITY_ACID_COOLDOWN_MS = 8000;
 const DEBUG_ABILITIES = true;
 const MP_ROOM_CODE_KEY = 'dobble_mp_room';
 
@@ -2057,7 +2055,7 @@ const Game = {
       $abilityTornado.classList.add('ability-btn--cooldown');
       this.startAbilityCooldownProgress(
         this.$abilityTornadoProgress,
-        ABILITY_TORNADO_DURATION_MS,
+        Tornado.COOLDOWN_MS,
       );
 
       // Send ability via Firebase
@@ -2085,7 +2083,7 @@ const Game = {
         if (this.$abilityTornadoProgress) {
           this.$abilityTornadoProgress.style.strokeDashoffset = '150.8';
         }
-      }, ABILITY_TORNADO_DURATION_MS);
+      }, Tornado.COOLDOWN_MS);
     }
 
     if (ability === 'acid') {
@@ -2093,7 +2091,7 @@ const Game = {
       $abilityAcid.classList.add('ability-btn--cooldown');
       this.startAbilityCooldownProgress(
         this.$abilityAcidProgress,
-        ABILITY_ACID_COOLDOWN_MS,
+        Acid.COOLDOWN_MS,
       );
 
       const abilityRef = ref(
@@ -2118,7 +2116,7 @@ const Game = {
         if (this.$abilityAcidProgress) {
           this.$abilityAcidProgress.style.strokeDashoffset = '150.8';
         }
-      }, ABILITY_ACID_COOLDOWN_MS);
+      }, Acid.COOLDOWN_MS);
     }
   },
 
@@ -2153,118 +2151,12 @@ const Game = {
 
   abilityApplyTornado() {
     console.log('🌪️ Tornado ability received! Whirlwind...');
-    const $card = this.$player;
-    const $circle = $card.$circle;
-    const duration = ABILITY_TORNADO_DURATION_MS;
-
-    // Card spins — stops at half duration, smooth deceleration
-    $circle.animate(
-      [
-        { transform: `rotate(${0}deg) scale(1)` },
-        { transform: `rotate(${360 * 7}deg) scale(1)` },
-      ],
-      { duration: duration, easing: 'cubic-bezier(0, 0.55, 0.1, 1)' },
-    );
-
-    // Blur + brightness — matches card duration
-    $circle.animate(
-      [
-        { filter: 'blur(0px) brightness(1)' },
-        { filter: 'blur(3px) brightness(1.2)', offset: 0.3 },
-        { filter: 'blur(1px) brightness(0.9)', offset: 0.7 },
-        { filter: 'blur(0px) brightness(1)' },
-      ],
-      { duration: duration / 2 },
-    );
-
-    // Each emoji spins individually
-    const $$emojis = $circle.querySelectorAll('.emoji-item');
-    $$emojis.forEach(($el) => {
-      const baseRotate = parseFloat($el.style.rotate) || 0;
-      const spinDeg = 720;
-
-      const randDelay = (Math.random() * duration) / 2;
-
-      $el.animate(
-        [
-          //
-          { rotate: `${baseRotate}deg` },
-          { rotate: `${baseRotate + spinDeg}deg` },
-        ],
-        {
-          duration: duration,
-          easing: 'ease-out',
-          delay: randDelay,
-        },
-      );
-    });
+    Tornado.animate(this.$player.$circle);
   },
 
   abilityApplyAcid() {
     console.log('🫟 Acid ability received! Hallucinations...');
-    const $card = this.$player;
-    const $circle = $card.$circle;
-    const duration = ABILITY_ACID_DURATION_MS;
-
-    // Hue-rotate + saturate cycling on the whole card
-    $circle.animate(
-      [
-        { filter: 'hue-rotate(0deg) saturate(1.5)' },
-        { filter: 'hue-rotate(360deg) saturate(1.5)' },
-      ],
-      {
-        duration: 800,
-        iterations: Math.ceil(duration / 800),
-        easing: 'linear',
-      },
-    );
-
-    // Card breathing + skew distortion
-    $circle.animate(
-      [
-        { transform: 'scale(1) skew(0deg)', easing: 'ease-in-out' },
-        { transform: 'scale(1.03) skew(-1.5deg)', easing: 'ease-in-out' },
-        { transform: 'scale(0.97) skew(1.5deg)', easing: 'ease-in-out' },
-        { transform: 'scale(1.02) skew(-1deg)', easing: 'ease-in-out' },
-        { transform: 'scale(1) skew(0deg)' },
-      ],
-      { duration: 2000, iterations: Math.ceil(duration / 2000) },
-    );
-
-    // Individual emojis wobble + brightness pulse with random delays
-    const $$emojis = $circle.querySelectorAll('.emoji-item');
-    $$emojis.forEach(($el) => {
-      const delay = Math.random() * 2000;
-
-      $el.animate(
-        [
-          { transform: 'translate(0, 0) rotate(0deg)', easing: 'ease-in-out' },
-          {
-            transform: 'translate(3px, -2px) rotate(5deg)',
-            easing: 'ease-in-out',
-          },
-          {
-            transform: 'translate(-2px, 3px) rotate(-3deg)',
-            easing: 'ease-in-out',
-          },
-          {
-            transform: 'translate(2px, 1px) rotate(4deg)',
-            easing: 'ease-in-out',
-          },
-          { transform: 'translate(0, 0) rotate(0deg)' },
-        ],
-        { duration: 1200, iterations: Math.ceil(duration / 1200), delay },
-      );
-
-      $el.animate(
-        [
-          { filter: 'brightness(1)', easing: 'ease-in-out' },
-          { filter: 'brightness(1.4)', easing: 'ease-in-out' },
-          { filter: 'brightness(1)' },
-        ],
-        { duration: 600, iterations: Math.ceil(duration / 600), delay },
-      );
-    });
+    Acid.animate(this.$player.$circle);
   },
 
   startAbilityCooldownProgress($progressEl, durationMs) {

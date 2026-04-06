@@ -1,6 +1,7 @@
 // ===== Logo Icon Animations (Web Animations API) =====
 
 import { Random } from './seeded-random.js';
+import { Tornado, Acid } from '../abilities/index.js';
 
 const EFFECTS = {
   sepia: {
@@ -85,6 +86,18 @@ const EFFECTS = {
       $el.style.border = '';
       $el.style.boxShadow = '';
       $el.style.backdropFilter = '';
+    },
+  },
+  tornado: {
+    isAbility: true,
+    applyToCard($circle) {
+      Tornado.animate($circle);
+    },
+  },
+  acidTrip: {
+    isAbility: true,
+    applyToCard($circle) {
+      Acid.animate($circle);
     },
   },
 };
@@ -173,6 +186,14 @@ export function playLogoEffect($logoIcon, { fromClick = false } = {}) {
   currentEffect = Random.sample(effectNames.filter((e) => e !== currentEffect));
 
   const effect = EFFECTS[currentEffect];
+
+  // Ability effects apply directly to the preview card
+  if (effect.isAbility) {
+    const $previewCircle = document.querySelector('#\\$cardPreview')?.$circle;
+    if ($previewCircle) effect.applyToCard($previewCircle);
+    console.log('🖐️ logo effect:', currentEffect);
+    return;
+  }
 
   // Apply special styling (bubble)
   if (effect.applyStyle) effect.applyStyle($logoIcon);
