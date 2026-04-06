@@ -92,6 +92,9 @@ const EFFECTS = {
   },
 };
 
+// todo(vmyshko): debug
+window.EFFECTS = EFFECTS;
+
 const effectNames = Object.keys(EFFECTS);
 let currentEffect = null;
 let currentAnimation = null;
@@ -176,6 +179,9 @@ export function playLogoEffect($logoIcon, { fromClick = false } = {}) {
   if (effect.isAbility) {
     const $previewCircle = document.querySelector('#\\$cardPreview')?.$circle;
     if ($previewCircle) effect.applyToCard($previewCircle);
+
+    if (effect.applyToLogo) effect.applyToLogo($logoIcon);
+
     console.log('🖐️ logo effect:', currentEffect);
     return;
   }
