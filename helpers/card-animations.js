@@ -44,19 +44,42 @@ export function flyCardDown($card, $target) {
 
 /**
  * Fly card up past the top of the viewport (opponent won).
+ * 3D arc with spin — card lifts, tilts, spins and shrinks away.
  * Returns Animation (fill: 'forwards' — caller must cancel after role swap).
  */
 export function flyCardOffScreen($card) {
   const topRect = $card.getBoundingClientRect();
-  const offsetY = -(topRect.top + topRect.height);
+  const offsetY = -(topRect.top + topRect.height + 40);
 
   $card.classList.add('card-flying');
   return $card.$circle.animate(
     [
-      { transform: 'translateY(0)', scale: 1, opacity: 1 },
-      { transform: `translateY(${offsetY}px)`, scale: 0.8, opacity: 0 },
+      {
+        transform:
+          'translateY(0) translateZ(0) scale(1) rotateX(0deg) rotateZ(0deg)',
+        opacity: 1,
+      },
+      {
+        transform:
+          'translateY(-20px) translateZ(100px) scale(1.08) rotateX(15deg) rotateZ(-8deg)',
+        opacity: 1,
+        offset: 0.15,
+      },
+      {
+        transform: `translateY(${offsetY * 0.4}px) translateZ(60px) scale(0.85) rotateX(-10deg) rotateZ(12deg)`,
+        opacity: 0.8,
+        offset: 0.5,
+      },
+      {
+        transform: `translateY(${offsetY}px) translateZ(0) scale(0.5) rotateX(-25deg) rotateZ(20deg)`,
+        opacity: 0,
+      },
     ],
-    { duration: CARD_FLY_DURATION_MS, easing: 'ease-in', fill: 'forwards' },
+    {
+      duration: CARD_FLY_DURATION_MS,
+      easing: 'cubic-bezier(0.4, 0, 1, 1)',
+      fill: 'forwards',
+    },
   );
 }
 
