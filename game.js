@@ -63,7 +63,6 @@ const FEEDBACK_CORRECT = 'correct';
 const FEEDBACK_WRONG = 'wrong';
 const CARD_TRANSITION_DURATION_MS = 250;
 const MP_WRONG_PENALTY_MS = 2000;
-const DEBUG_ABILITIES = true;
 const MP_ROOM_CODE_KEY = 'dobble_mp_room';
 
 // ===== Scoring Constants =====
@@ -1625,12 +1624,13 @@ const Game = {
     const currentUid = auth?.currentUser?.uid;
     const players = roomData.players;
     const $list = $mpPlayersList;
-    $list.innerHTML = '';
-    $mpCurrentPlayer.hidden = true;
 
     const sorted = Object.entries(players).sort(
       ([, a], [, b]) => (b.cardsWon || 0) - (a.cardsWon || 0),
     );
+
+    // Track active opponent UIDs for cleanup
+    const activeUids = new Set();
 
     sorted.forEach(([uid, data]) => {
       const playerData = {
@@ -1644,12 +1644,27 @@ const Game = {
         $mpCurrentPlayer.update(playerData);
         $mpCurrentPlayer.hidden = false;
       } else {
-        const $row = document.createElement('dobble-player');
-        $row.classList.add('mp-player-row');
-        $row.dataset.uid = uid;
-        if (!data.connected) $row.classList.add('mp-player-row--disconnected');
+        activeUids.add(uid);
+
+        // Reuse existing row or create new one
+        let $row = $list.querySelector(`[data-uid="${uid}"]`);
+        if (!$row) {
+          $row = document.createElement('dobble-player');
+          $row.classList.add('mp-player-row');
+          $row.dataset.uid = uid;
+          $list.appendChild($row);
+        }
+
+        $row.classList.toggle('mp-player-row--disconnected', !data.connected);
+        $row.hidden = false;
         $row.update(playerData);
-        $list.appendChild($row);
+      }
+    });
+
+    // Hide rows for players who left
+    $list.querySelectorAll('.mp-player-row').forEach(($row) => {
+      if (!activeUids.has($row.dataset.uid)) {
+        $row.hidden = true;
       }
     });
   },
@@ -2008,7 +2023,7 @@ const Game = {
     // Mark other players as targetable
     const currentUid = auth?.currentUser?.uid;
     $mpPlayersList.querySelectorAll('.mp-player-row').forEach(($row) => {
-      if (DEBUG_ABILITIES || $row.dataset.uid !== currentUid) {
+      if ($row.dataset.uid !== currentUid) {
         $row.classList.add('ability-targetable');
       }
     });
@@ -2029,7 +2044,7 @@ const Game = {
     // Mark other players as targetable
     const currentUid = auth?.currentUser?.uid;
     $mpPlayersList.querySelectorAll('.mp-player-row').forEach(($row) => {
-      if (DEBUG_ABILITIES || $row.dataset.uid !== currentUid) {
+      if ($row.dataset.uid !== currentUid) {
         $row.classList.add('ability-targetable');
       }
     });
@@ -2047,7 +2062,7 @@ const Game = {
   async abilityUseOnPlayer(targetUid) {
     if (!this.abilitySelected || !targetUid) return;
     const currentUid = auth?.currentUser?.uid;
-    if (!DEBUG_ABILITIES && targetUid === currentUid) return;
+    if (targetUid === currentUid) return;
 
     const ability = this.abilitySelected;
     this.abilityCancelSelection();
