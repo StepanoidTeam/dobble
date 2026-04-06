@@ -195,6 +195,30 @@ footer {
 
   padding-top: 65px;
   padding-bottom: 25px;
+
+  perspective: 1200px;
+}
+
+/* ===== Card Roles ===== */
+/* Flex order keeps deck on top and player on bottom regardless of DOM order */
+.card-deck {
+  order: 0;
+}
+
+.card-player {
+  order: 2;
+}
+
+/* Hidden card pre-rendered with next deck content; positioned out of flow */
+.card-buffer {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* During fly animation the moving card must be above the player card */
+.card-flying {
+  z-index: 1;
 }
 
 /* ===== Feedback Icon (check / cross) ===== */
@@ -241,7 +265,7 @@ footer {
   transition: width 0.1s linear;
 
   &.warning {
-    background: #f44336;
+    background: linear-gradient(180deg, #ffa800, #f44336 60%, #c62828);
   }
 }
 

@@ -93,24 +93,3 @@
     box-shadow: 0 0 10px rgba(245, 197, 24, 0.6);
   }
 }
-
-/* ===== Clock Ability Effect on Card ===== */
-.card-circle.ability-clock-spin {
-  animation: clock-spin 1s linear;
-  animation-iteration-count: 1;
-
-  /* Emojis spin independently after card stops */
-  .emoji-item {
-    animation: clock-spin 2s linear;
-    animation-iteration-count: 3;
-  }
-}
-
-@keyframes clock-spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}

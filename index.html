@@ -345,8 +345,10 @@
       </div>
 
       <div class="game-area">
-        <!-- Top card (from deck) -->
-        <dobble-card id="$cardTop" class="card-top"></dobble-card>
+        <!-- Deck: visible top card -->
+        <dobble-card id="$cardA" class="card-deck"></dobble-card>
+        <!-- Buffer: hidden, pre-rendered next card -->
+        <dobble-card id="$cardB" class="card-buffer"></dobble-card>
 
         <!-- Feedback icon (check/cross) shown between cards -->
         <div id="$feedbackIcon" class="feedback-icon" hidden>
@@ -354,8 +356,8 @@
           <img class="icon-wrong" src="./images/cross.png" alt="❌" hidden />
         </div>
 
-        <!-- Bottom card (player's card) -->
-        <dobble-card id="$cardBottom" class="card-bottom"></dobble-card>
+        <!-- Player card -->
+        <dobble-card id="$cardC" class="card-player"></dobble-card>
       </div>
       <footer>
         <div class="timer-bar" id="$timerBar">

@@ -10,6 +10,7 @@
 
   width: var(--card-size);
   height: var(--card-size);
+  transform-style: preserve-3d;
 }
 
 .card-circle {

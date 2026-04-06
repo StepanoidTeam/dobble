@@ -42,6 +42,13 @@ import {
   startAutoPlay,
   stopAutoPlay,
 } from './helpers/logo-animations.js';
+import {
+  flyCardDown,
+  flyCardOffScreen,
+  shakeCard,
+  revealBufferOverDeck,
+  CARD_FLY_DURATION_MS,
+} from './helpers/card-animations.js';
 import { EMOJIS_CLASSIC } from './emojis/emojis-classic.js';
 
 import './helpers/app-version.js';
@@ -53,7 +60,6 @@ import './components/player.js';
 
 const FEEDBACK_CORRECT = 'correct';
 const FEEDBACK_WRONG = 'wrong';
-const CARD_FLY_DURATION_MS = 300;
 const CARD_TRANSITION_DURATION_MS = 250;
 const MP_WRONG_PENALTY_MS = 2000;
 const ABILITY_CLOCK_DURATION_MS = 5000;
@@ -76,6 +82,11 @@ const Game = {
   currentCardIndex: 0,
   topCard: null,
   bottomCard: null,
+  bufferCard: null,
+  // Card role references — rotated on each transition
+  $deck: null, // visible deck card (top)
+  $buffer: null, // hidden behind deck (pre-rendered)
+  $player: null, // visible player card (bottom)
   score: 0,
   startTime: 0,
   timerAnimationFrameId: null,
@@ -532,7 +543,7 @@ const Game = {
 
     if (hinted) {
       const progressionMult =
-        1 + (this.currentCardIndex - 1) * PROGRESSION_BONUS_PER_CARD;
+        1 + (this.currentCardIndex - 2) * PROGRESSION_BONUS_PER_CARD;
       return Math.round(SCORE_HINTED_BASE * difficultyMult * progressionMult);
     }
 
@@ -543,7 +554,7 @@ const Game = {
     const streakMult =
       1 + Math.min(this.streak, STREAK_CAP) * STREAK_BONUS_PER_LEVEL;
     const progressionMult =
-      1 + (this.currentCardIndex - 1) * PROGRESSION_BONUS_PER_CARD;
+      1 + (this.currentCardIndex - 2) * PROGRESSION_BONUS_PER_CARD;
 
     return Math.round(
       (SCORE_BASE + speedBonus) * difficultyMult * streakMult * progressionMult,
@@ -559,7 +570,7 @@ const Game = {
     const streakMult =
       1 + Math.min(this.streak, STREAK_CAP) * STREAK_BONUS_PER_LEVEL;
     const progressionMult =
-      1 + (this.currentCardIndex - 1) * PROGRESSION_BONUS_PER_CARD;
+      1 + (this.currentCardIndex - 2) * PROGRESSION_BONUS_PER_CARD;
     return difficultyMult * streakMult * progressionMult;
   },
 
@@ -675,7 +686,7 @@ const Game = {
     // Limit to totalCardsInGame + 1 cards (need pairs)
     this.deck = this.deck.slice(0, this.totalCardsInGame + 1);
 
-    this.currentCardIndex = 1;
+    this.currentCardIndex = 2;
     this.score = 0;
     this.streak = 0;
     this.bestStreak = 0;
@@ -690,9 +701,19 @@ const Game = {
     this.updateMultiplierDisplay();
     this.updateElapsedTime();
 
-    // Set up first pair
+    // Set up first pair + buffer
     this.topCard = this.deck[0];
     this.bottomCard = this.deck[1];
+    this.bufferCard =
+      this.currentCardIndex < this.deck.length
+        ? this.deck[this.currentCardIndex]
+        : null;
+
+    // Assign initial card roles
+    this.$deck = $cardA;
+    this.$buffer = $cardB;
+    this.$player = $cardC;
+    this.assignCardRoles();
 
     this.renderCards();
     this.updateCardsRemaining();
@@ -701,65 +722,128 @@ const Game = {
     this.mpToggleHud(false);
   },
 
-  renderCards() {
-    const onSymbolClick = (symbol, $el) => this.handleSymbolClick(symbol, $el);
-    const layoutOptions = {
+  // ===== Card Layout Helpers =====
+
+  getLayoutOptions() {
+    return {
       rotationRangeDegrees: this.iconRotationDegrees,
       rotateByPosition: this.rotateByPosition,
       useCustomEmojiImages: this.useCustomEmojiRender,
       emojiSetKey: this.selectedEmojiSetKey,
     };
-    $cardTop.setEmojis(this.topCard, true, onSymbolClick, layoutOptions);
-    $cardBottom.setEmojis(this.bottomCard, true, onSymbolClick, layoutOptions);
-
-    $cardTop.playAnimation('card-enter');
-    $cardBottom.playAnimation('card-enter');
   },
 
-  transitionToNextCards() {
-    // Calculate fly distance between card centers
-    const topRect = $cardTop.getBoundingClientRect();
-    const bottomRect = $cardBottom.getBoundingClientRect();
-    const offsetY =
-      topRect.top +
-      topRect.height / 2 -
-      (bottomRect.top + bottomRect.height / 2);
+  getSymbolClickHandler() {
+    return (symbol, $el) => this.handleSymbolClick(symbol, $el);
+  },
 
-    // Animate bottom card flying up to overlay the top card
-    const flyAnimation = $cardBottom.animateCircle(
-      [
-        { transform: 'translateY(0)', scale: 1, zIndex: 1 },
-        { scale: 1.2, zIndex: 1, offset: 0.5 },
-        { transform: `translateY(${offsetY}px)`, scale: 1, zIndex: 1 },
-      ],
-      { duration: CARD_FLY_DURATION_MS, easing: 'ease-in-out' },
+  assignCardRoles() {
+    $cardA.classList.remove(
+      'card-deck',
+      'card-buffer',
+      'card-player',
+      'card-flying',
     );
+    $cardB.classList.remove(
+      'card-deck',
+      'card-buffer',
+      'card-player',
+      'card-flying',
+    );
+    $cardC.classList.remove(
+      'card-deck',
+      'card-buffer',
+      'card-player',
+      'card-flying',
+    );
+    // Clear inline overrides from transition
+    for (const $c of [$cardA, $cardB, $cardC]) {
+      $c.style.visibility = '';
+      $c.style.top = '';
+      $c.style.left = '';
+      $c.style.width = '';
+      $c.style.height = '';
+    }
+    this.$deck.classList.add('card-deck');
+    this.$buffer.classList.add('card-buffer');
+    this.$player.classList.add('card-player');
+  },
 
-    flyAnimation.finished.then(() => {
-      // Swap card data
-      this.topCard = this.bottomCard;
-      this.bottomCard = this.deck[this.currentCardIndex];
+  renderCards() {
+    const onSymbolClick = this.getSymbolClickHandler();
+    const layoutOptions = this.getLayoutOptions();
 
-      // Render top card silently (visually same content that just flew up)
-      const onSymbolClick = (symbol, $el) =>
-        this.handleSymbolClick(symbol, $el);
-      const layoutOptions = {
-        rotationRangeDegrees: this.iconRotationDegrees,
-        rotateByPosition: this.rotateByPosition,
-        useCustomEmojiImages: this.useCustomEmojiRender,
-        emojiSetKey: this.selectedEmojiSetKey,
-      };
-      $cardTop.setEmojis(this.topCard, true, onSymbolClick, layoutOptions);
+    this.$deck.setEmojis(this.topCard, true, onSymbolClick, layoutOptions);
+    this.$player.setEmojis(this.bottomCard, true, onSymbolClick, layoutOptions);
 
-      // Render new bottom card with enter animation
-      $cardBottom.setEmojis(
-        this.bottomCard,
+    // Pre-render buffer card (hidden behind deck)
+    if (this.bufferCard) {
+      this.$buffer.setEmojis(
+        this.bufferCard,
         true,
         onSymbolClick,
         layoutOptions,
       );
-      $cardBottom.playAnimation('card-enter');
+    }
 
+    this.$deck.playAnimation('card-enter');
+    this.$player.playAnimation('card-enter');
+  },
+
+  // ===== Unified Card Transition =====
+  // Shared flow for solo and multiplayer card transitions.
+  // Buffer must already have its content set before calling.
+  transitionCards({ flyDirection = 'down', onBeforeFly, onSwapRoles }) {
+    revealBufferOverDeck(this.$buffer, this.$deck);
+    onBeforeFly?.();
+
+    const $flyingCard = this.$deck;
+    const animation =
+      flyDirection === 'down'
+        ? flyCardDown($flyingCard, this.$player)
+        : flyCardOffScreen($flyingCard);
+
+    return animation.finished.then(() => {
+      onSwapRoles();
+      animation.cancel();
+      $flyingCard.classList.remove('card-flying');
+      this.assignCardRoles();
+    });
+  },
+
+  transitionToNextCards() {
+    this.transitionCards({
+      flyDirection: 'down',
+      onSwapRoles: () => {
+        // Rotate roles: deck→player, buffer→deck, player→buffer
+        const prevDeck = this.$deck;
+        const prevBuffer = this.$buffer;
+        const prevPlayer = this.$player;
+        this.$player = prevDeck;
+        this.$deck = prevBuffer;
+        this.$buffer = prevPlayer;
+
+        // Update card data
+        this.bottomCard = this.topCard;
+        this.topCard = this.bufferCard;
+        this.bufferCard =
+          this.currentCardIndex < this.deck.length
+            ? this.deck[this.currentCardIndex]
+            : null;
+
+        // Pre-render next card on the hidden buffer (no flicker!)
+        if (this.bufferCard) {
+          const onSymbolClick = this.getSymbolClickHandler();
+          const layoutOptions = this.getLayoutOptions();
+          this.$buffer.setEmojis(
+            this.bufferCard,
+            true,
+            onSymbolClick,
+            layoutOptions,
+          );
+        }
+      },
+    }).then(() => {
       this.updateCardsRemaining();
       this.startCardTimer();
       this.isInputLocked = false;
@@ -803,8 +887,8 @@ const Game = {
 
       // Next card
       this.currentCardIndex++;
-      if (this.currentCardIndex >= this.deck.length) {
-        // Game over — won!
+      if (this.currentCardIndex >= this.deck.length && !this.bufferCard) {
+        // No buffer card left — game over after this match!
         setTimeout(() => this.endGame(true), 400);
       } else {
         this.transitionToNextCards();
@@ -815,6 +899,8 @@ const Game = {
       this.flash(FEEDBACK_WRONG);
       this.showFeedbackIcon(FEEDBACK_WRONG);
       AudioManager.play(FEEDBACK_WRONG);
+
+      shakeCard($el);
 
       // Penalty + streak reset
       const penalty = this.calcPenalty();
@@ -867,8 +953,8 @@ const Game = {
       $timerFill.classList.add('warning');
     }
 
-    $cardTop.updateRingProgress(initialRemaining);
-    $cardBottom.updateRingProgress(initialRemaining);
+    this.$deck.updateRingProgress(initialRemaining);
+    this.$player.updateRingProgress(initialRemaining);
 
     const tick = () => {
       if (!this.isPlaying) {
@@ -881,8 +967,8 @@ const Game = {
       this.updateElapsedTime();
 
       $timerFill.style.width = `${roundUiNumber(remaining * 100)}%`;
-      $cardTop.updateRingProgress(remaining);
-      $cardBottom.updateRingProgress(remaining);
+      this.$deck.updateRingProgress(remaining);
+      this.$player.updateRingProgress(remaining);
 
       if (remaining < 0.3) {
         $timerFill.classList.add('warning');
@@ -911,7 +997,7 @@ const Game = {
 
   updateCardsRemaining() {
     const total = Math.max(0, this.deck.length - 1);
-    const done = Math.max(0, this.currentCardIndex - 1);
+    const done = Math.max(0, this.currentCardIndex - 2);
     $cardsRemaining.textContent = `${done} / ${total}`;
   },
 
@@ -962,7 +1048,7 @@ const Game = {
       timeMs: elapsedMs,
       bestStreak: this.bestStreak,
       timePerCardMs: this.timePerCard,
-      cardsPlayed: this.currentCardIndex - 1,
+      cardsPlayed: this.currentCardIndex - 2,
     });
 
     AudioManager.play('gameover');
@@ -1368,6 +1454,12 @@ const Game = {
     this.bestStreak = 0;
     this.startTime = Date.now();
 
+    // Assign card roles (lost on page reload)
+    this.$deck = $cardA;
+    this.$buffer = $cardB;
+    this.$player = $cardC;
+    this.assignCardRoles();
+
     this.showScreen($screenGame);
     this.mpToggleHud(true);
 
@@ -1419,6 +1511,12 @@ const Game = {
     this.bestStreak = 0;
     this.startTime = Date.now();
     this.isInputLocked = true;
+
+    // Assign card roles for multiplayer (no buffer needed)
+    this.$deck = $cardA;
+    this.$buffer = $cardB;
+    this.$player = $cardC;
+    this.assignCardRoles();
 
     this.showScreen($screenGame);
     this.mpToggleHud(true);
@@ -1567,84 +1665,71 @@ const Game = {
 
     const renderNewCards = () => {
       if (cards.isPlayerDone) {
-        $cardTop.setEmojis(cards.centralCard, false, null, {
+        this.$deck.setEmojis(cards.centralCard, false, null, {
           ...layoutOptions,
           seed: cardToSeed(cards.centralCard) ^ roomSeed,
         });
-        $cardBottom.setContent(
+        this.$player.setContent(
           '<span style="font-size:2rem;opacity:0.5">⏳</span>',
         );
-        $cardTop.playAnimation('card-enter');
+        this.$deck.playAnimation('card-enter');
         return;
       }
 
       const onSymbolClick = (symbol, $el) => this.mpTapSymbol(symbol, $el);
 
-      // Central card (top) — not clickable, seed shared across all players
-      $cardTop.setEmojis(cards.centralCard, false, null, {
+      // Central card (top) — clickable, seed shared across all players
+      this.$deck.setEmojis(cards.centralCard, true, onSymbolClick, {
         ...layoutOptions,
         seed: cardToSeed(cards.centralCard) ^ roomSeed,
       });
       // Player card (bottom) — clickable, seed shared across all players
-      $cardBottom.setEmojis(cards.playerCard, true, onSymbolClick, {
+      this.$player.setEmojis(cards.playerCard, true, onSymbolClick, {
         ...layoutOptions,
         seed: cardToSeed(cards.playerCard) ^ roomSeed,
       });
 
-      $cardTop.playAnimation('card-enter');
+      this.$deck.playAnimation('card-enter');
       if (playerCardChanged) {
-        $cardBottom.playAnimation('card-enter');
+        this.$player.playAnimation('card-enter');
       }
     };
 
     if (isFirstRender) {
       renderNewCards();
-    } else if (playerCardChanged) {
-      // Current player won — top card flies down onto bottom card
-      this.mpFlyTopCardDown().then(renderNewCards);
     } else {
-      // Another player won — top card flies up off screen
-      this.mpFlyTopCardOffScreen().then(renderNewCards);
+      const onSymbolClick = (symbol, $el) => this.mpTapSymbol(symbol, $el);
+
+      // Pre-render new central card on buffer before transition
+      this.$buffer.setEmojis(cards.centralCard, true, onSymbolClick, {
+        ...layoutOptions,
+        seed: cardToSeed(cards.centralCard) ^ roomSeed,
+      });
+
+      this.transitionCards({
+        flyDirection: playerCardChanged ? 'down' : 'up',
+        onSwapRoles: () => {
+          // Always 2-way: buffer→deck, deck→buffer (flying card hidden)
+          const prevDeck = this.$deck;
+          this.$deck = this.$buffer;
+          this.$buffer = prevDeck;
+
+          // Update player content while still covered by flying card's fill:forwards
+          if (playerCardChanged) {
+            if (cards.isPlayerDone) {
+              this.$player.setContent(
+                '<span style="font-size:2rem;opacity:0.5">⏳</span>',
+              );
+            } else {
+              this.$player.setEmojis(cards.playerCard, true, onSymbolClick, {
+                ...layoutOptions,
+                seed: cardToSeed(cards.playerCard) ^ roomSeed,
+              });
+            }
+          }
+        },
+      });
     }
-  },
-
-  // Top card flies down to overlay the bottom card (current player won)
-  mpFlyTopCardDown() {
-    const topRect = $cardTop.getBoundingClientRect();
-    const bottomRect = $cardBottom.getBoundingClientRect();
-    const offsetY =
-      bottomRect.top +
-      bottomRect.height / 2 -
-      (topRect.top + topRect.height / 2);
-
-    const flyAnimation = $cardTop.animateCircle(
-      [
-        { transform: 'translateY(0)', scale: 1, zIndex: 1 },
-        { scale: 1.2, zIndex: 1, offset: 0.5 },
-        { transform: `translateY(${offsetY}px)`, scale: 1, zIndex: 1 },
-      ],
-      { duration: CARD_FLY_DURATION_MS, easing: 'ease-in-out' },
-    );
-
-    return flyAnimation.finished;
-  },
-
-  // Top card flies up off screen (opponent won)
-  mpFlyTopCardOffScreen() {
-    const topRect = $cardTop.getBoundingClientRect();
-
-    // Fly up past the top of the viewport
-    const offsetY = -(topRect.top + topRect.height);
-
-    const flyAnimation = $cardTop.animateCircle(
-      [
-        { transform: 'translateY(0)', scale: 1, opacity: 1 },
-        { transform: `translateY(${offsetY}px)`, scale: 0.8, opacity: 0 },
-      ],
-      { duration: CARD_FLY_DURATION_MS, easing: 'ease-in' },
-    );
-
-    return flyAnimation.finished;
   },
 
   renderCardSymbols($card, symbols, isClickable) {
@@ -1760,10 +1845,12 @@ const Game = {
       AudioManager.play(FEEDBACK_WRONG);
       Multiplayer.reportWrongTap();
 
+      shakeCard($el);
+
       // Penalty: lock input + grayscale on player's card
-      $cardBottom.$circle.classList.add('card-penalty');
+      this.$player.$circle.classList.add('card-penalty');
       setTimeout(() => {
-        $cardBottom.$circle.classList.remove('card-penalty');
+        this.$player.$circle.classList.remove('card-penalty');
         this.isInputLocked = false;
       }, MP_WRONG_PENALTY_MS);
     }
@@ -1981,16 +2068,21 @@ const Game = {
 
   abilityApplyClock() {
     console.log('⏰ Clock ability received! Spinning card...');
-    const $card = $cardBottom;
+    const $card = this.$player;
 
-    // Phase 1: spin the whole card
-    $card.classList.add('ability-clock-spin');
+    // Card + emojis spin together; card stops first, emojis keep going
+    const cardSpin = $card.$circle.animate(
+      [{ transform: 'rotate(0deg)' }, { transform: 'rotate(720deg)' }],
+      { duration: 1500, easing: 'ease-out' },
+    );
 
-    // Phase 2: after card spin, spin individual emojis
-    const onSpinEnd = () => {
-      $card.classList.remove('ability-clock-spin');
-    };
-    $card.addEventListener('animationend', onSpinEnd, { once: true });
+    const $$emojis = $card.$circle.querySelectorAll('.emoji-item');
+    $$emojis.forEach(($el) => {
+      $el.animate(
+        [{ transform: 'rotate(0deg)' }, { transform: 'rotate(1440deg)' }],
+        { duration: 3000, easing: 'ease-out' },
+      );
+    });
   },
 
   startAbilityCooldownProgress(durationMs) {

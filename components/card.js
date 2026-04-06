@@ -1,6 +1,6 @@
 // ===== <dobble-card> Web Component =====
 // Light DOM card with auto-generated ring SVG and emoji circle.
-// Usage: <dobble-card id="$cardTop" class="card-top"></dobble-card>
+// Usage: <dobble-card id="$cardA" class="card-deck"></dobble-card>
 // Access .$circle for the inner card-circle element, .$ring for the ring.
 
 import {
@@ -82,10 +82,6 @@ class DobbleCard extends HTMLElement {
       direction === 'card-exit' ? [...keyframes].reverse() : keyframes,
       { duration: CARD_TRANSITION_DURATION_MS, easing: 'ease-out' },
     );
-  }
-
-  animateCircle(keyframes, options) {
-    return this.$circle.animate(keyframes, options);
   }
 }
 
