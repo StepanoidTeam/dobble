@@ -1,7 +1,7 @@
 // ===== Logo Icon Animations (Web Animations API) =====
 
 import { Random } from './seeded-random.js';
-import { Tornado, Acid } from '../abilities/index.js';
+import { Tornado, Acid, Freeze } from '../abilities/index.js';
 
 const EFFECTS = {
   sepia: {
@@ -61,32 +61,10 @@ const EFFECTS = {
     ],
     options: { duration: 5000, easing: 'ease-in-out' },
   },
-  acid: {
-    keyframes: [
-      { filter: 'hue-rotate(0deg)' },
-      { filter: 'hue-rotate(360deg)' },
-    ],
-    options: { duration: 5000, easing: 'ease-in-out' },
-  },
+
   bubble: {
     keyframes: [{ scale: 1.1 }, { scale: 0.9 }],
     options: { duration: 3000, easing: 'ease-in-out', direction: 'alternate' },
-    applyStyle($el) {
-      $el.style.padding = '15px';
-      $el.style.borderRadius = '90px';
-      $el.style.backgroundColor = '#ffffff33';
-      $el.style.border = '3px solid var(--bg-primary)';
-      $el.style.boxShadow = 'inset 0 0 3px 3px var(--ring-purple)';
-      $el.style.backdropFilter = 'blur(1px)';
-    },
-    removeStyle($el) {
-      $el.style.padding = '';
-      $el.style.borderRadius = '';
-      $el.style.backgroundColor = '';
-      $el.style.border = '';
-      $el.style.boxShadow = '';
-      $el.style.backdropFilter = '';
-    },
   },
   tornado: {
     isAbility: true,
@@ -98,6 +76,18 @@ const EFFECTS = {
     isAbility: true,
     applyToCard($circle) {
       Acid.animate($circle);
+    },
+    applyToLogo($el) {
+      Acid.animate($el);
+    },
+  },
+  freeze: {
+    isAbility: true,
+    applyToCard($circle) {
+      Freeze.animate($circle);
+    },
+    applyToLogo($el) {
+      Freeze.animate($el);
     },
   },
 };
@@ -174,11 +164,6 @@ export function playLogoEffect($logoIcon, { fromClick = false } = {}) {
   }
   cancelPreviewAnimations();
 
-  // Remove bubble styling if it was active
-  if (currentEffect === 'bubble') {
-    EFFECTS.bubble.removeStyle($logoIcon);
-  }
-
   // Reset inline filter so it doesn't stick
   $logoIcon.style.filter = '';
 
@@ -196,7 +181,7 @@ export function playLogoEffect($logoIcon, { fromClick = false } = {}) {
   }
 
   // Apply special styling (bubble)
-  if (effect.applyStyle) effect.applyStyle($logoIcon);
+  if (effect.applyToLogo) effect.applyToLogo($logoIcon);
 
   currentAnimation = $logoIcon.animate(effect.keyframes, {
     ...effect.options,

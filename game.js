@@ -53,7 +53,7 @@ import {
   revealBufferOverDeck,
   CARD_FLY_DURATION_MS,
 } from './helpers/card-animations.js';
-import { Tornado, Acid } from './abilities/index.js';
+import { Tornado, Acid, Freeze } from './abilities/index.js';
 import { EMOJIS_CLASSIC } from './emojis/emojis-classic.js';
 
 import './helpers/app-version.js';
@@ -116,11 +116,13 @@ const Game = {
   abilitySelected: null,
   abilityTornadoCooldown: false,
   abilityAcidCooldown: false,
+  abilityFreezeCooldown: false,
   _abilityListener: null,
   _abilityQueue: [],
   _abilityPlaying: false,
   $abilityTornadoProgress: null,
   $abilityAcidProgress: null,
+  $abilityFreezeProgress: null,
 
   init() {
     this.loadEmojiSetPreference();
@@ -160,6 +162,12 @@ const Game = {
     );
     if (this.$abilityAcidProgress) {
       this.$abilityAcidProgress.style.strokeDashoffset = '150.8';
+    }
+    this.$abilityFreezeProgress = $abilityFreeze.querySelector(
+      '.ability-progress circle',
+    );
+    if (this.$abilityFreezeProgress) {
+      this.$abilityFreezeProgress.style.strokeDashoffset = '150.8';
     }
   },
 
@@ -389,6 +397,7 @@ const Game = {
       this.abilitySelectTornado(),
     );
     $abilityAcid.addEventListener('click', () => this.abilitySelectAcid());
+    $abilityFreeze.addEventListener('click', () => this.abilitySelectFreeze());
     $mpPlayersList.addEventListener('click', (e) => {
       if (!this.abilitySelected) return;
       const $row = e.target.closest('.mp-player-row');
@@ -1535,11 +1544,16 @@ const Game = {
     this.abilitySelected = null;
     this.abilityTornadoCooldown = false;
     this.abilityAcidCooldown = false;
+    this.abilityFreezeCooldown = false;
     $abilityTornado.classList.remove(
       'ability-btn--selected',
       'ability-btn--cooldown',
     );
     $abilityAcid.classList.remove(
+      'ability-btn--selected',
+      'ability-btn--cooldown',
+    );
+    $abilityFreeze.classList.remove(
       'ability-btn--selected',
       'ability-btn--cooldown',
     );
@@ -1602,11 +1616,16 @@ const Game = {
     this.abilitySelected = null;
     this.abilityTornadoCooldown = false;
     this.abilityAcidCooldown = false;
+    this.abilityFreezeCooldown = false;
     $abilityTornado.classList.remove(
       'ability-btn--selected',
       'ability-btn--cooldown',
     );
     $abilityAcid.classList.remove(
+      'ability-btn--selected',
+      'ability-btn--cooldown',
+    );
+    $abilityFreeze.classList.remove(
       'ability-btn--selected',
       'ability-btn--cooldown',
     );
@@ -2125,10 +2144,32 @@ const Game = {
     });
   },
 
+  abilitySelectFreeze() {
+    if (this.abilityFreezeCooldown) return;
+
+    if (this.abilitySelected === 'freeze') {
+      this.abilityCancelSelection();
+      return;
+    }
+
+    this.abilityCancelSelection();
+    this.abilitySelected = 'freeze';
+    $abilityFreeze.classList.add('ability-btn--selected');
+
+    // Mark other players as targetable
+    const currentUid = auth?.currentUser?.uid;
+    $mpPlayersList.querySelectorAll('.mp-player-row').forEach(($row) => {
+      if ($row.dataset.uid !== currentUid) {
+        $row.classList.add('ability-targetable');
+      }
+    });
+  },
+
   abilityCancelSelection() {
     this.abilitySelected = null;
     $abilityTornado.classList.remove('ability-btn--selected');
     $abilityAcid.classList.remove('ability-btn--selected');
+    $abilityFreeze.classList.remove('ability-btn--selected');
     $mpPlayersList.querySelectorAll('.mp-player-row').forEach(($row) => {
       $row.classList.remove('ability-targetable');
     });
@@ -2210,6 +2251,39 @@ const Game = {
         }
       }, Acid.COOLDOWN_MS);
     }
+
+    if (ability === 'freeze') {
+      this.abilityFreezeCooldown = true;
+      $abilityFreeze.classList.add('ability-btn--cooldown');
+      this.startAbilityCooldownProgress(
+        this.$abilityFreezeProgress,
+        Freeze.COOLDOWN_MS,
+      );
+
+      const abilityRef = ref(
+        rtdb,
+        `rooms/${Multiplayer.roomCode}/abilities/${targetUid}`,
+      );
+      await set(abilityRef, {
+        type: 'freeze',
+        from: currentUid,
+        timestamp: Date.now(),
+      });
+
+      console.log('❄️ Freeze ability sent to', targetUid);
+
+      setTimeout(() => {
+        remove(abilityRef);
+      }, 2000);
+
+      setTimeout(() => {
+        this.abilityFreezeCooldown = false;
+        $abilityFreeze.classList.remove('ability-btn--cooldown');
+        if (this.$abilityFreezeProgress) {
+          this.$abilityFreezeProgress.style.strokeDashoffset = '150.8';
+        }
+      }, Freeze.COOLDOWN_MS);
+    }
   },
 
   mpListenAbilities() {
@@ -2239,7 +2313,7 @@ const Game = {
   },
 
   abilityEnqueue(type) {
-    const abilities = { tornado: Tornado, acid: Acid };
+    const abilities = { tornado: Tornado, acid: Acid, freeze: Freeze };
     const ability = abilities[type];
     if (!ability) return;
 
@@ -2254,9 +2328,18 @@ const Game = {
     const ability = this._abilityQueue.shift();
 
     console.log(`${ability.ICON} ${ability.KEY} ability received!`);
+
+    // Lock input for abilities that freeze the player
+    if (ability.LOCKS_INPUT) {
+      this.isInputLocked = true;
+    }
+
     ability.animate(this.$player.$circle);
 
     setTimeout(() => {
+      if (ability.LOCKS_INPUT) {
+        this.isInputLocked = false;
+      }
       this._abilityPlaying = false;
       this.abilityProcessQueue();
     }, ability.DURATION_MS);
