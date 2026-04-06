@@ -62,7 +62,7 @@ const FEEDBACK_CORRECT = 'correct';
 const FEEDBACK_WRONG = 'wrong';
 const CARD_TRANSITION_DURATION_MS = 250;
 const MP_WRONG_PENALTY_MS = 2000;
-const ABILITY_CLOCK_DURATION_MS = 5000;
+const ABILITY_TORNADO_DURATION_MS = 5000;
 const ABILITY_ACID_DURATION_MS = 6000;
 const ABILITY_ACID_COOLDOWN_MS = 8000;
 const DEBUG_ABILITIES = true;
@@ -112,10 +112,10 @@ const Game = {
   selectedMode: 'classic',
   mpLastRenderedRound: -1,
   abilitySelected: null,
-  abilityClockCooldown: false,
+  abilityTornadoCooldown: false,
   abilityAcidCooldown: false,
   _abilityListener: null,
-  $abilityClockProgress: null,
+  $abilityTornadoProgress: null,
   $abilityAcidProgress: null,
 
   init() {
@@ -145,11 +145,11 @@ const Game = {
   },
 
   cacheAbilityProgress() {
-    this.$abilityClockProgress = $abilityClock.querySelector(
+    this.$abilityTornadoProgress = $abilityTornado.querySelector(
       '.ability-progress circle',
     );
-    if (this.$abilityClockProgress) {
-      this.$abilityClockProgress.style.strokeDashoffset = '150.8';
+    if (this.$abilityTornadoProgress) {
+      this.$abilityTornadoProgress.style.strokeDashoffset = '150.8';
     }
     this.$abilityAcidProgress = $abilityAcid.querySelector(
       '.ability-progress circle',
@@ -359,7 +359,9 @@ const Game = {
     });
 
     // ===== Ability Events =====
-    $abilityClock.addEventListener('click', () => this.abilitySelectClock());
+    $abilityTornado.addEventListener('click', () =>
+      this.abilitySelectTornado(),
+    );
     $abilityAcid.addEventListener('click', () => this.abilitySelectAcid());
     $mpPlayersList.addEventListener('click', (e) => {
       if (!this.abilitySelected) return;
@@ -1479,9 +1481,9 @@ const Game = {
 
     $abilitiesPanel.hidden = false;
     this.abilitySelected = null;
-    this.abilityClockCooldown = false;
+    this.abilityTornadoCooldown = false;
     this.abilityAcidCooldown = false;
-    $abilityClock.classList.remove(
+    $abilityTornado.classList.remove(
       'ability-btn--selected',
       'ability-btn--cooldown',
     );
@@ -1544,9 +1546,9 @@ const Game = {
     // Show abilities panel
     $abilitiesPanel.hidden = false;
     this.abilitySelected = null;
-    this.abilityClockCooldown = false;
+    this.abilityTornadoCooldown = false;
     this.abilityAcidCooldown = false;
-    $abilityClock.classList.remove(
+    $abilityTornado.classList.remove(
       'ability-btn--selected',
       'ability-btn--cooldown',
     );
@@ -1990,18 +1992,18 @@ const Game = {
   },
 
   // ===== Abilities =====
-  abilitySelectClock() {
-    if (this.abilityClockCooldown) return;
+  abilitySelectTornado() {
+    if (this.abilityTornadoCooldown) return;
 
-    if (this.abilitySelected === 'clock') {
+    if (this.abilitySelected === 'tornado') {
       // Deselect
       this.abilityCancelSelection();
       return;
     }
 
     this.abilityCancelSelection();
-    this.abilitySelected = 'clock';
-    $abilityClock.classList.add('ability-btn--selected');
+    this.abilitySelected = 'tornado';
+    $abilityTornado.classList.add('ability-btn--selected');
 
     // Mark other players as targetable
     const currentUid = auth?.currentUser?.uid;
@@ -2035,7 +2037,7 @@ const Game = {
 
   abilityCancelSelection() {
     this.abilitySelected = null;
-    $abilityClock.classList.remove('ability-btn--selected');
+    $abilityTornado.classList.remove('ability-btn--selected');
     $abilityAcid.classList.remove('ability-btn--selected');
     $mpPlayersList.querySelectorAll('.mp-player-row').forEach(($row) => {
       $row.classList.remove('ability-targetable');
@@ -2050,12 +2052,12 @@ const Game = {
     const ability = this.abilitySelected;
     this.abilityCancelSelection();
 
-    if (ability === 'clock') {
-      this.abilityClockCooldown = true;
-      $abilityClock.classList.add('ability-btn--cooldown');
+    if (ability === 'tornado') {
+      this.abilityTornadoCooldown = true;
+      $abilityTornado.classList.add('ability-btn--cooldown');
       this.startAbilityCooldownProgress(
-        this.$abilityClockProgress,
-        ABILITY_CLOCK_DURATION_MS,
+        this.$abilityTornadoProgress,
+        ABILITY_TORNADO_DURATION_MS,
       );
 
       // Send ability via Firebase
@@ -2064,12 +2066,12 @@ const Game = {
         `rooms/${Multiplayer.roomCode}/abilities/${targetUid}`,
       );
       await set(abilityRef, {
-        type: 'clock',
+        type: 'tornado',
         from: currentUid,
         timestamp: Date.now(),
       });
 
-      console.log('⏰ Clock ability sent to', targetUid);
+      console.log('🌪️ Tornado ability sent to', targetUid);
 
       // Remove after a short delay so the listener picks it up
       setTimeout(() => {
@@ -2078,12 +2080,12 @@ const Game = {
 
       // Cooldown timer
       setTimeout(() => {
-        this.abilityClockCooldown = false;
-        $abilityClock.classList.remove('ability-btn--cooldown');
-        if (this.$abilityClockProgress) {
-          this.$abilityClockProgress.style.strokeDashoffset = '150.8';
+        this.abilityTornadoCooldown = false;
+        $abilityTornado.classList.remove('ability-btn--cooldown');
+        if (this.$abilityTornadoProgress) {
+          this.$abilityTornadoProgress.style.strokeDashoffset = '150.8';
         }
-      }, ABILITY_CLOCK_DURATION_MS);
+      }, ABILITY_TORNADO_DURATION_MS);
     }
 
     if (ability === 'acid') {
@@ -2133,8 +2135,8 @@ const Game = {
       const data = snapshot.val();
       if (!data) return;
 
-      if (data.type === 'clock') {
-        this.abilityApplyClock();
+      if (data.type === 'tornado') {
+        this.abilityApplyTornado();
       }
       if (data.type === 'acid') {
         this.abilityApplyAcid();
@@ -2149,21 +2151,51 @@ const Game = {
     }
   },
 
-  abilityApplyClock() {
-    console.log('⏰ Clock ability received! Spinning card...');
+  abilityApplyTornado() {
+    console.log('🌪️ Tornado ability received! Whirlwind...');
     const $card = this.$player;
+    const $circle = $card.$circle;
+    const duration = ABILITY_TORNADO_DURATION_MS;
 
-    // Card + emojis spin together; card stops first, emojis keep going
-    const cardSpin = $card.$circle.animate(
-      [{ transform: 'rotate(0deg)' }, { transform: 'rotate(720deg)' }],
-      { duration: 1500, easing: 'ease-out' },
+    // Card spins — stops at half duration, smooth deceleration
+    $circle.animate(
+      [
+        { transform: `rotate(${0}deg) scale(1)` },
+        { transform: `rotate(${360 * 7}deg) scale(1)` },
+      ],
+      { duration: duration, easing: 'cubic-bezier(0, 0.55, 0.1, 1)' },
     );
 
-    const $$emojis = $card.$circle.querySelectorAll('.emoji-item');
+    // Blur + brightness — matches card duration
+    $circle.animate(
+      [
+        { filter: 'blur(0px) brightness(1)' },
+        { filter: 'blur(3px) brightness(1.2)', offset: 0.3 },
+        { filter: 'blur(1px) brightness(0.9)', offset: 0.7 },
+        { filter: 'blur(0px) brightness(1)' },
+      ],
+      { duration: duration / 2 },
+    );
+
+    // Each emoji spins individually
+    const $$emojis = $circle.querySelectorAll('.emoji-item');
     $$emojis.forEach(($el) => {
+      const baseRotate = parseFloat($el.style.rotate) || 0;
+      const spinDeg = 720;
+
+      const randDelay = (Math.random() * duration) / 2;
+
       $el.animate(
-        [{ transform: 'rotate(0deg)' }, { transform: 'rotate(1440deg)' }],
-        { duration: 3000, easing: 'ease-out' },
+        [
+          //
+          { rotate: `${baseRotate}deg` },
+          { rotate: `${baseRotate + spinDeg}deg` },
+        ],
+        {
+          duration: duration,
+          easing: 'ease-out',
+          delay: randDelay,
+        },
       );
     });
   },
