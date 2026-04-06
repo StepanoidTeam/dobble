@@ -20,7 +20,15 @@ const LEADERBOARD_LIMIT = 50;
 
 export const Leaderboard = {
   // ===== Submit Score =====
-  async submitScore({ score, timeMs, bestStreak, timePerCardMs, cardsPlayed }) {
+  async submitScore({
+    score,
+    timeMs,
+    bestStreak,
+    timePerCardMs,
+    cardsPlayed,
+    symbolsPerCard,
+    emojiSet,
+  }) {
     const user = auth.currentUser;
     if (!user) {
       console.log('🏆 no user, skip leaderboard submit');
@@ -45,6 +53,8 @@ export const Leaderboard = {
         bestStreak,
         timePerCardMs,
         cardsPlayed,
+        symbolsPerCard: symbolsPerCard || null,
+        emojiSet: emojiSet || null,
         updatedAt: serverTimestamp(),
       };
 

@@ -1,8 +1,9 @@
 // ===== Dobble Game Engine =====
 
 import {
-  getDeckStatsBySymbolsCount,
   getValidOrders,
+  symbolsPerCardForOrder,
+  totalCardsForOrder,
 } from './helpers/dobble-math.js';
 import { AudioManager } from './audio-manager.js';
 import { buildDeck, findCommonSymbol } from './helpers/deck.js';
@@ -577,13 +578,27 @@ const Game = {
     return Math.sqrt(maxMs / this.timePerCard);
   },
 
+  calcSymbolsMult() {
+    const symbols = this.getCurrentSymbols();
+    const orders = getValidOrders(symbols.length);
+    if (!orders.length) return 1;
+    const maxSymbolsPerCard = orders[orders.length - 1].symbolsPerCard;
+    const currentSymbolsPerCard = symbolsPerCardForOrder(
+      this.getEffectiveOrder(),
+    );
+    return currentSymbolsPerCard / maxSymbolsPerCard;
+  },
+
   calcCardScore(elapsed, hinted) {
     const difficultyMult = this.calcDifficultyMult();
+    const symbolsMult = this.calcSymbolsMult();
 
     if (hinted) {
       const progressionMult =
         1 + (this.currentCardIndex - 2) * PROGRESSION_BONUS_PER_CARD;
-      return Math.round(SCORE_HINTED_BASE * difficultyMult * progressionMult);
+      return Math.round(
+        SCORE_HINTED_BASE * difficultyMult * symbolsMult * progressionMult,
+      );
     }
 
     const speedBonus = Math.max(
@@ -596,21 +611,28 @@ const Game = {
       1 + (this.currentCardIndex - 2) * PROGRESSION_BONUS_PER_CARD;
 
     return Math.round(
-      (SCORE_BASE + speedBonus) * difficultyMult * streakMult * progressionMult,
+      (SCORE_BASE + speedBonus) *
+        difficultyMult *
+        symbolsMult *
+        streakMult *
+        progressionMult,
     );
   },
 
   calcPenalty() {
-    return Math.round(SCORE_PENALTY_BASE * this.calcDifficultyMult());
+    return Math.round(
+      SCORE_PENALTY_BASE * this.calcDifficultyMult() * this.calcSymbolsMult(),
+    );
   },
 
   calcTotalMult() {
     const difficultyMult = this.calcDifficultyMult();
+    const symbolsMult = this.calcSymbolsMult();
     const streakMult =
       1 + Math.min(this.streak, STREAK_CAP) * STREAK_BONUS_PER_LEVEL;
     const progressionMult =
       1 + (this.currentCardIndex - 2) * PROGRESSION_BONUS_PER_CARD;
-    return difficultyMult * streakMult * progressionMult;
+    return difficultyMult * symbolsMult * streakMult * progressionMult;
   },
 
   updateMultiplierDisplay() {
@@ -1090,6 +1112,8 @@ const Game = {
       bestStreak: this.bestStreak,
       timePerCardMs: this.timePerCard,
       cardsPlayed: this.currentCardIndex - 2,
+      symbolsPerCard: symbolsPerCardForOrder(this.getEffectiveOrder()),
+      emojiSet: this.selectedEmojiSetKey,
     });
 
     AudioManager.play('gameover');
