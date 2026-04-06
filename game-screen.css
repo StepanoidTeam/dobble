@@ -6,12 +6,26 @@
   position: relative;
 }
 
-.game-header {
+header {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
 
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  flex: 0 0 auto;
+  z-index: 1;
+}
+
+footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  display: flex;
   gap: 10px;
   padding: 10px;
   flex: 0 0 auto;
@@ -179,7 +193,8 @@
   width: 100%;
   overflow: hidden;
 
-  padding-top: 30px;
+  padding-top: 65px;
+  padding-bottom: 25px;
 }
 
 /* ===== Feedback Icon (check / cross) ===== */
@@ -226,7 +241,7 @@
   transition: width 0.1s linear;
 
   &.warning {
-    background: linear-gradient(180deg, #ffb347, #f44336 60%, #c62828);
+    background: #f44336;
   }
 }
 

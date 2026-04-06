@@ -302,7 +302,7 @@
 
     <!-- Game Screen -->
     <div id="$screenGame" class="screen" hidden>
-      <div class="game-header flex-row items-center justify-between w-full">
+      <header class="flex-row items-center justify-between w-full">
         <button id="$btnGameMenu" class="icon-btn" aria-label="Menu">
           <svg viewBox="0 0 24 24" fill="white" width="28" height="28">
             <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
@@ -313,7 +313,7 @@
         <div class="mp-players-panel" id="$mpPlayersPanel" hidden>
           <div class="mp-players-list" id="$mpPlayersList"></div>
         </div>
-      </div>
+      </header>
 
       <!-- HUD Panel — left side -->
       <div class="hud-panel" aria-label="Игровая статистика">
@@ -357,12 +357,18 @@
         <!-- Bottom card (player's card) -->
         <dobble-card id="$cardBottom" class="card-bottom"></dobble-card>
       </div>
-      <div class="timer-bar" id="$timerBar">
-        <div class="timer-fill" id="$timerFill"></div>
-      </div>
+      <footer>
+        <div class="timer-bar" id="$timerBar">
+          <div class="timer-fill" id="$timerFill"></div>
+        </div>
+      </footer>
 
       <!-- Current Player Panel — bottom left -->
-      <dobble-player class="mp-current-player" id="$mpCurrentPlayer" hidden></dobble-player>
+      <dobble-player
+        class="mp-current-player"
+        id="$mpCurrentPlayer"
+        hidden
+      ></dobble-player>
 
       <!-- Abilities Panel — bottom right -->
       <div class="abilities-panel" id="$abilitiesPanel" hidden>
