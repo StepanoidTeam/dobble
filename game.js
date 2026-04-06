@@ -63,6 +63,8 @@ const FEEDBACK_WRONG = 'wrong';
 const CARD_TRANSITION_DURATION_MS = 250;
 const MP_WRONG_PENALTY_MS = 2000;
 const ABILITY_CLOCK_DURATION_MS = 5000;
+const ABILITY_ACID_DURATION_MS = 6000;
+const ABILITY_ACID_COOLDOWN_MS = 8000;
 const DEBUG_ABILITIES = true;
 const MP_ROOM_CODE_KEY = 'dobble_mp_room';
 
@@ -111,8 +113,10 @@ const Game = {
   mpLastRenderedRound: -1,
   abilitySelected: null,
   abilityClockCooldown: false,
+  abilityAcidCooldown: false,
   _abilityListener: null,
   $abilityClockProgress: null,
+  $abilityAcidProgress: null,
 
   init() {
     this.loadEmojiSetPreference();
@@ -146,6 +150,12 @@ const Game = {
     );
     if (this.$abilityClockProgress) {
       this.$abilityClockProgress.style.strokeDashoffset = '150.8';
+    }
+    this.$abilityAcidProgress = $abilityAcid.querySelector(
+      '.ability-progress circle',
+    );
+    if (this.$abilityAcidProgress) {
+      this.$abilityAcidProgress.style.strokeDashoffset = '150.8';
     }
   },
 
@@ -350,6 +360,7 @@ const Game = {
 
     // ===== Ability Events =====
     $abilityClock.addEventListener('click', () => this.abilitySelectClock());
+    $abilityAcid.addEventListener('click', () => this.abilitySelectAcid());
     $mpPlayersList.addEventListener('click', (e) => {
       if (!this.abilitySelected) return;
       const $row = e.target.closest('.mp-player-row');
@@ -1469,7 +1480,12 @@ const Game = {
     $abilitiesPanel.hidden = false;
     this.abilitySelected = null;
     this.abilityClockCooldown = false;
+    this.abilityAcidCooldown = false;
     $abilityClock.classList.remove(
+      'ability-btn--selected',
+      'ability-btn--cooldown',
+    );
+    $abilityAcid.classList.remove(
       'ability-btn--selected',
       'ability-btn--cooldown',
     );
@@ -1529,7 +1545,12 @@ const Game = {
     $abilitiesPanel.hidden = false;
     this.abilitySelected = null;
     this.abilityClockCooldown = false;
+    this.abilityAcidCooldown = false;
     $abilityClock.classList.remove(
+      'ability-btn--selected',
+      'ability-btn--cooldown',
+    );
+    $abilityAcid.classList.remove(
       'ability-btn--selected',
       'ability-btn--cooldown',
     );
@@ -1978,8 +1999,30 @@ const Game = {
       return;
     }
 
+    this.abilityCancelSelection();
     this.abilitySelected = 'clock';
     $abilityClock.classList.add('ability-btn--selected');
+
+    // Mark other players as targetable
+    const currentUid = auth?.currentUser?.uid;
+    $mpPlayersList.querySelectorAll('.mp-player-row').forEach(($row) => {
+      if (DEBUG_ABILITIES || $row.dataset.uid !== currentUid) {
+        $row.classList.add('ability-targetable');
+      }
+    });
+  },
+
+  abilitySelectAcid() {
+    if (this.abilityAcidCooldown) return;
+
+    if (this.abilitySelected === 'acid') {
+      this.abilityCancelSelection();
+      return;
+    }
+
+    this.abilityCancelSelection();
+    this.abilitySelected = 'acid';
+    $abilityAcid.classList.add('ability-btn--selected');
 
     // Mark other players as targetable
     const currentUid = auth?.currentUser?.uid;
@@ -1993,6 +2036,7 @@ const Game = {
   abilityCancelSelection() {
     this.abilitySelected = null;
     $abilityClock.classList.remove('ability-btn--selected');
+    $abilityAcid.classList.remove('ability-btn--selected');
     $mpPlayersList.querySelectorAll('.mp-player-row').forEach(($row) => {
       $row.classList.remove('ability-targetable');
     });
@@ -2009,7 +2053,10 @@ const Game = {
     if (ability === 'clock') {
       this.abilityClockCooldown = true;
       $abilityClock.classList.add('ability-btn--cooldown');
-      this.startAbilityCooldownProgress(ABILITY_CLOCK_DURATION_MS);
+      this.startAbilityCooldownProgress(
+        this.$abilityClockProgress,
+        ABILITY_CLOCK_DURATION_MS,
+      );
 
       // Send ability via Firebase
       const abilityRef = ref(
@@ -2038,6 +2085,39 @@ const Game = {
         }
       }, ABILITY_CLOCK_DURATION_MS);
     }
+
+    if (ability === 'acid') {
+      this.abilityAcidCooldown = true;
+      $abilityAcid.classList.add('ability-btn--cooldown');
+      this.startAbilityCooldownProgress(
+        this.$abilityAcidProgress,
+        ABILITY_ACID_COOLDOWN_MS,
+      );
+
+      const abilityRef = ref(
+        rtdb,
+        `rooms/${Multiplayer.roomCode}/abilities/${targetUid}`,
+      );
+      await set(abilityRef, {
+        type: 'acid',
+        from: currentUid,
+        timestamp: Date.now(),
+      });
+
+      console.log('🫟 Acid ability sent to', targetUid);
+
+      setTimeout(() => {
+        remove(abilityRef);
+      }, 2000);
+
+      setTimeout(() => {
+        this.abilityAcidCooldown = false;
+        $abilityAcid.classList.remove('ability-btn--cooldown');
+        if (this.$abilityAcidProgress) {
+          this.$abilityAcidProgress.style.strokeDashoffset = '150.8';
+        }
+      }, ABILITY_ACID_COOLDOWN_MS);
+    }
   },
 
   mpListenAbilities() {
@@ -2055,6 +2135,9 @@ const Game = {
 
       if (data.type === 'clock') {
         this.abilityApplyClock();
+      }
+      if (data.type === 'acid') {
+        this.abilityApplyAcid();
       }
     });
   },
@@ -2085,8 +2168,75 @@ const Game = {
     });
   },
 
-  startAbilityCooldownProgress(durationMs) {
-    if (!this.$abilityClockProgress) return;
+  abilityApplyAcid() {
+    console.log('🫟 Acid ability received! Hallucinations...');
+    const $card = this.$player;
+    const $circle = $card.$circle;
+    const duration = ABILITY_ACID_DURATION_MS;
+
+    // Hue-rotate + saturate cycling on the whole card
+    $circle.animate(
+      [
+        { filter: 'hue-rotate(0deg) saturate(1.5)' },
+        { filter: 'hue-rotate(360deg) saturate(1.5)' },
+      ],
+      {
+        duration: 800,
+        iterations: Math.ceil(duration / 800),
+        easing: 'linear',
+      },
+    );
+
+    // Card breathing + skew distortion
+    $circle.animate(
+      [
+        { transform: 'scale(1) skew(0deg)', easing: 'ease-in-out' },
+        { transform: 'scale(1.03) skew(-1.5deg)', easing: 'ease-in-out' },
+        { transform: 'scale(0.97) skew(1.5deg)', easing: 'ease-in-out' },
+        { transform: 'scale(1.02) skew(-1deg)', easing: 'ease-in-out' },
+        { transform: 'scale(1) skew(0deg)' },
+      ],
+      { duration: 2000, iterations: Math.ceil(duration / 2000) },
+    );
+
+    // Individual emojis wobble + brightness pulse with random delays
+    const $$emojis = $circle.querySelectorAll('.emoji-item');
+    $$emojis.forEach(($el) => {
+      const delay = Math.random() * 2000;
+
+      $el.animate(
+        [
+          { transform: 'translate(0, 0) rotate(0deg)', easing: 'ease-in-out' },
+          {
+            transform: 'translate(3px, -2px) rotate(5deg)',
+            easing: 'ease-in-out',
+          },
+          {
+            transform: 'translate(-2px, 3px) rotate(-3deg)',
+            easing: 'ease-in-out',
+          },
+          {
+            transform: 'translate(2px, 1px) rotate(4deg)',
+            easing: 'ease-in-out',
+          },
+          { transform: 'translate(0, 0) rotate(0deg)' },
+        ],
+        { duration: 1200, iterations: Math.ceil(duration / 1200), delay },
+      );
+
+      $el.animate(
+        [
+          { filter: 'brightness(1)', easing: 'ease-in-out' },
+          { filter: 'brightness(1.4)', easing: 'ease-in-out' },
+          { filter: 'brightness(1)' },
+        ],
+        { duration: 600, iterations: Math.ceil(duration / 600), delay },
+      );
+    });
+  },
+
+  startAbilityCooldownProgress($progressEl, durationMs) {
+    if (!$progressEl) return;
 
     const startTime = Date.now();
     const totalDash = 150.8; // full circle
@@ -2096,7 +2246,7 @@ const Game = {
       const progress = Math.min(elapsed / durationMs, 1);
       const dashOffset = totalDash * (1 - progress); // from 150.8 to 0
 
-      this.$abilityClockProgress.style.strokeDashoffset = dashOffset;
+      $progressEl.style.strokeDashoffset = dashOffset;
 
       if (progress < 1) {
         requestAnimationFrame(animate);
