@@ -35,6 +35,8 @@
   "settings.language": "Язык",
   "timer.seconds": "{value} с",
   "rotation.degrees": "{value}°",
+  "settings.symbolsPerCard": "Символов на карте",
+  "settings.symbolsPerCardValue": "{symbols} ({cards} карт)",
   "confirm.exitTitle": "Выйти из игры?",
   "confirm.exitMessage": "Текущий прогресс раунда будет потерян.",
   "confirm.resetTitle": "Сброс прогресса?",

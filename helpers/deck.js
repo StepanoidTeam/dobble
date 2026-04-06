@@ -1,4 +1,8 @@
-import { getDeckStatsBySymbolsCount } from './dobble-math.js';
+import {
+  getDeckStatsBySymbolsCount,
+  totalCardsForOrder,
+  symbolsPerCardForOrder,
+} from './dobble-math.js';
 
 // ===== Dobble Card Generation =====
 // Dobble uses a projective plane of order n.
@@ -38,7 +42,8 @@ function generateDobbleCards(order) {
 }
 
 // Build deck with actual emoji symbols
-export function buildDeck(symbols) {
+// If symbolsPerCard is provided, use that instead of the maximum
+export function buildDeck(symbols, symbolsPerCard) {
   const sourceSymbols = Array.isArray(symbols) ? symbols : [];
   const stats = getDeckStatsBySymbolsCount(sourceSymbols.length);
 
@@ -51,13 +56,29 @@ export function buildDeck(symbols) {
     };
   }
 
-  const cards = generateDobbleCards(stats.n);
-  const safeSymbols = sourceSymbols.slice(0, stats.totalSymbolsUsed);
+  // Convert symbolsPerCard to projective plane order n
+  const n =
+    symbolsPerCard && symbolsPerCard >= 3 && symbolsPerCard - 1 <= stats.n
+      ? symbolsPerCard - 1
+      : stats.n;
+  const totalCards = totalCardsForOrder(n);
+
+  const cards = generateDobbleCards(n);
+  const safeSymbols = sourceSymbols.slice(0, totalCards);
 
   // Map indices to emojis
+  const actualStats = {
+    totalCards,
+    symbolsPerCard: symbolsPerCardForOrder(n),
+    totalSymbolsUsed: totalCards,
+    unusedSymbols: sourceSymbols.length - totalCards,
+    n,
+    perfect: totalCards === sourceSymbols.length,
+  };
+
   return {
     deck: cards.map((card) => card.map((idx) => safeSymbols[idx])),
-    stats,
+    stats: actualStats,
   };
 }
 

@@ -1,6 +1,9 @@
 // ===== Dobble Game Engine =====
 
-import { getDeckStatsBySymbolsCount } from './helpers/dobble-math.js';
+import {
+  getDeckStatsBySymbolsCount,
+  getValidOrders,
+} from './helpers/dobble-math.js';
 import { AudioManager } from './audio-manager.js';
 import { buildDeck, findCommonSymbol } from './helpers/deck.js';
 import { Random, stringToSeed, cardToSeed } from './helpers/seeded-random.js';
@@ -94,6 +97,7 @@ const Game = {
   iconRotationDegrees: DEFAULT_ICON_ROTATION_DEGREES,
   rotateByPosition: false,
   useCustomEmojiRender: true,
+  symbolsPerCardOrder: null, // null = use max for current set
   cardStartTime: 0,
   previewCardStartTime: 0,
   isPreviewTransitioning: false,
@@ -239,6 +243,14 @@ const Game = {
     $rotationValue.textContent = t('rotation.degrees', { value: degrees });
   },
 
+  updateSymbolsPerCardDisplay(n) {
+    if (!$symbolsPerCardValue) return;
+    $symbolsPerCardValue.textContent = t('settings.symbolsPerCardValue', {
+      symbols: symbolsPerCardForOrder(n),
+      cards: totalCardsForOrder(n),
+    });
+  },
+
   syncSettingsControls() {
     if ($toggleSound) {
       $toggleSound.checked = AudioManager.enabled;
@@ -263,9 +275,23 @@ const Game = {
   },
 
   getCurrentDeckStats() {
-    const stats = getDeckStatsBySymbolsCount(this.getCurrentSymbols().length);
-    console.log('🃏stats', stats);
-    return stats;
+    const n = this.getEffectiveOrder();
+    return {
+      totalCards: totalCardsForOrder(n),
+      symbolsPerCard: symbolsPerCardForOrder(n),
+      totalSymbolsUsed: totalCardsForOrder(n),
+      n,
+    };
+  },
+
+  getEffectiveOrder() {
+    const symbols = this.getCurrentSymbols();
+    const orders = getValidOrders(symbols.length);
+    if (!orders.length) return 2;
+    const maxN = orders[orders.length - 1].n;
+    const minN = orders[0].n;
+    if (this.symbolsPerCardOrder == null) return maxN;
+    return Math.max(minN, Math.min(maxN, this.symbolsPerCardOrder));
   },
 
   bindEvents() {
@@ -413,6 +439,7 @@ const Game = {
 
       this.selectedEmojiSetKey = nextSetKey;
       localStorage.setItem(EMOJI_SET_STORAGE_KEY, this.selectedEmojiSetKey);
+      SettingsOptionsManager.syncControls(this);
       this.renderPreviewCard();
     });
 
@@ -692,7 +719,10 @@ const Game = {
     AudioManager.resume();
 
     // Generate and shuffle deck
-    const { deck } = buildDeck(this.getCurrentSymbols());
+    const { deck } = buildDeck(
+      this.getCurrentSymbols(),
+      this.getEffectiveOrder() + 1,
+    );
     this.deck = Random.shuffle(deck);
 
     // Limit to totalCardsInGame + 1 cards (need pairs)
@@ -817,9 +847,8 @@ const Game = {
 
     return animation.finished.then(() => {
       onSwapRoles();
-      animation.cancel();
-      $flyingCard.classList.remove('card-flying');
       this.assignCardRoles();
+      animation.cancel();
     });
   },
 
@@ -1401,7 +1430,7 @@ const Game = {
     if (!Multiplayer.isHost) return;
     try {
       const symbols = this.getCurrentSymbols();
-      await Multiplayer.startGame(symbols);
+      await Multiplayer.startGame(symbols, this.getEffectiveOrder() + 1);
     } catch (err) {
       console.log('🎮 Start game error:', err.message);
     }
@@ -1502,7 +1531,9 @@ const Game = {
     Multiplayer.onRoomUpdate = (data) => {
       if (!data) return;
       if (data.status === 'finished') {
-        this.mpGameOver(data);
+        this.mpRenderPlayersList(data);
+        this.mpShowRoundPopup(data);
+        this.mpRenderCards(data).then(() => this.mpGameOver(data));
         return;
       }
       this.mpRenderPlayersList(data);
@@ -1572,7 +1603,9 @@ const Game = {
       Multiplayer.onRoomUpdate = (data) => {
         if (!data) return;
         if (data.status === 'finished') {
-          this.mpGameOver(data);
+          this.mpRenderPlayersList(data);
+          this.mpShowRoundPopup(data);
+          this.mpRenderCards(data).then(() => this.mpGameOver(data));
           return;
         }
         this.mpRenderPlayersList(data);
@@ -1735,35 +1768,53 @@ const Game = {
 
     if (isFirstRender) {
       renderNewCards();
+      return Promise.resolve();
     } else {
       const onSymbolClick = (symbol, $el) => this.mpTapSymbol(symbol, $el);
+      const flyDirection = playerCardChanged ? 'down' : 'up';
 
-      // Pre-render new central card on buffer before transition
-      this.$buffer.setEmojis(cards.centralCard, true, onSymbolClick, {
-        ...layoutOptions,
-        seed: cardToSeed(cards.centralCard) ^ roomSeed,
-      });
+      // Pre-render new central card on the hidden buffer (like solo mode)
+      if (cards.isPlayerDone) {
+        this.$buffer.setEmojis(cards.centralCard, false, null, {
+          ...layoutOptions,
+          seed: cardToSeed(cards.centralCard) ^ roomSeed,
+        });
+      } else {
+        this.$buffer.setEmojis(cards.centralCard, true, onSymbolClick, {
+          ...layoutOptions,
+          seed: cardToSeed(cards.centralCard) ^ roomSeed,
+        });
+      }
 
-      this.transitionCards({
-        flyDirection: playerCardChanged ? 'down' : 'up',
+      return this.transitionCards({
+        flyDirection,
         onSwapRoles: () => {
-          // Always 2-way: buffer→deck, deck→buffer (flying card hidden)
-          const prevDeck = this.$deck;
-          this.$deck = this.$buffer;
-          this.$buffer = prevDeck;
-
-          // Update player content while still covered by flying card's fill:forwards
           if (playerCardChanged) {
+            // Both cards change — same 3-way rotation as solo:
+            // deck→player, buffer→deck, player→buffer
+            const prevDeck = this.$deck;
+            const prevBuffer = this.$buffer;
+            const prevPlayer = this.$player;
+            this.$player = prevDeck;
+            this.$deck = prevBuffer;
+            this.$buffer = prevPlayer;
+
+            // Pre-render new player card on the now-buffer element (hidden)
             if (cards.isPlayerDone) {
-              this.$player.setContent(
+              this.$buffer.setContent(
                 '<span style="font-size:2rem;opacity:0.5">⏳</span>',
               );
             } else {
-              this.$player.setEmojis(cards.playerCard, true, onSymbolClick, {
+              this.$buffer.setEmojis(cards.playerCard, true, onSymbolClick, {
                 ...layoutOptions,
                 seed: cardToSeed(cards.playerCard) ^ roomSeed,
               });
             }
+          } else {
+            // Only deck changes — 2-way swap: buffer→deck, deck→buffer
+            const prevDeck = this.$deck;
+            this.$deck = this.$buffer;
+            this.$buffer = prevDeck;
           }
         },
       });

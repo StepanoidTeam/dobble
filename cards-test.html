@@ -124,6 +124,11 @@
       import { EMOJI_SETS } from './settings.js';
       import { buildDeck } from './helpers/deck.js';
       import { positionEmojis } from './helpers/ui-utils.js';
+      import {
+        getValidOrders,
+        totalCardsForOrder,
+        symbolsPerCardForOrder,
+      } from './helpers/dobble-math.js';
 
       const $setSelect = document.getElementById('$setSelect');
       const $symbolsPerCardSelect = document.getElementById(
@@ -149,21 +154,7 @@
       });
 
       // ===== Get all valid n values for a symbol count =====
-      function getValidOrders(totalSymbols) {
-        const orders = [];
-        for (let n = 2; n <= 20; n++) {
-          const needed = n * n + n + 1;
-          if (needed <= totalSymbols) {
-            orders.push({
-              n,
-              symbolsPerCard: n + 1,
-              totalCards: needed,
-              totalSymbols: needed,
-            });
-          }
-        }
-        return orders;
-      }
+      // Now imported from dobble-math.js
 
       // ===== Build a card DOM element matching game structure =====
       function createCardElement(symbols, index, setKey) {
@@ -240,8 +231,8 @@
           cardSize + 'px',
         );
 
-        const totalCards = n * n + n + 1;
-        const symbolsPerCard = n + 1;
+        const totalCards = totalCardsForOrder(n);
+        const symbolsPerCard = symbolsPerCardForOrder(n);
         const symbolsToUse = set.symbols.slice(0, totalCards);
 
         const { deck } = buildDeck(symbolsToUse);

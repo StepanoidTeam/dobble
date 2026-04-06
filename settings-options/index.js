@@ -1,11 +1,13 @@
 import { customEmojiRenderOption } from './custom-emoji-render-option.js';
 import { rotateByPositionOption } from './rotate-by-position-option.js';
 import { iconRotationOption } from './icon-rotation-option.js';
+import { symbolsPerCardOption } from './symbols-per-card-option.js';
 
 const OPTIONS = [
   customEmojiRenderOption,
   rotateByPositionOption,
   iconRotationOption,
+  symbolsPerCardOption,
 ];
 
 export const SettingsOptionsManager = {

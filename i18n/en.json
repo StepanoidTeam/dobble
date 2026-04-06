@@ -35,6 +35,8 @@
   "settings.language": "Language",
   "timer.seconds": "{value} s",
   "rotation.degrees": "{value}°",
+  "settings.symbolsPerCard": "Symbols per card",
+  "settings.symbolsPerCardValue": "{symbols} ({cards} cards)",
   "confirm.exitTitle": "Quit game?",
   "confirm.exitMessage": "Current round progress will be lost.",
   "confirm.resetTitle": "Reset progress?",

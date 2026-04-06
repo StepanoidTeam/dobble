@@ -246,7 +246,7 @@ export const Multiplayer = {
   },
 
   // ===== Start Game (Host Only) =====
-  async startGame(symbols) {
+  async startGame(symbols, symbolsPerCard) {
     if (!this.isHost || !this.roomCode) return;
 
     const roomSnapshot = await get(this.roomRef);
@@ -254,7 +254,7 @@ export const Multiplayer = {
     const playerUids = Object.keys(roomData.players || {});
 
     // Generate and shuffle deck
-    const { deck } = buildDeck(symbols);
+    const { deck } = buildDeck(symbols, symbolsPerCard);
     const shuffledDeck = Random.shuffle(deck);
 
     // Take cards: first = central, rest = shared draw pile
