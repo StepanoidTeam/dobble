@@ -113,6 +113,8 @@ const Game = {
   abilityTornadoCooldown: false,
   abilityAcidCooldown: false,
   _abilityListener: null,
+  _abilityQueue: [],
+  _abilityPlaying: false,
   $abilityTornadoProgress: null,
   $abilityAcidProgress: null,
 
@@ -2133,12 +2135,7 @@ const Game = {
       const data = snapshot.val();
       if (!data) return;
 
-      if (data.type === 'tornado') {
-        this.abilityApplyTornado();
-      }
-      if (data.type === 'acid') {
-        this.abilityApplyAcid();
-      }
+      this.abilityEnqueue(data.type);
     });
   },
 
@@ -2147,16 +2144,32 @@ const Game = {
       this._abilityListener();
       this._abilityListener = null;
     }
+    this._abilityQueue = [];
+    this._abilityPlaying = false;
   },
 
-  abilityApplyTornado() {
-    console.log('🌪️ Tornado ability received! Whirlwind...');
-    Tornado.animate(this.$player.$circle);
+  abilityEnqueue(type) {
+    const abilities = { tornado: Tornado, acid: Acid };
+    const ability = abilities[type];
+    if (!ability) return;
+
+    this._abilityQueue.push(ability);
+    this.abilityProcessQueue();
   },
 
-  abilityApplyAcid() {
-    console.log('🫟 Acid ability received! Hallucinations...');
-    Acid.animate(this.$player.$circle);
+  abilityProcessQueue() {
+    if (this._abilityPlaying || this._abilityQueue.length === 0) return;
+
+    this._abilityPlaying = true;
+    const ability = this._abilityQueue.shift();
+
+    console.log(`${ability.ICON} ${ability.KEY} ability received!`);
+    ability.animate(this.$player.$circle);
+
+    setTimeout(() => {
+      this._abilityPlaying = false;
+      this.abilityProcessQueue();
+    }, ability.DURATION_MS);
   },
 
   startAbilityCooldownProgress($progressEl, durationMs) {
